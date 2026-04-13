@@ -1143,7 +1143,10 @@ const SEED=[
 ];
 let niveis=DEFAULT_NIVEIS;
 let perguntas=DEFAULT_PERGUNTAS;
-let colaboradores=ls('cols_v3',SEED);
+// Se tem token salvo, começa com localStorage (pode estar vazio — nuvem preenche)
+// Se não tem token, usa SEED como demo local
+const _temToken = !!localStorage.getItem('squado_jwt_token');
+let colaboradores=ls('cols_v3', _temToken ? [] : SEED);
 let funcoes=ls('funcoes',buildDefaultFuncoes(SEED));
 let avaliacoes=ls('avaliacoes',[]);
 let metas=ls('metas_v2',[]);
@@ -1163,7 +1166,7 @@ function saveAll(){
   lss('avaliacoes',avaliacoes);
   lss('metas_v2',metas);lss('feedbacks',feedbacks);lss('cols_v3',colaboradores);lss('funcoes',funcoes);lss('orgPos_v2',orgPositions);lss('orgConns',orgConnections);lss('notas',notas);lss('aiHistory',aiHistory);lss('qtdAmostras',qtdAmostras);
   document.getElementById('nb-col').textContent=colaboradores.length;
-  // Sync automático de configurações
+  // Marcar dados como sujos e agendar sync para a nuvem
   if(squadoGetToken()) agendarSync();
 }
 
