@@ -6566,7 +6566,15 @@ function migrarFuncoes(){
   const existente = ls('funcoes_v8', null);
   if(existente) return existente;
   // Criar novo array com IDs estáveis baseados em nome+area (não uid())
-  function stableId(nome, area){ return 'fn_'+btoa(encodeURIComponent(nome+'|'+area)).replace(/[^a-zA-Z0-9]/g,'').slice(0,28); }
+  function stableId(nome, area){
+    // Hash único: nome + area sem truncar a parte crítica
+    const str = nome + '||' + area;
+    let h = 0;
+    for (let i = 0; i < str.length; i++) { h = Math.imul(31, h) + str.charCodeAt(i) | 0; }
+    const p1 = btoa(encodeURIComponent(nome)).replace(/[^a-zA-Z0-9]/g,'').slice(0,12);
+    const p2 = btoa(encodeURIComponent(area)).replace(/[^a-zA-Z0-9]/g,'').slice(0,8);
+    return 'fn_' + p1 + p2 + (h >>> 0).toString(36);
+  }
   const novasFuncoes = SEED_FUNCOES_CAPACIDADE.map(f => ({
     id: stableId(f.nome, f.area),
     nome: f.nome,
