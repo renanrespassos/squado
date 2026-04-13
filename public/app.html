@@ -6224,6 +6224,7 @@ function delCol(id){
 function desligarCol(id){
   const i=colaboradores.findIndex(x=>x.id===id);if(i<0)return;
   const col=colaboradores[i];
+  const nomeCol=col.nome;
   if(!col.historico)col.historico=[];
   col.historico.push({
     data:new Date().toISOString().slice(0,10),
@@ -6231,8 +6232,19 @@ function desligarCol(id){
     descricao:'Vínculo encerrado. Colaborador desligado da equipe.'
   });
   col.status='Desligado';
+  // Remover de todas as funções de capacidade ao desligar
+  let funcoesV8=ls('funcoes_v8',null);
+  if(funcoesV8&&funcoesV8.length){
+    funcoesV8=funcoesV8.map(f=>({
+      ...f,
+      responsaveis:(f.responsaveis||[]).filter(r=>
+        r.nome!==nomeCol && r.nome.toLowerCase()!==nomeCol.toLowerCase()
+      )
+    }));
+    lss('funcoes_v8',funcoesV8);
+  }
   saveAll();closeModal();
-  toast(col.nome+' desligado. Histórico mantido ✓');
+  toast(nomeCol+' desligado. Histórico mantido ✓');
   render(currentPage);
   // Sync com API
   const token=squadoGetToken();
@@ -6244,14 +6256,42 @@ function desligarCol(id){
 function excluirColPermanente(id){
   if(!confirm('Excluir PERMANENTEMENTE? Esta ação não pode ser desfeita.'))return;
   const col=colaboradores.find(x=>x.id===id);
+  if(!col)return;
+  const nomeCol=col.nome;
+  // Remover do array de colaboradores
   colaboradores=colaboradores.filter(x=>x.id!==id);
+  // Remover de avaliações, notas, PDIs
   avaliacoes=avaliacoes.filter(a=>a.colaboradorId!==id);
   notas=notas.filter(n=>n.colId!==id);
   const pdis=getPDIs().filter(p=>p.colId!==id);savePDIs(pdis);
+  // Remover de todas as funções de capacidade (funcoes_v8)
+  let funcoesV8=ls('funcoes_v8',null);
+  if(funcoesV8&&funcoesV8.length){
+    funcoesV8=funcoesV8.map(f=>({
+      ...f,
+      responsaveis:(f.responsaveis||[]).filter(r=>
+        r.nome!==nomeCol && r.nome.toLowerCase()!==nomeCol.toLowerCase()
+      )
+    }));
+    lss('funcoes_v8',funcoesV8);
+  }
+  // Remover do organograma
+  const orgPos=ls('orgPos_v2',{});
+  if(orgPos[id]){delete orgPos[id];lss('orgPos_v2',orgPos);}
+  // Remover conexões de organograma que envolvem este colaborador
+  const orgConns=ls('orgConns',[]);
+  const orgConnsFiltered=orgConns.filter(conn=>conn.from!==id&&conn.to!==id);
+  lss('orgConns',orgConnsFiltered);
+  // Remover do ninebox
+  const posNB=ls('ninebox_pos',{});
+  if(posNB[id]){delete posNB[id];lss('ninebox_pos',posNB);}
+  // Remover metas do colaborador
+  const metas=ls('metas_v2',[]).filter(m=>m.colId!==id);
+  lss('metas_v2',metas);
   saveAll();closeModal();toast('Excluído permanentemente.');render(currentPage);
   // Sync com API
   const token=squadoGetToken();
-  if(token&&col&&col._apiId){
+  if(token&&col._apiId){
     fetch(SQUADO_API+'/api/colaboradores/'+col._apiId,{method:'DELETE',headers:{'Authorization':'Bearer '+token}}).catch(()=>{});
   }
 }
@@ -6602,8 +6642,14 @@ function renderCapacidade() {
   function horas(min) { return (min/60).toFixed(1)+'h'; }
   function pctOcu(min) { return Math.round(min/MIN_MES_DISPONIVEL*100); }
 
+  // Cards de pessoas — incluir TODOS os colaboradores ativos (mesmo os sem funções = 0%)
+  // Adicionar colaboradores ativos que não têm nenhuma função atribuída
+  colaboradores.filter(c => c.status === 'Ativo').forEach(c => {
+    if (!cargaPessoa[c.nome]) cargaPessoa[c.nome] = 0;
+  });
+  const pessoas_todos = Object.keys(cargaPessoa);
   // Cards de pessoas — ordenadas por ocupação decrescente
-  const pessoasOrdenadas = pessoas.sort((a,b) => cargaPessoa[b] - cargaPessoa[a]);
+  const pessoasOrdenadas = pessoas_todos.sort((a,b) => cargaPessoa[b] - cargaPessoa[a]);
 
   const pessoaCards = pessoasOrdenadas.map(nome => {
     const min = cargaPessoa[nome];
