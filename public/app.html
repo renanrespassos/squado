@@ -5932,7 +5932,7 @@ function renderPerfilAba(id, aba){
               +'<input type="number" min="1" max="100" id="ded-'+f.id+'" value="'+pct+'" data-funcid="'+f.id+'" data-colid="'+id+'" style="width:52px;text-align:center;font-size:12px;font-weight:700;border:0.5px solid var(--border2);border-radius:6px;padding:3px 6px;color:var(--green)" onchange="atualizarDedicacaoEl(this)"/>'
               +'<span style="font-size:10px;color:var(--txt3)">%</span>'
               +'<button class="btn btn-xs btn-primary" onclick="salvarDedicacaoInput(\''+f.id+'\',\''+id+'\')" title="Salvar">💾</button>'
-              +'<button class="btn btn-xs btn-danger" onclick="removerDeFuncao(\''+id+'\',\''+f.id+'\')" title="Remover desta função">×</button>'
+              +'<button class="btn btn-xs btn-danger" data-colid="'+id+'" data-funcid="'+encodeURIComponent(f.id)+'" onclick="removerDeFuncao(this.dataset.colid,decodeURIComponent(this.dataset.funcid))" title="Remover desta função">×</button>'
             +'</div>'
           +'</div>';
         }).join('')
@@ -6169,8 +6169,12 @@ function _showColForm(id,c){
 }
 
 function saveCol(id){
-  const nome=((document.getElementById('fc-nome')||{}).value||'');
+  const nome=((document.getElementById('fc-nome')||{}).value||'').trim();
   if(!nome){alert('Nome obrigatório');return;}
+  // Verificar nome duplicado (ignorar o próprio colaborador ao editar)
+  const nomeNorm=nome.toLowerCase();
+  const duplicado=colaboradores.find(x=>x.nome.toLowerCase()===nomeNorm && x.id!==id);
+  if(duplicado){alert('Já existe um colaborador com o nome "'+duplicado.nome+'". Use um nome diferente.');return;}
   const nivel=(document.getElementById('fc-nivel')||{}).value||'Assistente I';
   const area=(document.getElementById('fc-area')||{}).value||'EMC';
   const status=(document.getElementById('fc-status')||{}).value||'Ativo';
@@ -6337,19 +6341,30 @@ function removerDeFuncao(colId,funcId){
   const col=colaboradores.find(x=>x.id===colId);if(!col)return;
   let funcoesV4=ls('funcoes_v8',null);
   if(!funcoesV4||funcoesV4.length===0) funcoesV4=migrarFuncoes();
-  // Buscar por ID exato primeiro
+  const nomeCol=col.nome.toLowerCase();
+  // Buscar por ID exato
   let idx=funcoesV4.findIndex(f=>f.id===funcId);
   if(idx<0){
-    // Fallback: buscar pelo nome do colaborador + qualquer match de id/nome
-    idx=funcoesV4.findIndex(f=>(f.responsaveis||[]).some(r=>r.nome===col.nome||r.nome.toLowerCase()===col.nome.toLowerCase()) && (f.nome===funcId||f.id===funcId));
+    // Fallback: ID pode ser nome da função (gerado dinamicamente)
+    idx=funcoesV4.findIndex(f=>f.nome===funcId);
   }
   if(idx<0){
-    // Último recurso: buscar apenas pelo ID mesmo sem ter o colaborador
-    idx=funcoesV4.findIndex(f=>f.id===funcId||f.nome===funcId);
+    // Fallback: buscar pela função que TEM o colaborador E cujo id/nome bate
+    idx=funcoesV4.findIndex(f=>
+      (f.responsaveis||[]).some(r=>r.nome.toLowerCase()===nomeCol) &&
+      (f.id===funcId||f.nome===funcId)
+    );
+  }
+  if(idx<0){
+    // Último recurso: qualquer função que tenha este colaborador e cujo id começa igual
+    idx=funcoesV4.findIndex(f=>
+      (f.responsaveis||[]).some(r=>r.nome.toLowerCase()===nomeCol) &&
+      (funcId.startsWith(f.id)||f.id.startsWith(funcId))
+    );
   }
   if(idx<0){toast('Função não encontrada. Tente recarregar a página.');return;}
   funcoesV4[idx].responsaveis=(funcoesV4[idx].responsaveis||[]).filter(r=>
-    r.nome!==col.nome && r.nome.toLowerCase()!==col.nome.toLowerCase()
+    r.nome.toLowerCase()!==nomeCol
   );
   lss('funcoes_v8',funcoesV4);
   toast('Removido da função!');
@@ -6551,7 +6566,7 @@ function migrarFuncoes(){
   const existente = ls('funcoes_v8', null);
   if(existente) return existente;
   // Criar novo array com IDs estáveis baseados em nome+area (não uid())
-  function stableId(nome, area){ return 'fn_'+btoa(encodeURIComponent(nome+'|'+area)).replace(/[^a-zA-Z0-9]/g,'').slice(0,16); }
+  function stableId(nome, area){ return 'fn_'+btoa(encodeURIComponent(nome+'|'+area)).replace(/[^a-zA-Z0-9]/g,'').slice(0,28); }
   const novasFuncoes = SEED_FUNCOES_CAPACIDADE.map(f => ({
     id: stableId(f.nome, f.area),
     nome: f.nome,
@@ -6581,12 +6596,15 @@ function calcCargaFuncao(f, amostras) {
 }
 
 function calcCargaPorPessoa(amostras) {
-  // Retorna {nome: minutos_totais}
+  // Retorna {nome: minutos_totais} — só colaboradores que existem e estão Ativos
+  const nomesAtivos = new Set(colaboradores.filter(c => c.status === 'Ativo').map(c => c.nome));
   const carga = {};
   const funcoesAtivas = ls('funcoes_v8', migrarFuncoes());
   funcoesAtivas.forEach(f => {
     const total = calcCargaFuncao(f, amostras);
     (f.responsaveis || []).forEach(r => {
+      // Só inclui se o colaborador ainda existe e está ativo
+      if (!nomesAtivos.has(r.nome)) return;
       if (!carga[r.nome]) carga[r.nome] = 0;
       carga[r.nome] += total * (r.pct / 100);
     });
@@ -6729,11 +6747,14 @@ function renderCapacidade() {
     const pessoasReais = nomesArea.size;
     const deficit_area = pessoasIdeaisInt > pessoasReais;
 
+    const nomesAtivosSet = new Set(colaboradores.filter(c=>c.status==='Ativo').map(c=>c.nome));
     const rows = funcs.map(f => {
       const cF = calcCargaFuncao(f, amostras);
       // Pessoas ideais por função individual
       const piFunc = cF / MIN_FUNC_MES;
-      const respStr = (f.responsaveis||[]).map(r => r.nome.split(' ')[0]+'('+r.pct+'%)').join(', ');
+      // Só mostrar responsáveis que ainda existem e estão ativos
+      const respAtivos = (f.responsaveis||[]).filter(r=>nomesAtivosSet.has(r.nome));
+      const respStr = respAtivos.map(r => r.nome.split(' ')[0]+'('+r.pct+'%)').join(', ') || '—';
       return '<tr>'
         + '<td style="padding:7px 10px;font-size:12px;color:var(--txt)">'+f.nome+'</td>'
         + '<td style="padding:7px 10px;font-size:11px;color:var(--txt2);text-align:center">'
@@ -6759,7 +6780,7 @@ function renderCapacidade() {
               +'<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:'+bg+';color:'+cor+'" title="Soma das dedicações dos responsáveis">'
               +icon+somaR+'%</span></td>';
           })()
-        + '<td style="padding:7px 10px;text-align:center"><button class="btn btn-xs" onclick="editarFuncaoCapacidade(\''+f.id+'\')">Editar</button></td>'
+        + '<td style="padding:7px 10px;text-align:center"><button class="btn btn-xs" data-fid="'+encodeURIComponent(f.id)+'" onclick="editarFuncaoCapacidade(decodeURIComponent(this.dataset.fid))">Editar</button></td>'
       + '</tr>';
     }).join('');
 
@@ -6934,7 +6955,12 @@ function setAmostras(val) {
 // ═══════════════════════════════════════════════════════════════
 function editarFuncaoCapacidade(id) {
   const funcoesV2 = ls('funcoes_v8', migrarFuncoes());
-  const f = funcoesV2.find(x => x.id === id);
+  // Buscar por ID exato — se não achar, tentar por índice codificado
+  let f = funcoesV2.find(x => x.id === id);
+  if (!f) {
+    // Fallback: ID pode ter sido truncado ou ter underscores
+    f = funcoesV2.find(x => x.id === id || x.id.replace(/[^a-z0-9]/gi,'') === id.replace(/[^a-z0-9]/gi,''));
+  }
   if (!f) return;
   _showFuncCapModal(f, false);
 }
@@ -7263,26 +7289,30 @@ async function squadoCarregarDaNuvem() {
   try {
     toast('☁️ Sincronizando com a nuvem...');
 
-    // Colaboradores
+    // Colaboradores — SEMPRE sobrescrever ao logar (mesmo vazio)
     const cols = await apiCall('GET', '/api/colaboradores');
-    if (cols && Array.isArray(cols) && cols.length > 0) {
-      colaboradores = cols.map(c => ({
-        id: c.id, _apiId: c.id, nome: c.nome, cargo: c.cargo || '', area: c.area || '',
-        nivel: c.nivel || 'Assistente', email: c.email || '', whatsapp: c.whatsapp || '',
-        dataAdmissao: c.data_admissao || '', status: c.ativo ? 'Ativo' : 'Desligado',
-        historico: c.historico || [], obs: c.obs || '',
-        perfil: { email: c.email || '', celular: c.whatsapp || '' }
-      }));
+    if (cols && Array.isArray(cols)) {
+      if (cols.length > 0) {
+        colaboradores = cols.map(c => ({
+          id: c.id, _apiId: c.id, nome: c.nome, cargo: c.cargo || '', area: c.area || '',
+          nivel: c.nivel || 'Assistente', email: c.email || '', whatsapp: c.whatsapp || '',
+          dataAdmissao: c.data_admissao || '', status: c.ativo ? 'Ativo' : 'Desligado',
+          historico: c.historico || [], obs: c.obs || '',
+          perfil: { email: c.email || '', celular: c.whatsapp || '' }
+        }));
+      } else {
+        colaboradores = []; // conta sem colaboradores — limpar o SEED
+      }
       lss('cols_v3', colaboradores);
     }
 
     // Avaliações
     const avals = await apiCall('GET', '/api/avaliacoes');
     if (avals && Array.isArray(avals)) {
-      avaliacoes = avals.map(a => ({
+      avaliacoes = avals.length > 0 ? avals.map(a => ({
         id: a.id, colId: a.colaborador_id, periodo: a.periodo || '',
         notas: a.notas || {}, mediaGeral: a.media || 0, data: a.criado_em
-      }));
+      })) : [];
       lss('avaliacoes', avaliacoes);
     }
 
@@ -7321,8 +7351,8 @@ async function squadoCarregarDaNuvem() {
     const cfg = await apiCall('GET', '/api/config');
     // Restaurar snapshot completo se existir
     if (cfg) {
-      if (cfg.snapshot_cols && Array.isArray(cfg.snapshot_cols) && cfg.snapshot_cols.length > 0) {
-        colaboradores = cfg.snapshot_cols;
+      if (cfg.snapshot_cols && Array.isArray(cfg.snapshot_cols)) {
+        colaboradores = cfg.snapshot_cols; // pode ser [] — limpa o SEED se conta vazia
         lss('cols_v3', colaboradores);
       }
       if (cfg.snapshot_avaliacoes && Array.isArray(cfg.snapshot_avaliacoes)) {
