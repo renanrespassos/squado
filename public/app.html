@@ -502,6 +502,7 @@ input[type=range]:focus{box-shadow:none}
     </div>
     <button id="btn-migrar" onclick="squadoMigrarDados()" style="display:none;width:100%;font-size:10px;padding:5px 8px;background:#EF9F27;border:none;border-radius:6px;color:#412402;font-weight:700;cursor:pointer">☁️ Migrar dados para nuvem</button>
     <button class="btn btn-sm" onclick="showApiKeyModal()" style="font-size:10px;padding:4px 8px;background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);color:#fff">⚙️ Configurar IA</button>
+    <div id="sq-sync-ind" style="font-size:9px;color:rgba(255,255,255,.5);text-align:center;min-height:12px;transition:color .3s"></div>
     <button class="btn btn-sm" onclick="squadoLogout()" style="font-size:10px;padding:4px 8px;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:rgba(255,255,255,.7)">🚪 Sair</button>
   </div>
 </aside>
@@ -7315,6 +7316,40 @@ async function squadoCarregarDaNuvem() {
 
     // Configurações (valores, competências, níveis, organograma, gestor, IA)
     const cfg = await apiCall('GET', '/api/config');
+    // Restaurar snapshot completo se existir
+    if (cfg) {
+      if (cfg.snapshot_cols && Array.isArray(cfg.snapshot_cols) && cfg.snapshot_cols.length > 0) {
+        colaboradores = cfg.snapshot_cols;
+        lss('cols_v3', colaboradores);
+      }
+      if (cfg.snapshot_avaliacoes && Array.isArray(cfg.snapshot_avaliacoes)) {
+        avaliacoes = cfg.snapshot_avaliacoes;
+        lss('avaliacoes', avaliacoes);
+      }
+      if (cfg.snapshot_metas && Array.isArray(cfg.snapshot_metas)) {
+        metas = cfg.snapshot_metas;
+        lss('metas_v2', metas);
+      }
+      if (cfg.snapshot_notas && Array.isArray(cfg.snapshot_notas)) {
+        notas = cfg.snapshot_notas;
+        lss('notas', notas);
+      }
+      if (cfg.snapshot_pdis && Array.isArray(cfg.snapshot_pdis)) {
+        lss('pdis_v1', cfg.snapshot_pdis);
+      }
+      if (cfg.snapshot_funcoes) {
+        lss('funcoes_v8', cfg.snapshot_funcoes);
+      }
+      if (cfg.snapshot_valores_empresa && Array.isArray(cfg.snapshot_valores_empresa) && cfg.snapshot_valores_empresa.length > 0) {
+        lss('valores_empresa', cfg.snapshot_valores_empresa);
+      }
+      if (cfg.snapshot_competencias && Array.isArray(cfg.snapshot_competencias) && cfg.snapshot_competencias.length > 0) {
+        lss('competencias_v2', cfg.snapshot_competencias);
+      }
+      if (cfg.snapshot_niveis && Array.isArray(cfg.snapshot_niveis) && cfg.snapshot_niveis.length > 0) {
+        lss('niveis_v2', cfg.snapshot_niveis);
+      }
+    }
     if (cfg && cfg.tenant_id) {
       if (cfg.valores)        lss('valores_v1', cfg.valores);
       if (cfg.matriz_comp)    lss('matriz_comp_v1', cfg.matriz_comp);
@@ -7427,11 +7462,25 @@ async function squadoMigrarDados() {
   }
 }
 
-// ─── SYNC AUTOMÁTICO ao salvar ─────────────────────────────────
-async function squadoSyncConfig() {
+// ═══════════════════════════════════════════════════════════════
+// SISTEMA DE SYNC INTELIGENTE
+// Estratégia: dirty flag + debounce 3s + periodic 5min + blur/close
+// Custo estimado: ~3.000 requests/mês/usuário ativo → dentro do free tier
+// ═══════════════════════════════════════════════════════════════
+
+let _syncTimer = null;       // debounce timer
+let _syncPeriodic = null;    // timer periódico 5min
+let _syncDirty = false;      // há dados não salvos na nuvem?
+let _syncEmAndamento = false; // evitar chamadas paralelas
+
+// Snapshot completo — 1 único request com tudo
+async function squadoSyncSnapshot(origem) {
   if (!squadoGetToken()) return;
+  if (_syncEmAndamento) return; // já está sincronizando
+  _syncEmAndamento = true;
   try {
     await apiCall('PUT', '/api/config', {
+      // Configurações
       valores:          ls('valores_v1', null),
       matriz_comp:      ls('matriz_comp_v1', null),
       perguntas:        ls('perguntas_v3', null),
@@ -7439,17 +7488,92 @@ async function squadoSyncConfig() {
       organograma_pos:  orgPositions,
       organograma_conn: orgConnections,
       gestor_config:    ls('gestor_config_v1', null),
-      historico_ia:     aiHistory
+      historico_ia:     aiHistory,
+      // Dados principais (snapshot completo)
+      snapshot_cols:       colaboradores,
+      snapshot_avaliacoes: avaliacoes,
+      snapshot_metas:      ls('metas_v2', []),
+      snapshot_notas:      notas,
+      snapshot_pdis:       ls('pdis_v1', []),
+      snapshot_funcoes:    ls('funcoes_v8', null),
+      snapshot_valores_empresa: ls('valores_empresa', []),
+      snapshot_competencias:   ls('competencias_v2', []),
+      snapshot_niveis:         ls('niveis_v2', []),
+      snapshot_perguntas:      ls('perguntas_v3', null),
     });
-  } catch(e) { /* silencioso */ }
+    _syncDirty = false;
+    // Indicador visual discreto
+    const ind = document.getElementById('sq-sync-ind');
+    if (ind) { ind.textContent = '☁️ salvo'; ind.style.color = '#1D9E75'; setTimeout(() => { ind.textContent = ''; }, 3000); }
+  } catch(e) {
+    const ind = document.getElementById('sq-sync-ind');
+    if (ind) { ind.textContent = '⚠️ sem sync'; ind.style.color = '#854F0B'; }
+  } finally {
+    _syncEmAndamento = false;
+  }
 }
 
-// Debounce para não chamar a cada keystroke
-let _syncTimer = null;
+// Agenda sync com debounce de 3 segundos (evita requests a cada keystroke)
 function agendarSync() {
+  _syncDirty = true;
   clearTimeout(_syncTimer);
-  _syncTimer = setTimeout(squadoSyncConfig, 2000);
+  _syncTimer = setTimeout(() => squadoSyncSnapshot('debounce'), 3000);
 }
+
+// Sync imediato (sem debounce) — para blur/fechar aba
+function agendarSyncImediato() {
+  if (!_syncDirty) return;
+  clearTimeout(_syncTimer);
+  squadoSyncSnapshot('imediato');
+}
+
+// Alias para compatibilidade
+async function squadoSyncConfig() { return squadoSyncSnapshot('config'); }
+
+// Iniciar rotina periódica de 5 minutos (só enquanto logado)
+function iniciarSyncPeriodico() {
+  clearInterval(_syncPeriodic);
+  _syncPeriodic = setInterval(() => {
+    if (_syncDirty && squadoGetToken()) squadoSyncSnapshot('periodico');
+  }, 5 * 60 * 1000); // 5 minutos
+}
+
+function pararSyncPeriodico() {
+  clearInterval(_syncPeriodic);
+  _syncPeriodic = null;
+}
+
+// Sync ao trocar/sair da aba (visibilitychange)
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) agendarSyncImediato();
+});
+
+// Sync ao fechar o browser/aba (beforeunload)
+window.addEventListener('beforeunload', () => {
+  if (_syncDirty && squadoGetToken()) {
+    // Beacon API para garantir o envio mesmo no fechamento
+    const token = squadoGetToken();
+    if (token) {
+      const payload = JSON.stringify({
+        snapshot_cols:       colaboradores,
+        snapshot_avaliacoes: avaliacoes,
+        snapshot_metas:      ls('metas_v2', []),
+        snapshot_notas:      notas,
+        snapshot_funcoes:    ls('funcoes_v8', null),
+        snapshot_valores_empresa: ls('valores_empresa', []),
+        snapshot_competencias:   ls('competencias_v2', []),
+        snapshot_niveis:         ls('niveis_v2', []),
+        niveis: niveis,
+        organograma_pos: orgPositions,
+        organograma_conn: orgConnections,
+      });
+      navigator.sendBeacon && navigator.sendBeacon(
+        SQUADO_API + '/api/config?token=' + token,
+        new Blob([payload], {type: 'application/json'})
+      );
+    }
+  }
+});
 
 function squadoGetToken() { return localStorage.getItem(SQUADO_TOKEN_KEY); }
 function squadoGetUser()  { try { return JSON.parse(localStorage.getItem(SQUADO_USER_KEY)||'null'); } catch{ return null; } }
@@ -7578,6 +7702,7 @@ function squadoEntrar(user) {
   if(_mob) _mob.style.display = 'block';
   // Carregar dados da nuvem após login
   setTimeout(() => squadoCarregarDaNuvem(), 500);
+  iniciarSyncPeriodico();
 }
 
 function squadoToggleUserMenu(e) {
@@ -7590,6 +7715,7 @@ function squadoToggleUserMenu(e) {
 function squadoShowUserMenu() { squadoToggleUserMenu(); }
 
 function squadoLogout() {
+  pararSyncPeriodico();
   localStorage.removeItem(SQUADO_TOKEN_KEY);
   localStorage.removeItem(SQUADO_USER_KEY);
   const badge = document.getElementById('squado-user-badge');
