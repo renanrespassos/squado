@@ -6293,14 +6293,20 @@ function removerDeFuncao(colId,funcId){
   const col=colaboradores.find(x=>x.id===colId);if(!col)return;
   let funcoesV4=ls('funcoes_v8',null);
   if(!funcoesV4||funcoesV4.length===0) funcoesV4=migrarFuncoes();
-  // Buscar por ID exato; se não achar, buscar pela função que tem o colaborador como responsável
+  // Buscar por ID exato primeiro
   let idx=funcoesV4.findIndex(f=>f.id===funcId);
   if(idx<0){
-    // Fallback: achar a função pelo nome do responsável + funcId como nome
-    idx=funcoesV4.findIndex(f=>(f.responsaveis||[]).some(r=>r.nome===col.nome) && (f.nome===funcId||f.id===funcId));
+    // Fallback: buscar pelo nome do colaborador + qualquer match de id/nome
+    idx=funcoesV4.findIndex(f=>(f.responsaveis||[]).some(r=>r.nome===col.nome||r.nome.toLowerCase()===col.nome.toLowerCase()) && (f.nome===funcId||f.id===funcId));
   }
-  if(idx<0){toast('Função não encontrada.');return;}
-  funcoesV4[idx].responsaveis=(funcoesV4[idx].responsaveis||[]).filter(r=>r.nome!==col.nome);
+  if(idx<0){
+    // Último recurso: buscar apenas pelo ID mesmo sem ter o colaborador
+    idx=funcoesV4.findIndex(f=>f.id===funcId||f.nome===funcId);
+  }
+  if(idx<0){toast('Função não encontrada. Tente recarregar a página.');return;}
+  funcoesV4[idx].responsaveis=(funcoesV4[idx].responsaveis||[]).filter(r=>
+    r.nome!==col.nome && r.nome.toLowerCase()!==col.nome.toLowerCase()
+  );
   lss('funcoes_v8',funcoesV4);
   toast('Removido da função!');
   renderPerfilAba(colId,'funcoes_col');
@@ -7578,6 +7584,189 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
+
+// ═══════════════════════════════════════════════════════════════
+// RESET DE DADOS DE DEMONSTRAÇÃO (conta teste)
+// ═══════════════════════════════════════════════════════════════
+function squadoResetDemoData() {
+  if(!confirm('Isso vai resetar TODOS os dados para o padrão de demonstração. Continuar?')) return;
+  
+  // Limpar colaboradores
+  lss('colaboradores_v2', []);
+  
+  // Limpar funções de capacidade (vai usar o seed padrão)
+  lss('funcoes_v8', null);
+  localStorage.removeItem('funcoes_v8');
+  
+  // Limpar valores da empresa
+  lss('valores_empresa', []);
+  
+  // Limpar competências
+  lss('competencias_v2', []);
+  
+  // Limpar organograma customizado
+  lss('orgPositions', null);
+  localStorage.removeItem('orgPositions');
+  
+  // Limpar notas
+  lss('notas_v2', []);
+  
+  // Limpar metas
+  lss('metas_v2', []);
+  
+  // Limpar PDI
+  lss('pdi_v2', []);
+  
+  // Limpar avaliações
+  lss('avaliacoes_v2', []);
+  
+  // Níveis de cargo: apenas os 5 básicos
+  const niveisPadrao = [
+    {id:'n1',nome:'Estagiário',cor:'#854F0B',bg:'#FAEEDA',ordem:1},
+    {id:'n2',nome:'Assistente',cor:'#534AB7',bg:'#EEEDFE',ordem:2},
+    {id:'n3',nome:'Analista',cor:'#0F6E56',bg:'#E1F5EE',ordem:3},
+    {id:'n4',nome:'Especialista',cor:'#993C1D',bg:'#F5C4B3',ordem:4},
+    {id:'n5',nome:'Coordenador',cor:'#3B6D11',bg:'#C0DD97',ordem:5},
+  ];
+  lss('niveis_v2', niveisPadrao);
+  
+  // Perguntas de avaliação genéricas (sem referência a 17025)
+  const perguntasGenericas = {
+    'Estagiário': {
+      'Trabalho em Equipe': [
+        'Colabora com os colegas para atingir os objetivos da equipe?',
+        'Pede ajuda quando necessário e compartilha informações relevantes?',
+        'Mantém um bom relacionamento com colegas e gestores?'
+      ],
+      'Responsabilidade': [
+        'Cumpre os prazos acordados para suas tarefas?',
+        'Avisa com antecedência quando não consegue entregar algo no prazo?',
+        'Assume responsabilidade pelos próprios erros e busca corrigi-los?'
+      ],
+      'Organização': [
+        'Mantém organização no seu espaço de trabalho?',
+        'É pontual nos horários de entrada e saída?',
+        'Gerencia bem o tempo nas atividades diárias?'
+      ],
+      'Iniciativa e Aprendizado': [
+        'Demonstra interesse em aprender coisas novas?',
+        'Busca soluções por conta própria antes de pedir ajuda?',
+        'Propõe melhorias nas suas atividades do dia a dia?'
+      ],
+    },
+    'Assistente': {
+      'Trabalho em Equipe': [
+        'Colabora ativamente com os colegas para atingir os objetivos da equipe?',
+        'Compartilha conhecimento e informações de forma proativa?',
+        'Lida bem com conflitos, buscando soluções construtivas?'
+      ],
+      'Responsabilidade': [
+        'Cumpre prazos e entrega trabalho com qualidade?',
+        'Antecipa problemas e comunica riscos ao gestor com antecedência?',
+        'Assume responsabilidade integral pelas suas atividades?'
+      ],
+      'Organização e Gestão do Tempo': [
+        'Define prioridades e gerencia múltiplas demandas com eficiência?',
+        'É pontual e disciplinado com horários de trabalho?',
+        'Mantém organização no posto de trabalho e nas suas atividades?'
+      ],
+      'Foco em Resultados': [
+        'Direciona esforços para atingir os objetivos da equipe?',
+        'Propõe melhorias nos processos e rotinas de trabalho?',
+        'Demonstra atenção aos detalhes e capricho nas atividades?'
+      ],
+    },
+    'Analista': {
+      'Liderança e Influência': [
+        'Orienta e apoia colegas menos experientes de forma espontânea?',
+        'É referência técnica para a equipe na sua área de atuação?',
+        'Contribui com ideias e perspectivas relevantes nas discussões?'
+      ],
+      'Responsabilidade e Autonomia': [
+        'Gerencia demandas complexas com autonomia, sem necessidade de cobranças?',
+        'Toma decisões técnicas com embasamento sólido?',
+        'Representa a equipe em interações com clientes ou parceiros?'
+      ],
+      'Foco em Resultados': [
+        'Entrega alta qualidade de forma consistente dentro dos prazos?',
+        'Monitora indicadores e toma ações proativas para garantir resultados?',
+        'Implementa melhorias com impacto mensurável nos processos?'
+      ],
+      'Desenvolvimento de Pessoas': [
+        'Contribui para o desenvolvimento dos colegas ao redor?',
+        'Identifica oportunidades de crescimento na equipe?',
+        'Delega atividades com clareza e acompanha a execução?'
+      ],
+    },
+    'Especialista': {
+      'Visão Técnica e Estratégica': [
+        'É referência técnica em múltiplas áreas do laboratório?',
+        'Contribui para inovação e desenvolvimento de novas capacidades?',
+        'Apoia a definição de diretrizes técnicas junto à coordenação?'
+      ],
+      'Liderança': [
+        'Desenvolve e mentora líderes técnicos emergentes na equipe?',
+        'Promove cultura de excelência técnica e colaboração?',
+        'Representa a empresa com autoridade em interações externas?'
+      ],
+      'Resultados e Impacto': [
+        'Entrega resultados de alto impacto de forma consistente?',
+        'Estabelece KPIs relevantes e monitora com rigor?',
+        'Orienta estratégias para superação de metas?'
+      ],
+      'Gestão de Pessoas': [
+        'Desenvolve ativamente os membros da equipe?',
+        'Cobra e orienta a equipe de forma construtiva e eficaz?',
+        'É reconhecido como mentor e referência por todos?'
+      ],
+    },
+    'Coordenador': {
+      'Visão Estratégica': [
+        'Define direção clara e objetivos para a equipe?',
+        'Antecipa riscos e propõe planos de contingência?',
+        'Alinha as atividades da equipe com os objetivos organizacionais?'
+      ],
+      'Gestão de Pessoas': [
+        'Desenvolve os talentos da equipe e promove crescimento?',
+        'Delega com clareza e acompanha resultados com eficácia?',
+        'Cria ambiente motivador e de alto desempenho?'
+      ],
+      'Resultados': [
+        'Garante o atingimento das metas da equipe?',
+        'Monitora indicadores e age proativamente nas desvios?',
+        'Implementa melhorias com impacto estratégico?'
+      ],
+      'Comunicação e Influência': [
+        'Comunica decisões com clareza e transparência?',
+        'Influencia positivamente a cultura da organização?',
+        'Representa a equipe com autoridade e credibilidade?'
+      ],
+    },
+  };
+  lss('perguntas_v3', perguntasGenericas);
+  
+  // Valores genéricos de exemplo
+  const valoresExemplo = [
+    {id:'v1', nome:'Qualidade', descricao:'Comprometimento com a excelência em tudo que fazemos', cor:'#0F6E56'},
+    {id:'v2', nome:'Inovação', descricao:'Buscar constantemente novas formas de melhorar processos e resultados', cor:'#185FA5'},
+    {id:'v3', nome:'Trabalho em Equipe', descricao:'Colaborar, compartilhar e crescer juntos', cor:'#534AB7'},
+    {id:'v4', nome:'Responsabilidade', descricao:'Assumir compromissos e entregar com consistência', cor:'#854F0B'},
+    {id:'v5', nome:'Integridade', descricao:'Agir com ética e transparência em todas as situações', cor:'#3B6D11'},
+  ];
+  lss('valores_empresa', valoresExemplo);
+  
+  // Competências genéricas de exemplo
+  const competenciasExemplo = [
+    {id:'comp1', nome:'Comunicação', descricao:'Capacidade de comunicar ideias com clareza e objetividade', niveis: ['Comunica de forma básica', 'Se expressa com clareza', 'Influencia pelo discurso', 'Referência em comunicação']},
+    {id:'comp2', nome:'Resolução de Problemas', descricao:'Identificar e solucionar desafios com criatividade e eficácia', niveis: ['Resolve problemas simples', 'Analisa e propõe soluções', 'Resolve problemas complexos', 'Antecipa e previne problemas']},
+    {id:'comp3', nome:'Liderança', descricao:'Inspirar e conduzir pessoas para resultados', niveis: ['Influencia no grupo', 'Lidera projetos pontuais', 'Lidera equipes', 'Lidera com visão estratégica']},
+    {id:'comp4', nome:'Orientação a Resultados', descricao:'Foco em entregar resultados com qualidade e no prazo', niveis: ['Cumpre o básico', 'Entrega consistentemente', 'Supera metas', 'Define e eleva padrões']},
+  ];
+  lss('competencias_v2', competenciasExemplo);
+  
+  toast('✅ Dados de demonstração resetados!');
+  setTimeout(() => location.reload(), 1000);
+}
 </script>
 
 </body>
