@@ -1575,71 +1575,78 @@ function getPos(id){
 }
 
 function renderOrganograma(){
-  // Mapa de ordem dos níveis (maior = mais alto na hierarquia)
   const ordemNivel = {};
-  niveis.sort((a,b)=>a.ordem-b.ordem).forEach((n,i)=>{ ordemNivel[n.nome]=i; });
+  niveis.slice().sort((a,b)=>a.ordem-b.ordem).forEach((n,i)=>{ ordemNivel[n.nome]=i; });
 
   const ativos = colaboradores.filter(c => c.status === 'Ativo');
-
-  // Agrupar por nível (linhas) e dentro de cada linha por área (colunas)
-  const niveisList = niveis.slice().sort((a,b)=>b.ordem-a.ordem); // do maior para menor
-  const niveisPresenteIds = new Set(ativos.map(c=>c.nivel));
-  const niveisPresentes = niveisList.filter(n => niveisPresenteIds.has(n.nome));
-
   if (!ativos.length) return '<div class="empty-state">Nenhum colaborador ativo.</div>';
+
+  // Níveis presentes — do maior para o menor
+  const niveisList = niveis.slice().sort((a,b)=>b.ordem-a.ordem);
+  const niveisPresentes = niveisList.filter(n => ativos.some(c => c.nivel === n.nome));
 
   const linhas = niveisPresentes.map(nv => {
     const pessoas = ativos.filter(c => c.nivel === nv.nome);
     const ns = NIVEL_STYLE[nv.nome] || {cor:'#888', bg:'#eee'};
 
-    const cards = pessoas.map(col => {
-      const avsC = avaliacoes.filter(a => a.colaboradorId === col.id);
-      const lastAv = avsC.length ? avsC[avsC.length-1] : null;
-      const ac = AREA_COLORS[col.area] || {cor:'#888', bg:'#eee'};
-      return `<div onclick="verCol('${col.id}')"
-        style="background:var(--bg);border:0.5px solid var(--border);border-radius:10px;
-               padding:10px 12px;cursor:pointer;transition:box-shadow .15s;width:160px;
-               flex-shrink:0;border-top:3px solid ${ns.cor}"
-        onmouseover="this.style.boxShadow='0 4px 14px rgba(0,0,0,.1)'"
-        onmouseout="this.style.boxShadow='none'">
-        <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
-          ${av(col.nome, false, false)}
-          <div style="flex:1;min-width:0">
-            <div style="font-size:11.5px;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-              ${col.nome.split(' ').slice(0,2).join(' ')}
+    // Agrupar por área dentro do nível
+    const byArea = {};
+    pessoas.forEach(col => {
+      if (!byArea[col.area]) byArea[col.area] = [];
+      byArea[col.area].push(col);
+    });
+
+    const grupos = Object.entries(byArea).map(([area, membros]) => {
+      const ac = AREA_COLORS[area] || {cor:'#5F5E5A', bg:'#D3D1C7'};
+      const cards = membros.map(col => {
+        const avsC = avaliacoes.filter(a => a.colaboradorId === col.id);
+        const lastAv = avsC.length ? avsC[avsC.length-1] : null;
+        return `<div onclick="verCol('${col.id}')"
+          style="background:var(--bg);border:0.5px solid var(--border);border-radius:10px;
+                 padding:10px 12px;cursor:pointer;transition:box-shadow .15s;
+                 min-width:150px;border-top:3px solid ${ns.cor}"
+          onmouseover="this.style.boxShadow='0 4px 14px rgba(0,0,0,.1)'"
+          onmouseout="this.style.boxShadow='none'">
+          <div style="display:flex;align-items:center;gap:7px">
+            ${av(col.nome, false, false)}
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12px;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                ${col.nome.split(' ').slice(0,2).join(' ')}
+              </div>
+              ${col.gestor ? `<div style="font-size:9px;color:var(--txt3)">↑ ${col.gestor.split(' ')[0]}</div>` : ''}
             </div>
-            <span style="font-size:8.5px;padding:1px 5px;border-radius:10px;background:${ac.bg};color:${ac.cor};border:0.5px solid ${ac.cor}40;white-space:nowrap">
-              ${col.area}
-            </span>
+            ${lastAv ? `<span style="font-size:10px;font-weight:800;color:var(--green)">${lastAv.mediaGeral}</span>` : ''}
           </div>
+        </div>`;
+      }).join('');
+
+      return `<div style="margin-right:20px;margin-bottom:8px">
+        <div style="font-size:9.5px;font-weight:700;color:${ac.cor};text-transform:uppercase;
+                    letter-spacing:.06em;margin-bottom:5px;padding:2px 8px;border-radius:6px;
+                    background:${ac.bg};display:inline-block;border:0.5px solid ${ac.cor}40">
+          ${area}
         </div>
-        ${lastAv ? `<div style="font-size:10px;font-weight:800;color:var(--green);text-align:right">${lastAv.mediaGeral}</div>` : ''}
-        ${col.gestor ? `<div style="font-size:9px;color:var(--txt3);margin-top:3px">↑ ${col.gestor.split(' ')[0]}</div>` : ''}
+        <div style="display:flex;flex-wrap:wrap;gap:8px">${cards}</div>
       </div>`;
     }).join('');
 
-    return `<div style="margin-bottom:20px">
+    return `<div style="margin-bottom:24px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <span style="font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;
+        <span style="font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;
                      background:${ns.bg};color:${ns.cor};border:1px solid ${ns.cor}40;white-space:nowrap">
           ${nv.nome}
         </span>
         <span style="font-size:10px;color:var(--txt3)">${pessoas.length} pessoa${pessoas.length!==1?'s':''}</span>
         <div style="flex:1;height:1px;background:var(--border)"></div>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:10px">
-        ${cards}
-      </div>
+      <div style="display:flex;flex-wrap:wrap;align-items:flex-start">${grupos}</div>
     </div>`;
   }).join('');
 
-  const totalAtivos = ativos.length;
-  const niveisCount = niveisPresentes.length;
-
   return `
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-    <div style="font-size:12px;color:var(--txt2)">${totalAtivos} colaboradores · ${niveisCount} níveis</div>
-    <div style="font-size:11px;color:var(--txt3)">Hierarquia do topo para a base</div>
+    <div style="font-size:12px;color:var(--txt2)">${ativos.length} colaboradores · ${niveisPresentes.length} níveis</div>
+    <div style="font-size:11px;color:var(--txt3)">Do cargo mais alto para o mais baixo · agrupados por área</div>
   </div>
   <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:16px">
     ${linhas}
@@ -5885,9 +5892,10 @@ function renderPerfilAba(id, aba){
           +(p.email?'<div style="font-size:12px;color:var(--blue);margin-top:6px">✉️ '+p.email+'</div>':'')
           +(p.celular?'<div style="font-size:12px;color:var(--txt2);margin-top:2px">📱 '+p.celular+'</div>':'')
         +'</div>'
-        +'<div style="text-align:right;flex-shrink:0">'
+        +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">'
+          +'<button class="btn btn-sm btn-primary" onclick="closeModal();setTimeout(()=>openColFormDirect(\'\'+id+\'\'),100)">✏️ Editar</button>'
           +'<div style="font-size:10px;color:var(--txt3)">Status</div>'
-          +'<span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:'+(c.status==='Ativo'?'var(--green-bg)':'var(--bg2)')+';color:'+(c.status==='Ativo'?'var(--green2)':'var(--txt2)')+'">'+c.status+'</span>'
+          +'</div>'
         +'</div>'
       +'</div>'
       // Stats
