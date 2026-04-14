@@ -7499,16 +7499,8 @@ async function squadoCarregarDaNuvem() {
       if (cfg.snapshot_avaliacoes && Array.isArray(cfg.snapshot_avaliacoes) && cfg.snapshot_avaliacoes.length > 0) {
         avaliacoes = cfg.snapshot_avaliacoes;
         lss('avaliacoes', avaliacoes);
-      } else if (avals && Array.isArray(avals) && avals.length > 0 && avaliacoes.length === 0) {
-        // Fallback: API legada só se não há avaliações locais
-        avaliacoes = avals.map(a => ({
-          id: a.id, colaboradorId: a.colaborador_id, colaborador: '',
-          periodo: a.periodo || '', notas: a.notas || {},
-          mediaGeral: a.media || 0, data: a.criado_em,
-          secaoMedias: {}, respostas: {}, obs: {}
-        }));
-        lss('avaliacoes', avaliacoes);
       }
+      // (sem fallback legado — snapshot é a fonte de verdade)
       if (cfg.snapshot_metas && Array.isArray(cfg.snapshot_metas) && cfg.snapshot_metas.length > 0) {
         metas = cfg.snapshot_metas;
         lss('metas_v2', metas);
