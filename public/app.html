@@ -498,7 +498,7 @@ input[type=range]:focus{box-shadow:none}
     <div class="nav-section">Visão Geral</div>
     <div class="nav-item active" onclick="go('dashboard')"><span class="nav-icon">📊</span>Dashboard</div>
     <div class="nav-section">Pessoas</div>
-    <div class="nav-item" onclick="go('colaboradores')"><span class="nav-icon">👥</span>Colaboradores<span class="nav-badge" id="nb-col">28</span></div>
+    <div class="nav-item" onclick="go('colaboradores')"><span class="nav-icon">👥</span>Colaboradores</div>
     <div class="nav-item" onclick="go('organograma')"><span class="nav-icon">🏗️</span>Organograma</div>
     <div class="nav-item" onclick="go('capacidade')"><span class="nav-icon">⚡</span>Capacidade</div>
     <div class="nav-section">IA &amp; Anotações</div>
@@ -765,7 +765,7 @@ const DEFAULT_PERGUNTAS={
     'Organização':[
       'Sabe definir prioridades para alocar seu tempo e desempenhar várias tarefas ao mesmo tempo?',
       'É pontual nos horários de trabalho? Usa o tempo de forma produtiva e evita distrações?',
-      'Mantém organização no seu posto de trabalho e nas amostras sob sua responsabilidade?'
+      'Mantém organização no seu posto de trabalho e nos itens sob sua responsabilidade?'
     ],
     'Norma 17025 e Técnica':[
       'Realiza as atividades da qualidade para a manutenção do laboratório sem necessidade de cobranças?',
@@ -802,7 +802,7 @@ const DEFAULT_PERGUNTAS={
     'Organização e Gestão do Tempo':[
       'Sabe definir prioridades e gerenciar múltiplas demandas ao mesmo tempo?',
       'É pontual e disciplinado com os horários de trabalho e intervalos?',
-      'Mantém organização no seu posto, nas bancadas e nas amostras sob sua responsabilidade?'
+      'Mantém organização no seu posto, nas bancadas e nos itens sob sua responsabilidade?'
     ],
     'Norma 17025 e Qualidade':[
       'Realiza as atividades da qualidade sem necessidade de cobranças? (Condições Ambientais / Manutenção / Checagens)',
@@ -843,7 +843,7 @@ const DEFAULT_PERGUNTAS={
     'Organização e Gestão do Tempo':[
       'Gerencia bem o próprio tempo e o de atividades sob sua supervisão?',
       'É pontual e disciplinado, servindo de exemplo para os colegas?',
-      'Mantém organização exemplar no posto de trabalho, bancadas e amostras?'
+      'Mantém organização exemplar no posto de trabalho, bancadas e itens do laboratório?'
     ],
     'Norma 17025 e Qualidade':[
       'Domina a norma ISO/IEC 17025:2017 e garante conformidade plena em suas atividades?',
@@ -1178,8 +1178,8 @@ let feedbacks=ls('feedbacks',[]);
 // Posições salvas no organograma
 let orgPositions=ls('orgPos_v2',{});
 let orgConnections=ls('orgConns',[]); // [{id,from,to,label}]
-let qtdAmostras=ls('qtdAmostras',50);
-let _capTab='pessoas'; // aba ativa em Capacidade // amostras por mês (editável globalmente)
+let qtdServicos=ls('qtdServicos',50);
+let _capTab='pessoas'; // aba ativa em Capacidade // serviços por mês (editável globalmente)
 let notas=ls('notas',[]); // anotações organizadas pela IA
 let aiHistory=ls('aiHistory',[]);
 
@@ -1188,8 +1188,8 @@ function squadoGetUser()  { try { return JSON.parse(localStorage.getItem('squado
 
 function saveAll(){
   lss('avaliacoes',avaliacoes);
-  lss('metas_v2',metas);lss('feedbacks',feedbacks);lss('cols_v3',colaboradores);lss('funcoes',funcoes);lss('orgPos_v2',orgPositions);lss('orgConns',orgConnections);lss('notas',notas);lss('aiHistory',aiHistory);lss('qtdAmostras',qtdAmostras);
-  document.getElementById('nb-col').textContent=colaboradores.length;
+  lss('metas_v2',metas);lss('feedbacks',feedbacks);lss('cols_v3',colaboradores);lss('funcoes',funcoes);lss('orgPos_v2',orgPositions);lss('orgConns',orgConnections);lss('notas',notas);lss('aiHistory',aiHistory);lss('qtdServicos',qtdServicos);
+
   // Marcar dados como sujos e agendar sync para a nuvem
   if(squadoGetToken()) agendarSync();
 }
@@ -1225,9 +1225,9 @@ function handleTopAction(){
 }
 function render(page,search=''){
   const cfg={
-    dashboard:{title:'Dashboard',sub:'Visão geral · '+colaboradores.length+' colaboradores',btn:null},
+    dashboard:{title:'Dashboard',sub:'Visão geral da equipe',btn:null},
     colaboradores:{title:'Colaboradores',sub:'Equipe completa',btn:'Novo Colaborador'},
-    organograma:{title:'Organograma',sub:'Arraste · Conecte linhas · Scroll zoom',btn:null},
+    organograma:{title:'Organograma',sub:'Equipe organizada por área',btn:null},
     capacidade:{title:'Gestão de Capacidade',sub:'Carga por função · Análise de sobrecarga · Justificativa de contratação',btn:null},
     agente:{title:'Agente IA',sub:'Assistente inteligente de gestão de pessoas',btn:null},
     notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
@@ -1249,7 +1249,7 @@ function render(page,search=''){
   const c=document.getElementById('page-content');
   if(page==='dashboard')c.innerHTML=renderDashboard();
   else if(page==='colaboradores')c.innerHTML=renderColaboradores(search);
-  else if(page==='organograma'){c.innerHTML=renderOrganograma();initOrgDrag();}
+  else if(page==='organograma'){c.innerHTML=renderOrganograma();}
   else if(page==='avaliacao'){carregarRascunhoAval();c.innerHTML=renderAvaliacao();}
   else if(page==='historico_aval')c.innerHTML=renderHistoricoAval(search);
   else if(page==='perguntas')c.innerHTML=renderPerguntas();
@@ -1346,7 +1346,7 @@ function renderColaboradores(search=''){
     let total=0;
     getFuncsCapacidade(c).forEach(f=>{
       const resp=(f.responsaveis||[]).find(r=>r.nome===c.nome);
-      total+=calcCargaFuncao(f,qtdAmostras)*(resp?resp.pct/100:1);
+      total+=calcCargaFuncao(f,qtdServicos)*(resp?resp.pct/100:1);
     });
     return total;
   }
@@ -1560,19 +1560,62 @@ function getPos(id){
 }
 
 function renderOrganograma(){
-  return`
-  <div class="org-toolbar">
-    <button class="btn btn-sm" onclick="resetOrgLayout()">↺ Resetar</button>
-    <button class="btn btn-sm" onclick="centerOrg()">⊙ Centralizar</button>
-    <button class="btn btn-sm" id="btn-connect" onclick="toggleConnectMode()" style="border-color:var(--amber);color:var(--amber)">🔗 Conectar nós</button>
-    <button class="btn btn-sm btn-danger" onclick="clearOrgConnections()">🗑 Limpar linhas</button>
-    <span style="font-size:11px;color:var(--txt3)" id="org-hint">Arraste · Scroll zoom · Clique para perfil</span>
+  // Agrupar colaboradores ativos por área
+  const ativos = colaboradores.filter(c => c.status === 'Ativo');
+  const byArea = {};
+  ativos.forEach(c => {
+    if (!byArea[c.area]) byArea[c.area] = [];
+    byArea[c.area].push(c);
+  });
+
+  // Ordem das áreas
+  const ordemAreas = Object.keys(AREA_COLORS);
+  const areasPresentes = ordemAreas.filter(a => byArea[a] && byArea[a].length > 0);
+  // Adicionar áreas não mapeadas no AREA_COLORS
+  Object.keys(byArea).forEach(a => { if (!areasPresentes.includes(a)) areasPresentes.push(a); });
+
+  const colunas = areasPresentes.map(area => {
+    const cols = byArea[area] || [];
+    const ac = AREA_COLORS[area] || {cor:'#5F5E5A', bg:'#D3D1C7'};
+    const cards = cols.map(c => {
+      const ns = NIVEL_STYLE[c.nivel] || {cor:'#888', bg:'#eee'};
+      const avsC = avaliacoes.filter(a => a.colaboradorId === c.id);
+      const lastAv = avsC.length ? avsC[avsC.length-1] : null;
+      return `<div onclick="verCol('${c.id}')" style="background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;transition:box-shadow .15s;margin-bottom:8px" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow='none'">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          ${av(c.nome, false, false)}
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.nome.split(' ').slice(0,2).join(' ')}</div>
+            <span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:20px;background:${ns.bg};color:${ns.cor};border:0.5px solid ${ns.cor}40">${c.nivel}</span>
+          </div>
+          ${lastAv ? `<span style="font-size:11px;font-weight:800;color:var(--green)">${lastAv.mediaGeral}</span>` : ''}
+        </div>
+        ${c.gestor ? `<div style="font-size:9px;color:var(--txt3)">↑ ${c.gestor.split(' ')[0]}</div>` : ''}
+      </div>`;
+    }).join('');
+
+    return `<div style="flex-shrink:0;width:200px">
+      <div style="background:${ac.bg};border-left:3px solid ${ac.cor};border-radius:8px;padding:8px 12px;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:${ac.cor};text-transform:uppercase;letter-spacing:.06em">${area}</div>
+        <div style="font-size:10px;color:${ac.cor};opacity:.7">${cols.length} pessoa${cols.length!==1?'s':''}</div>
+      </div>
+      ${cards}
+    </div>`;
+  }).join('');
+
+  const totalAtivos = ativos.length;
+  const totalAreas = areasPresentes.length;
+
+  return `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+    <div style="font-size:12px;color:var(--txt2)">${totalAtivos} colaboradores · ${totalAreas} áreas</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      ${Object.entries(NIVEL_STYLE).map(([n,s])=>`<span style="font-size:9px;font-weight:600;padding:1px 8px;border-radius:20px;color:${s.cor};background:${s.bg};border:0.5px solid ${s.cor}60">${n}</span>`).join('')}
+    </div>
   </div>
-  <div class="org-canvas-wrap" id="orgWrap">
-    <svg class="org-svg" id="orgSvg"></svg>
-    <div class="org-canvas" id="orgCanvas"></div>
-    <div class="org-legend">
-      ${Object.entries(NIVEL_STYLE).map(([n,s])=>`<span style="font-size:10px;font-weight:600;padding:1px 8px;border-radius:20px;color:${s.cor};background:${s.bg};border:0.5px solid ${s.cor}60">${n}</span>`).join('')}
+  <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:16px">
+    <div style="display:flex;gap:16px;min-width:max-content;align-items:flex-start;padding:4px 2px">
+      ${colunas}
     </div>
   </div>`;
 }
@@ -1800,7 +1843,7 @@ function renderOrgNodes(){
       const funcoesV8=ls('funcoes_v8',[]);
       const cargaMin=funcoesV8.reduce((acc,f)=>{
         const resp=(f.responsaveis||[]).find(r=>r.nome===c.nome);
-        return acc+(resp?calcCargaFuncao(f,qtdAmostras)*(resp.pct/100):0);
+        return acc+(resp?calcCargaFuncao(f,qtdServicos)*(resp.pct/100):0);
       },0);
       const pctCarga=Math.round(cargaMin/(8*60*22)*100);
       const corCarga=pctCarga>=100?'#A32D2D':pctCarga>=80?'#854F0B':pctCarga>=60?'#185FA5':'#1D9E75';
@@ -3140,7 +3183,7 @@ function renderValores(){
   ];
 
   const pilares=vCustom?vCustom.pilares:[
-    {icon:'📋',nome:'Organização',itens:['Bancadas do Laboratório','Amostras','Itens do laboratório']},
+    {icon:'📋',nome:'Organização',itens:['Bancadas do Laboratório','Serviços em andamento','Itens do laboratório']},
     {icon:'🤝',nome:'Respeito',itens:['Com os colegas','Com o cliente']},
     {icon:'✅',nome:'Responsabilidade',itens:['Com as entregas']},
     {icon:'⚙️',nome:'Processo',itens:[]},
@@ -3393,7 +3436,7 @@ function imprimirValores(){
   ];
 
   const pilares=[
-    {icon:'📋',nome:'Organização',cor:'#185FA5',itens:['Bancadas do Laboratório','Amostras','Itens do laboratório']},
+    {icon:'📋',nome:'Organização',cor:'#185FA5',itens:['Bancadas do Laboratório','Serviços em andamento','Itens do laboratório']},
     {icon:'🤝',nome:'Respeito',cor:'#0F6E56',itens:['Com os colegas','Com o cliente']},
     {icon:'✅',nome:'Responsabilidade',cor:'#854F0B',itens:['Com as entregas']},
     {icon:'⚙️',nome:'Processo',cor:'#534AB7',itens:[]},
@@ -5835,7 +5878,7 @@ function renderPerfilAba(id, aba){
         +funcsCol.map(f=>{
           const col=colaboradores.find(x=>x.id===id);
           const resp=(f.responsaveis||[]).find(r=>col&&(r.nome===col.nome));
-          const carga=calcCargaFuncao(f,qtdAmostras)*(resp?resp.pct/100:1);
+          const carga=calcCargaFuncao(f,qtdServicos)*(resp?resp.pct/100:1);
           const pctDed=resp?resp.pct:100;
           const c2=AREA_COLORS[f.area]||{cor:'#888',bg:'#eee'};
           return '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg2);border-radius:8px;border-left:2px solid '+c2.cor+'">'
@@ -5966,12 +6009,12 @@ function renderPerfilAba(id, aba){
         +funcs.map(f=>{
           const resp=(f.responsaveis||[]).find(r=>r.nome===c.nome);
           const pct=resp?resp.pct:100;
-          const carga=calcCargaFuncao(f,qtdAmostras)*(pct/100);
+          const carga=calcCargaFuncao(f,qtdServicos)*(pct/100);
           return '<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg2);border-radius:9px;margin-bottom:6px;border:0.5px solid var(--border)">'
             +'<div style="flex:1;min-width:0">'
               +'<div style="font-size:13px;font-weight:600;color:var(--txt)">'+f.nome+'</div>'
               +'<div style="font-size:10px;color:var(--txt3);margin-top:2px">'
-                +(f.tipoTempo==='fixo_mes'?'⏱ fixo':'⚡ '+f.pctAmostras+'% das amostras')+' · '+f.tempoMin+'min'
+                +(f.tipoTempo==='fixo_mes'?'⏱ fixo':'⚡ '+f.pctServicos+'% dos serviços')+' · '+f.tempoMin+'min'
               +'</div>'
             +'</div>'
             +'<div style="text-align:right;flex-shrink:0">'
@@ -6015,7 +6058,7 @@ function renderPerfilAba(id, aba){
           +'<div style="font-size:20px;font-weight:800;color:var(--green)">'
             +(minhasFuncs.reduce((acc,f)=>{
               const r=(f.responsaveis||[]).find(r=>r.nome===c.nome);
-              return acc+calcCargaFuncao(f,qtdAmostras)*(r?r.pct/100:1);
+              return acc+calcCargaFuncao(f,qtdServicos)*(r?r.pct/100:1);
             },0)/60).toFixed(0)+'h'
           +'</div>'
           +'<div style="font-size:10px;color:var(--txt2)">Horas/mês</div>'
@@ -6137,7 +6180,7 @@ function calcCargaFuncao_pessoa(nome){
     funcoesV2.forEach(f=>{
       (f.responsaveis||[]).forEach(r=>{
         if(r.nome===nome){
-          total+=calcCargaFuncao(f,qtdAmostras)*(r.pct/100);
+          total+=calcCargaFuncao(f,qtdServicos)*(r.pct/100);
         }
       });
     });
@@ -6543,72 +6586,72 @@ document.addEventListener('DOMContentLoaded',()=>{
 // ═══════════════════════════════════════════════════════════════
 const SEED_FUNCOES_CAPACIDADE = [
   // ENTRADA E DEVOLUÇÃO
-  {area:'Entrada e Devolucao',nome:'Fotos',tempoMin:5,tipoTempo:'por_amostra',pctAmostras:100,responsaveis:[{nome:'Antoni Cruz',pct:100}]},
-  {area:'Entrada e Devolucao',nome:'Entrada no LABTRACK',tempoMin:5,tipoTempo:'por_amostra',pctAmostras:100,responsaveis:[{nome:'Isadora Maria',pct:100}]},
-  {area:'Entrada e Devolucao',nome:'Entrada no Atlas',tempoMin:5,tipoTempo:'por_amostra',pctAmostras:100,responsaveis:[{nome:'Isadora Maria',pct:100}]},
-  {area:'Entrada e Devolucao',nome:'Montar Minutas',tempoMin:10,tipoTempo:'por_amostra',pctAmostras:100,responsaveis:[{nome:'Guilherme',pct:100}]},
-  {area:'Entrada e Devolucao',nome:'Assinaturas IDs',tempoMin:5,tipoTempo:'por_amostra',pctAmostras:100,responsaveis:[{nome:'Isadora Maria',pct:100}]},
-  {area:'Entrada e Devolucao',nome:'Emendas dos IDs',tempoMin:30,tipoTempo:'por_amostra',pctAmostras:10,responsaveis:[{nome:'Isadora Maria',pct:100}]},
-  {area:'Entrada e Devolucao',nome:'Planilha ETS',tempoMin:5,tipoTempo:'por_amostra',pctAmostras:100,responsaveis:[{nome:'Guilherme',pct:100}]},
-  {area:'Entrada e Devolucao',nome:'Gerar Minutas',tempoMin:5,tipoTempo:'por_amostra',pctAmostras:100,responsaveis:[{nome:'Guilherme',pct:100}]},
-  {area:'Entrada e Devolucao',nome:'Devolver Amostras',tempoMin:5,tipoTempo:'por_amostra',pctAmostras:100,responsaveis:[{nome:'Kaua Lima',pct:100}]},
-  {area:'Entrada e Devolucao',nome:'Buscar Amostras',tempoMin:10,tipoTempo:'por_amostra',pctAmostras:10,responsaveis:[{nome:'Claudio Henrique',pct:100}]},
-  {area:'Entrada e Devolucao',nome:'Procurar Amostras',tempoMin:10,tipoTempo:'por_amostra',pctAmostras:5,responsaveis:[{nome:'Claudio Henrique',pct:100}]},
-  {area:'Entrada e Devolucao',nome:'Ensaio de Aquecimento',tempoMin:10,tipoTempo:'por_amostra',pctAmostras:60,responsaveis:[{nome:'Arthur Lima',pct:100}]},
-  {area:'Entrada e Devolucao',nome:'Ensaio de Choque Elétrico',tempoMin:10,tipoTempo:'por_amostra',pctAmostras:20,responsaveis:[{nome:'Arthur Lima',pct:100}]},
-  {area:'Entrada e Devolucao',nome:'Fechar Relatórios 17087',tempoMin:10,tipoTempo:'por_amostra',pctAmostras:60,responsaveis:[{nome:'Arthur Lima',pct:100}]},
-  {area:'Entrada e Devolucao',nome:'Assinar Relatórios 17087',tempoMin:10,tipoTempo:'por_amostra',pctAmostras:60,responsaveis:[{nome:'Arthur Lima',pct:100}]},
-  {area:'Entrada e Devolucao',nome:'Emendas 17087',tempoMin:30,tipoTempo:'por_amostra',pctAmostras:12,responsaveis:[{nome:'Arthur Lima',pct:100}]},
+  {area:'Entrada e Devolucao',nome:'Fotos',tempoMin:5,tipoTempo:'por_servico',pctServicos:100,responsaveis:[{nome:'Antoni Cruz',pct:100}]},
+  {area:'Entrada e Devolucao',nome:'Entrada no LABTRACK',tempoMin:5,tipoTempo:'por_servico',pctServicos:100,responsaveis:[{nome:'Isadora Maria',pct:100}]},
+  {area:'Entrada e Devolucao',nome:'Entrada no Atlas',tempoMin:5,tipoTempo:'por_servico',pctServicos:100,responsaveis:[{nome:'Isadora Maria',pct:100}]},
+  {area:'Entrada e Devolucao',nome:'Montar Minutas',tempoMin:10,tipoTempo:'por_servico',pctServicos:100,responsaveis:[{nome:'Guilherme',pct:100}]},
+  {area:'Entrada e Devolucao',nome:'Assinaturas IDs',tempoMin:5,tipoTempo:'por_servico',pctServicos:100,responsaveis:[{nome:'Isadora Maria',pct:100}]},
+  {area:'Entrada e Devolucao',nome:'Emendas dos IDs',tempoMin:30,tipoTempo:'por_servico',pctServicos:10,responsaveis:[{nome:'Isadora Maria',pct:100}]},
+  {area:'Entrada e Devolucao',nome:'Planilha ETS',tempoMin:5,tipoTempo:'por_servico',pctServicos:100,responsaveis:[{nome:'Guilherme',pct:100}]},
+  {area:'Entrada e Devolucao',nome:'Gerar Minutas',tempoMin:5,tipoTempo:'por_servico',pctServicos:100,responsaveis:[{nome:'Guilherme',pct:100}]},
+  {area:'Entrada e Devolucao',nome:'Devolver Serviços',tempoMin:5,tipoTempo:'por_servico',pctServicos:100,responsaveis:[{nome:'Kaua Lima',pct:100}]},
+  {area:'Entrada e Devolucao',nome:'Buscar Serviços',tempoMin:10,tipoTempo:'por_servico',pctServicos:10,responsaveis:[{nome:'Claudio Henrique',pct:100}]},
+  {area:'Entrada e Devolucao',nome:'Procurar Serviços',tempoMin:10,tipoTempo:'por_servico',pctServicos:5,responsaveis:[{nome:'Claudio Henrique',pct:100}]},
+  {area:'Entrada e Devolucao',nome:'Ensaio de Aquecimento',tempoMin:10,tipoTempo:'por_servico',pctServicos:60,responsaveis:[{nome:'Arthur Lima',pct:100}]},
+  {area:'Entrada e Devolucao',nome:'Ensaio de Choque Elétrico',tempoMin:10,tipoTempo:'por_servico',pctServicos:20,responsaveis:[{nome:'Arthur Lima',pct:100}]},
+  {area:'Entrada e Devolucao',nome:'Fechar Relatórios 17087',tempoMin:10,tipoTempo:'por_servico',pctServicos:60,responsaveis:[{nome:'Arthur Lima',pct:100}]},
+  {area:'Entrada e Devolucao',nome:'Assinar Relatórios 17087',tempoMin:10,tipoTempo:'por_servico',pctServicos:60,responsaveis:[{nome:'Arthur Lima',pct:100}]},
+  {area:'Entrada e Devolucao',nome:'Emendas 17087',tempoMin:30,tipoTempo:'por_servico',pctServicos:12,responsaveis:[{nome:'Arthur Lima',pct:100}]},
   // EMC
-  {area:'EMC',nome:'Ensaios Radiados',tempoMin:30,tipoTempo:'por_amostra',pctAmostras:55,responsaveis:[{nome:'Julia Marchant',pct:50},{nome:'Eduardo Altnetter',pct:50}]},
-  {area:'EMC',nome:'Ensaio de Imunidade',tempoMin:40,tipoTempo:'por_amostra',pctAmostras:55,responsaveis:[{nome:'Julia Marchant',pct:100}]},
-  {area:'EMC',nome:'Intensidade de Campo',tempoMin:150,tipoTempo:'por_amostra',pctAmostras:25,responsaveis:[{nome:'Julia Marchant',pct:100}]},
-  {area:'EMC',nome:'Ensaio Conduzido',tempoMin:30,tipoTempo:'por_amostra',pctAmostras:25,responsaveis:[{nome:'Lucas Menegoto',pct:100}]},
-  {area:'EMC',nome:'Imunidade Conduzida',tempoMin:80,tipoTempo:'por_amostra',pctAmostras:25,responsaveis:[{nome:'Cristian Giovani',pct:100}]},
-  {area:'EMC',nome:'Configurações EMC',tempoMin:60,tipoTempo:'por_amostra',pctAmostras:25,responsaveis:[{nome:'Fernando Barbosa',pct:50},{nome:'Joao de Paula',pct:50}]},
-  {area:'EMC',nome:'Fechar Relatório EMC',tempoMin:20,tipoTempo:'por_amostra',pctAmostras:55,responsaveis:[{nome:'Lucas Menegoto',pct:50},{nome:'Eduardo Altnetter',pct:50}]},
-  {area:'EMC',nome:'Assinar EMC',tempoMin:20,tipoTempo:'por_amostra',pctAmostras:55,responsaveis:[{nome:'Philipe Vasques',pct:100}]},
-  {area:'EMC',nome:'Emendas EMC',tempoMin:30,tipoTempo:'por_amostra',pctAmostras:11,responsaveis:[{nome:'Eduardo Altnetter',pct:100}]},
-  {area:'EMC',nome:'Ensaio Acompanhado',tempoMin:3840,tipoTempo:'fixo_mes',pctAmostras:0,responsaveis:[{nome:'Cristian Giovani',pct:50},{nome:'Julia Marchant',pct:50}]},
-  {area:'EMC',nome:'Estudo de Norma EMC',tempoMin:1920,tipoTempo:'fixo_mes',pctAmostras:0,responsaveis:[{nome:'Elinaldo dos Reis',pct:50},{nome:'Renan E S Passos',pct:50}]},
-  {area:'EMC',nome:'Dúvidas Comercial EMC',tempoMin:2400,tipoTempo:'fixo_mes',pctAmostras:0,responsaveis:[{nome:'Philipe Vasques',pct:50},{nome:'Elinaldo dos Reis',pct:50}]},
-  {area:'EMC',nome:'Reuniões EMC',tempoMin:2400,tipoTempo:'fixo_mes',pctAmostras:0,responsaveis:[{nome:'Fernando Barbosa',pct:50},{nome:'Joao de Paula',pct:50}]},
-  {area:'EMC',nome:'Auxílio Clientes',tempoMin:2400,tipoTempo:'fixo_mes',pctAmostras:0,responsaveis:[{nome:'Elinaldo dos Reis',pct:100}]},
-  {area:'EMC',nome:'Ensaios Eletrodomésticos',tempoMin:120,tipoTempo:'por_amostra',pctAmostras:5,responsaveis:[{nome:'Cristian Giovani',pct:70},{nome:'Julia Marchant',pct:30}]},
-  {area:'EMC',nome:'Fechar Relatório Eletrodomésticos',tempoMin:45,tipoTempo:'por_amostra',pctAmostras:5,responsaveis:[{nome:'Cristian Giovani',pct:100}]},
-  {area:'EMC',nome:'Eletromédicos',tempoMin:480,tipoTempo:'por_amostra',pctAmostras:2,responsaveis:[{nome:'Philipe Vasques',pct:100}]},
-  {area:'EMC',nome:'Fechar Relatório Eletromédicos',tempoMin:60,tipoTempo:'por_amostra',pctAmostras:2,responsaveis:[{nome:'Philipe Vasques',pct:100}]},
-  {area:'EMC',nome:'TVs - CISPR 32',tempoMin:120,tipoTempo:'por_amostra',pctAmostras:3,responsaveis:[{nome:'Julia Marchant',pct:80},{nome:'Cristian Giovani',pct:20}]},
+  {area:'EMC',nome:'Ensaios Radiados',tempoMin:30,tipoTempo:'por_servico',pctServicos:55,responsaveis:[{nome:'Julia Marchant',pct:50},{nome:'Eduardo Altnetter',pct:50}]},
+  {area:'EMC',nome:'Ensaio de Imunidade',tempoMin:40,tipoTempo:'por_servico',pctServicos:55,responsaveis:[{nome:'Julia Marchant',pct:100}]},
+  {area:'EMC',nome:'Intensidade de Campo',tempoMin:150,tipoTempo:'por_servico',pctServicos:25,responsaveis:[{nome:'Julia Marchant',pct:100}]},
+  {area:'EMC',nome:'Ensaio Conduzido',tempoMin:30,tipoTempo:'por_servico',pctServicos:25,responsaveis:[{nome:'Lucas Menegoto',pct:100}]},
+  {area:'EMC',nome:'Imunidade Conduzida',tempoMin:80,tipoTempo:'por_servico',pctServicos:25,responsaveis:[{nome:'Cristian Giovani',pct:100}]},
+  {area:'EMC',nome:'Configurações EMC',tempoMin:60,tipoTempo:'por_servico',pctServicos:25,responsaveis:[{nome:'Fernando Barbosa',pct:50},{nome:'Joao de Paula',pct:50}]},
+  {area:'EMC',nome:'Fechar Relatório EMC',tempoMin:20,tipoTempo:'por_servico',pctServicos:55,responsaveis:[{nome:'Lucas Menegoto',pct:50},{nome:'Eduardo Altnetter',pct:50}]},
+  {area:'EMC',nome:'Assinar EMC',tempoMin:20,tipoTempo:'por_servico',pctServicos:55,responsaveis:[{nome:'Philipe Vasques',pct:100}]},
+  {area:'EMC',nome:'Emendas EMC',tempoMin:30,tipoTempo:'por_servico',pctServicos:11,responsaveis:[{nome:'Eduardo Altnetter',pct:100}]},
+  {area:'EMC',nome:'Ensaio Acompanhado',tempoMin:3840,tipoTempo:'fixo_mes',pctServicos:0,responsaveis:[{nome:'Cristian Giovani',pct:50},{nome:'Julia Marchant',pct:50}]},
+  {area:'EMC',nome:'Estudo de Norma EMC',tempoMin:1920,tipoTempo:'fixo_mes',pctServicos:0,responsaveis:[{nome:'Elinaldo dos Reis',pct:50},{nome:'Renan E S Passos',pct:50}]},
+  {area:'EMC',nome:'Dúvidas Comercial EMC',tempoMin:2400,tipoTempo:'fixo_mes',pctServicos:0,responsaveis:[{nome:'Philipe Vasques',pct:50},{nome:'Elinaldo dos Reis',pct:50}]},
+  {area:'EMC',nome:'Reuniões EMC',tempoMin:2400,tipoTempo:'fixo_mes',pctServicos:0,responsaveis:[{nome:'Fernando Barbosa',pct:50},{nome:'Joao de Paula',pct:50}]},
+  {area:'EMC',nome:'Auxílio Clientes',tempoMin:2400,tipoTempo:'fixo_mes',pctServicos:0,responsaveis:[{nome:'Elinaldo dos Reis',pct:100}]},
+  {area:'EMC',nome:'Ensaios Eletrodomésticos',tempoMin:120,tipoTempo:'por_servico',pctServicos:5,responsaveis:[{nome:'Cristian Giovani',pct:70},{nome:'Julia Marchant',pct:30}]},
+  {area:'EMC',nome:'Fechar Relatório Eletrodomésticos',tempoMin:45,tipoTempo:'por_servico',pctServicos:5,responsaveis:[{nome:'Cristian Giovani',pct:100}]},
+  {area:'EMC',nome:'Eletromédicos',tempoMin:480,tipoTempo:'por_servico',pctServicos:2,responsaveis:[{nome:'Philipe Vasques',pct:100}]},
+  {area:'EMC',nome:'Fechar Relatório Eletromédicos',tempoMin:60,tipoTempo:'por_servico',pctServicos:2,responsaveis:[{nome:'Philipe Vasques',pct:100}]},
+  {area:'EMC',nome:'TVs - CISPR 32',tempoMin:120,tipoTempo:'por_servico',pctServicos:3,responsaveis:[{nome:'Julia Marchant',pct:80},{nome:'Cristian Giovani',pct:20}]},
   // RF — ENSAIO 14448
-  {area:'RF',nome:'Configurações RF',tempoMin:120,tipoTempo:'por_amostra',pctAmostras:40,responsaveis:[{nome:'Georgia dos Reis',pct:40},{nome:'Marcelo Benfato',pct:40},{nome:'Israel de Azevedo',pct:20}]},
-  {area:'RF',nome:'Ensaio de Wi-Fi',tempoMin:480,tipoTempo:'por_amostra',pctAmostras:10,responsaveis:[{nome:'Rafael Ledur',pct:100}]},
-  {area:'RF',nome:'Ensaio de DFS',tempoMin:60,tipoTempo:'por_amostra',pctAmostras:10,responsaveis:[{nome:'Joao Daneres',pct:100}]},
-  {area:'RF',nome:'Ensaio SAR',tempoMin:60,tipoTempo:'por_amostra',pctAmostras:20,responsaveis:[{nome:'Joao Daneres',pct:100}]},
-  {area:'RF',nome:'Ensaio de BT',tempoMin:120,tipoTempo:'por_amostra',pctAmostras:10,responsaveis:[{nome:'Rafael Ledur',pct:100}]},
-  {area:'RF',nome:'Ensaio de Lora',tempoMin:120,tipoTempo:'por_amostra',pctAmostras:10,responsaveis:[{nome:'Joao Daneres',pct:100}]},
-  {area:'RF',nome:'Emendas RF',tempoMin:30,tipoTempo:'por_amostra',pctAmostras:8,responsaveis:[{nome:'Joao Vitor Torres',pct:100}]},
-  {area:'RF',nome:'Fechar Relatório RF',tempoMin:30,tipoTempo:'por_amostra',pctAmostras:40,responsaveis:[{nome:'Joao Vitor Torres',pct:100}]},
-  {area:'RF',nome:'Assinar RF',tempoMin:10,tipoTempo:'por_amostra',pctAmostras:40,responsaveis:[{nome:'Bernardo Nogueira',pct:100}]},
-  {area:'RF',nome:'Reuniões RF',tempoMin:2400,tipoTempo:'fixo_mes',pctAmostras:0,responsaveis:[{nome:'Georgia dos Reis',pct:50},{nome:'Marcelo Benfato',pct:50}]},
-  {area:'RF',nome:'Dúvidas Comercial RF',tempoMin:2400,tipoTempo:'fixo_mes',pctAmostras:0,responsaveis:[{nome:'Bernardo Nogueira',pct:80},{nome:'Renan E S Passos',pct:20}]},
+  {area:'RF',nome:'Configurações RF',tempoMin:120,tipoTempo:'por_servico',pctServicos:40,responsaveis:[{nome:'Georgia dos Reis',pct:40},{nome:'Marcelo Benfato',pct:40},{nome:'Israel de Azevedo',pct:20}]},
+  {area:'RF',nome:'Ensaio de Wi-Fi',tempoMin:480,tipoTempo:'por_servico',pctServicos:10,responsaveis:[{nome:'Rafael Ledur',pct:100}]},
+  {area:'RF',nome:'Ensaio de DFS',tempoMin:60,tipoTempo:'por_servico',pctServicos:10,responsaveis:[{nome:'Joao Daneres',pct:100}]},
+  {area:'RF',nome:'Ensaio SAR',tempoMin:60,tipoTempo:'por_servico',pctServicos:20,responsaveis:[{nome:'Joao Daneres',pct:100}]},
+  {area:'RF',nome:'Ensaio de BT',tempoMin:120,tipoTempo:'por_servico',pctServicos:10,responsaveis:[{nome:'Rafael Ledur',pct:100}]},
+  {area:'RF',nome:'Ensaio de Lora',tempoMin:120,tipoTempo:'por_servico',pctServicos:10,responsaveis:[{nome:'Joao Daneres',pct:100}]},
+  {area:'RF',nome:'Emendas RF',tempoMin:30,tipoTempo:'por_servico',pctServicos:8,responsaveis:[{nome:'Joao Vitor Torres',pct:100}]},
+  {area:'RF',nome:'Fechar Relatório RF',tempoMin:30,tipoTempo:'por_servico',pctServicos:40,responsaveis:[{nome:'Joao Vitor Torres',pct:100}]},
+  {area:'RF',nome:'Assinar RF',tempoMin:10,tipoTempo:'por_servico',pctServicos:40,responsaveis:[{nome:'Bernardo Nogueira',pct:100}]},
+  {area:'RF',nome:'Reuniões RF',tempoMin:2400,tipoTempo:'fixo_mes',pctServicos:0,responsaveis:[{nome:'Georgia dos Reis',pct:50},{nome:'Marcelo Benfato',pct:50}]},
+  {area:'RF',nome:'Dúvidas Comercial RF',tempoMin:2400,tipoTempo:'fixo_mes',pctServicos:0,responsaveis:[{nome:'Bernardo Nogueira',pct:80},{nome:'Renan E S Passos',pct:20}]},
   // REDES MÓVEIS
-  {area:'Redes Moveis',nome:'IPV6',tempoMin:60,tipoTempo:'por_amostra',pctAmostras:5,responsaveis:[{nome:'Eduardo de Oliveira',pct:50},{nome:'Lauren Stefani',pct:50}]},
-  {area:'Redes Moveis',nome:'Ensaios Funcionais (2G, 3G e 4G)',tempoMin:480,tipoTempo:'por_amostra',pctAmostras:5,responsaveis:[{nome:'Eduardo de Oliveira',pct:50},{nome:'Lauren Stefani',pct:50}]},
-  {area:'Redes Moveis',nome:'Reuniões Redes Móveis',tempoMin:2400,tipoTempo:'fixo_mes',pctAmostras:0,responsaveis:[{nome:'Eduardo de Oliveira',pct:50},{nome:'Lauren Stefani',pct:50}]},
-  {area:'Redes Moveis',nome:'Retestes',tempoMin:480,tipoTempo:'por_amostra',pctAmostras:4,responsaveis:[{nome:'Eduardo de Oliveira',pct:50},{nome:'Lauren Stefani',pct:50}]},
-  {area:'Redes Moveis',nome:'Funcional',tempoMin:60,tipoTempo:'por_amostra',pctAmostras:5,responsaveis:[{nome:'Eduardo de Oliveira',pct:50},{nome:'Lauren Stefani',pct:50}]},
-  {area:'Redes Moveis',nome:'Fechar Relatórios IPV6',tempoMin:60,tipoTempo:'por_amostra',pctAmostras:5,responsaveis:[{nome:'Eduardo de Oliveira',pct:50},{nome:'Lauren Stefani',pct:50}]},
+  {area:'Redes Moveis',nome:'IPV6',tempoMin:60,tipoTempo:'por_servico',pctServicos:5,responsaveis:[{nome:'Eduardo de Oliveira',pct:50},{nome:'Lauren Stefani',pct:50}]},
+  {area:'Redes Moveis',nome:'Ensaios Funcionais (2G, 3G e 4G)',tempoMin:480,tipoTempo:'por_servico',pctServicos:5,responsaveis:[{nome:'Eduardo de Oliveira',pct:50},{nome:'Lauren Stefani',pct:50}]},
+  {area:'Redes Moveis',nome:'Reuniões Redes Móveis',tempoMin:2400,tipoTempo:'fixo_mes',pctServicos:0,responsaveis:[{nome:'Eduardo de Oliveira',pct:50},{nome:'Lauren Stefani',pct:50}]},
+  {area:'Redes Moveis',nome:'Retestes',tempoMin:480,tipoTempo:'por_servico',pctServicos:4,responsaveis:[{nome:'Eduardo de Oliveira',pct:50},{nome:'Lauren Stefani',pct:50}]},
+  {area:'Redes Moveis',nome:'Funcional',tempoMin:60,tipoTempo:'por_servico',pctServicos:5,responsaveis:[{nome:'Eduardo de Oliveira',pct:50},{nome:'Lauren Stefani',pct:50}]},
+  {area:'Redes Moveis',nome:'Fechar Relatórios IPV6',tempoMin:60,tipoTempo:'por_servico',pctServicos:5,responsaveis:[{nome:'Eduardo de Oliveira',pct:50},{nome:'Lauren Stefani',pct:50}]},
   // BATERIAS
-  {area:'Baterias e Acustica',nome:'Ensaio de Baterias',tempoMin:90,tipoTempo:'por_amostra',pctAmostras:5,responsaveis:[{nome:'Fabricio Nobre',pct:100}]},
-  {area:'Baterias e Acustica',nome:'Fechar Relatórios Baterias',tempoMin:30,tipoTempo:'por_amostra',pctAmostras:10,responsaveis:[{nome:'Fabricio Nobre',pct:100}]},
-  {area:'Baterias e Acustica',nome:'Organizar Powerbanks',tempoMin:30,tipoTempo:'por_amostra',pctAmostras:5,responsaveis:[{nome:'Fabricio Nobre',pct:100}]},
+  {area:'Baterias e Acustica',nome:'Ensaio de Baterias',tempoMin:90,tipoTempo:'por_servico',pctServicos:5,responsaveis:[{nome:'Fabricio Nobre',pct:100}]},
+  {area:'Baterias e Acustica',nome:'Fechar Relatórios Baterias',tempoMin:30,tipoTempo:'por_servico',pctServicos:10,responsaveis:[{nome:'Fabricio Nobre',pct:100}]},
+  {area:'Baterias e Acustica',nome:'Organizar Powerbanks',tempoMin:30,tipoTempo:'por_servico',pctServicos:5,responsaveis:[{nome:'Fabricio Nobre',pct:100}]},
   // ENSAIOS ACÚSTICOS
-  {area:'Baterias e Acustica',nome:'Ensaio Acústico',tempoMin:60,tipoTempo:'por_amostra',pctAmostras:5,responsaveis:[{nome:'Fabricio Nobre',pct:100}]},
-  {area:'Baterias e Acustica',nome:'Relatórios Ensaio Acústico',tempoMin:60,tipoTempo:'por_amostra',pctAmostras:5,responsaveis:[{nome:'Fabricio Nobre',pct:100}]},
-  {area:'Baterias e Acustica',nome:'Fotos das amostras acústico',tempoMin:60,tipoTempo:'por_amostra',pctAmostras:5,responsaveis:[{nome:'Fabricio Nobre',pct:100}]},
+  {area:'Baterias e Acustica',nome:'Ensaio Acústico',tempoMin:60,tipoTempo:'por_servico',pctServicos:5,responsaveis:[{nome:'Fabricio Nobre',pct:100}]},
+  {area:'Baterias e Acustica',nome:'Relatórios Ensaio Acústico',tempoMin:60,tipoTempo:'por_servico',pctServicos:5,responsaveis:[{nome:'Fabricio Nobre',pct:100}]},
+  {area:'Baterias e Acustica',nome:'Fotos dos serviços acústico',tempoMin:60,tipoTempo:'por_servico',pctServicos:5,responsaveis:[{nome:'Fabricio Nobre',pct:100}]},
   // TV
-  {area:'Outros Ensaios',nome:'Ensaio de TV - Segurança e Eficiência',tempoMin:120,tipoTempo:'por_amostra',pctAmostras:2,responsaveis:[{nome:'Fabricio Nobre',pct:100}]},
-  {area:'Outros Ensaios',nome:'Desenvolvimento de Melhorias',tempoMin:2400,tipoTempo:'fixo_mes',pctAmostras:0,responsaveis:[{nome:'Joao Pinheiro',pct:100}]},
+  {area:'Outros Ensaios',nome:'Ensaio de TV - Segurança e Eficiência',tempoMin:120,tipoTempo:'por_servico',pctServicos:2,responsaveis:[{nome:'Fabricio Nobre',pct:100}]},
+  {area:'Outros Ensaios',nome:'Desenvolvimento de Melhorias',tempoMin:2400,tipoTempo:'fixo_mes',pctServicos:0,responsaveis:[{nome:'Joao Pinheiro',pct:100}]},
 ];
 
 // Migrar funcoes antigas para novo formato se necessário
@@ -6630,14 +6673,14 @@ function migrarFuncoes(){
     nome: f.nome,
     area: f.area,
     tempoMin: f.tempoMin,
-    tipoTempo: f.tipoTempo || 'por_amostra',
-    pctAmostras: f.pctAmostras,
+    tipoTempo: f.tipoTempo || 'por_servico',
+    pctServicos: f.pctServicos,
     responsaveis: f.responsaveis || [],
     colaboradores: (f.responsaveis||[]).map(r => {
       const col = colaboradores.find(c => c.nome === r.nome);
       return col ? {colId: col.id, pct: r.pct} : null;
     }).filter(Boolean),
-    tempoSemana: Math.round(f.tempoMin * (f.pctAmostras/100) * 50 / 60 / 4) || 8,
+    tempoSemana: Math.round(f.tempoMin * (f.pctServicos/100) * 50 / 60 / 4) || 8,
   }));
   lss('funcoes_v8', novasFuncoes);
   return novasFuncoes;
@@ -6650,7 +6693,7 @@ const MIN_MES_DISPONIVEL = 9600; // 160h × 60min por pessoa por mês
 
 function calcCargaFuncao(f, amostras) {
   if (f.tipoTempo === 'fixo_mes') return f.tempoMin;
-  return amostras * (f.pctAmostras / 100) * f.tempoMin;
+  return amostras * (f.pctServicos / 100) * f.tempoMin;
 }
 
 function calcCargaPorPessoa(amostras) {
@@ -6675,7 +6718,7 @@ function calcCargaPorPessoa(amostras) {
 // ═══════════════════════════════════════════════════════════════
 function renderCapacidade() {
   const funcoesV2 = ls('funcoes_v8', migrarFuncoes());
-  const amostras = qtdAmostras;
+  const amostras = qtdServicos;
   const cargaPessoa = calcCargaPorPessoa(amostras);
 
   // Agrupar por área
@@ -6818,10 +6861,10 @@ function renderCapacidade() {
         + '<td style="padding:7px 10px;font-size:11px;color:var(--txt2);text-align:center">'
           + (f.tipoTempo==='fixo_mes'
               ? '<span style="background:#EEEDFE;color:#534AB7;padding:1px 6px;border-radius:10px;font-size:10px">fixo</span>'
-              : f.pctAmostras+'% das amostras')
+              : f.pctServicos+'% dos serviços')
         + '</td>'
         + '<td style="padding:7px 10px;font-size:11px;color:var(--txt2);text-align:center">'
-          + (f.tipoTempo==='fixo_mes' ? horas(f.tempoMin)+'/mês' : f.tempoMin+'min/amostra')
+          + (f.tipoTempo==='fixo_mes' ? horas(f.tempoMin)+'/mês' : f.tempoMin+'min/serviço')
         + '</td>'
         + '<td style="padding:7px 10px;text-align:center">'
           + '<div style="font-size:13px;font-weight:800;color:var(--green)">'+horas(cF)+'</div>'
@@ -6882,13 +6925,13 @@ function renderCapacidade() {
   return ''
   // Barra de controle de amostras
   + '<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:11px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">'
-    + '<div style="font-size:13px;font-weight:700;color:var(--txt)">📦 Amostras por mês:</div>'
+    + '<div style="font-size:13px;font-weight:700;color:var(--txt)">📦 Serviços por mês:</div>'
     + '<div style="display:flex;align-items:center;gap:10px">'
-      + '<button class="btn btn-sm" onclick="ajustarAmostras(-5)" style="font-size:16px;padding:4px 10px">−</button>'
-      + '<input type="number" id="inp-amostras" value="'+amostras+'" min="1" max="9999" '
+      + '<button class="btn btn-sm" onclick="ajustarServicos(-5)" style="font-size:16px;padding:4px 10px">−</button>'
+      + '<input type="number" id="inp-servicos" value="'+qtdServicos+'" min="1" max="9999" '
         + 'style="width:80px;text-align:center;font-size:20px;font-weight:800;color:var(--green);border:2px solid var(--green);border-radius:8px;padding:4px 8px" '
-        + 'onchange="setAmostras(this.value)" oninput="setAmostras(this.value)"/>'
-      + '<button class="btn btn-sm" onclick="ajustarAmostras(5)" style="font-size:16px;padding:4px 10px">+</button>'
+        + 'onchange="setServicos(this.value)" oninput="setServicos(this.value)"/>'
+      + '<button class="btn btn-sm" onclick="ajustarServicos(5)" style="font-size:16px;padding:4px 10px">+</button>'
     + '</div>'
     + '<div style="font-size:11px;color:var(--txt3)">→ Todos os cálculos atualizam em tempo real</div>'
     + '<div style="margin-left:auto;display:flex;gap:8px">'
@@ -6903,7 +6946,7 @@ function renderCapacidade() {
     + '<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:13px">'
       + '<div style="font-size:10px;color:var(--txt2);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em;font-weight:600">⏱ Demanda Total</div>'
       + '<div style="font-size:22px;font-weight:800;color:var(--txt)">'+horas(totalMinFunc)+'</div>'
-      + '<div style="font-size:10px;color:var(--txt3)">horas/mês com '+amostras+' amostras</div>'
+      + '<div style="font-size:10px;color:var(--txt3)">horas/mês com '+qtdServicos+' serviços</div>'
     + '</div>'
     // Card 2: Capacidade disponível
     + '<div style="background:'+(deficit?'#FCEBEB':'var(--green-bg)')+';border:0.5px solid '+(deficit?'rgba(163,45,45,.3)':'rgba(29,158,117,.3)')+';border-radius:10px;padding:13px">'
@@ -6993,17 +7036,17 @@ function switchCapTab(tab) {
   document.getElementById('tab-cap-areas').style.color  = isPessoas ? 'var(--txt2)' : '#fff';
 }
 
-function ajustarAmostras(delta) {
-  qtdAmostras = Math.max(1, qtdAmostras + delta);
-  lss('qtdAmostras', qtdAmostras);
+function ajustarServicos(delta) {
+  qtdServicos = Math.max(1, qtdServicos + delta);
+  lss('qtdServicos', qtdServicos);
   render('capacidade');
 }
 
-function setAmostras(val) {
+function setServicos(val) {
   const n = parseInt(val);
   if (n > 0) {
-    qtdAmostras = n;
-    lss('qtdAmostras', qtdAmostras);
+    qtdServicos = n;
+    lss('qtdServicos', qtdServicos);
     render('capacidade');
   }
 }
@@ -7026,7 +7069,7 @@ function editarFuncaoCapacidade(id) {
 function abrirNovaFuncaoCapacidade() {
   _showFuncCapModal({
     id: null, area: 'EMC', nome: '', tempoMin: 10,
-    tipoTempo: 'por_amostra', pctAmostras: 100, responsaveis: []
+    tipoTempo: 'por_servico', pctServicos: 100, responsaveis: []
   }, true);
 }
 
@@ -7049,12 +7092,12 @@ function _showFuncCapModal(f, isNew) {
       + '<div class="field-group"><div class="field-label">Área</div><select id="fc-area">'+areas.map(a=>'<option value="'+a+'"'+(f.area===a?' selected':'')+'>'+a+'</option>').join('')+'</select></div>'
       + '<div class="field-group"><div class="field-label">Tipo de Tempo</div>'
         + '<select id="fc-tipo" onchange="updateFCTipoView()">'
-          + '<option value="por_amostra"'+(f.tipoTempo==='por_amostra'?' selected':'')+'>Por amostra</option>'
+          + '<option value="por_servico"'+(f.tipoTempo==='por_servico'?' selected':'')+'>Por serviço</option>'
           + '<option value="fixo_mes"'+(f.tipoTempo==='fixo_mes'?' selected':'')+'>Fixo por mês</option>'
         + '</select>'
       + '</div>'
-      + '<div class="field-group"><div class="field-label" id="lbl-tempo">Minutos por amostra</div><input id="fc-tempo" type="number" min="1" value="'+(f.tempoMin||10)+'"/></div>'
-      + '<div class="field-group" id="div-pct-amostras"><div class="field-label">% das amostras que passam</div><div style="display:flex;align-items:center;gap:8px"><input id="fc-pct" type="number" min="0" max="100" value="'+(f.pctAmostras||100)+'" style="width:80px"/><span style="font-size:12px;color:var(--txt2)">%</span></div></div>'
+      + '<div class="field-group"><div class="field-label" id="lbl-tempo">Minutos por serviço</div><input id="fc-tempo" type="number" min="1" value="'+(f.tempoMin||10)+'"/></div>'
+      + '<div class="field-group" id="div-pct-servicos"><div class="field-label">% dos serviços que passam</div><div style="display:flex;align-items:center;gap:8px"><input id="fc-pct" type="number" min="0" max="100" value="'+(f.pctServicos||100)+'" style="width:80px"/><span style="font-size:12px;color:var(--txt2)">%</span></div></div>'
       + '<div class="field-group"><div class="field-label">Estimativa automática</div><div id="fc-estimativa" style="padding:8px;background:var(--green-bg);border-radius:7px;font-size:12px;color:var(--green2);font-weight:600">—</div></div>'
     + '</div>'
     + '<div class="divider"></div>'
@@ -7080,20 +7123,20 @@ function _showFuncCapModal(f, isNew) {
 
 function updateFCTipoView() {
   const tipo = (document.getElementById('fc-tipo')||{}).value;
-  const divPct = document.getElementById('div-pct-amostras');
+  const divPct = document.getElementById('div-pct-servicos');
   const lbl = document.getElementById('lbl-tempo');
   if (tipo === 'fixo_mes') {
     if (divPct) divPct.style.display = 'none';
     if (lbl) lbl.textContent = 'Minutos por mês (total fixo)';
   } else {
     if (divPct) divPct.style.display = '';
-    if (lbl) lbl.textContent = 'Minutos por amostra';
+    if (lbl) lbl.textContent = 'Minutos por serviço';
   }
   updateFCEstimativa();
 }
 
 function updateFCEstimativa() {
-  const tipo = (document.getElementById('fc-tipo')||{}).value || 'por_amostra';
+  const tipo = (document.getElementById('fc-tipo')||{}).value || 'por_servico';
   const tempo = parseInt((document.getElementById('fc-tempo')||{}).value||0);
   const pct = parseInt((document.getElementById('fc-pct')||{}).value||100);
   const el = document.getElementById('fc-estimativa');
@@ -7101,8 +7144,8 @@ function updateFCEstimativa() {
   if (tipo === 'fixo_mes') {
     el.textContent = (tempo/60).toFixed(1)+'h fixas por mês';
   } else {
-    const min = qtdAmostras * (pct/100) * tempo;
-    el.textContent = (min/60).toFixed(1)+'h/mês com '+qtdAmostras+' amostras ('+pct+'% × '+tempo+'min)';
+    const min = qtdServicos * (pct/100) * tempo;
+    el.textContent = (min/60).toFixed(1)+'h/mês com '+qtdServicos+' amostras ('+pct+'% × '+tempo+'min)';
   }
 }
 
@@ -7140,7 +7183,7 @@ function salvarFuncaoCapacidade(id) {
     area: document.getElementById('fc-area').value,
     tipoTempo: document.getElementById('fc-tipo').value,
     tempoMin: parseInt(document.getElementById('fc-tempo').value)||10,
-    pctAmostras: parseInt((document.getElementById('fc-pct')||{}).value||0),
+    pctServicos: parseInt((document.getElementById('fc-pct')||{}).value||0),
     responsaveis: respRows,
     colaboradores: respRows.map(r => {
       const col = colaboradores.find(c => c.nome === r.nome);
@@ -8042,7 +8085,7 @@ function squadoResetDemoData() {
 // ═══════════════════════════════════════════════════════════════
 function gerarRelatorioCapacidade(){
   const funcoesV2=ls('funcoes_v8',migrarFuncoes());
-  const amostras=qtdAmostras;
+  const amostras=qtdServicos;
   const cargaPessoa=calcCargaPorPessoa(amostras);
   const DIAS_UTEIS=22;
   const MIN_FUNC=8*60*DIAS_UTEIS, MIN_EST=6*60*DIAS_UTEIS;
@@ -8099,10 +8142,10 @@ function gerarRelatorioCapacidade(){
       const resps=(f.responsaveis||[]).map(r=>r.nome.split(' ')[0]+'('+r.pct+'%)').join(', ');
       return '<tr><td style="padding:7px 12px;font-size:11.5px;padding-left:24px">'+f.nome+'</td>'
         +'<td style="padding:7px 12px;font-size:11px;color:#6b7280;text-align:center">'
-          +(f.tipoTempo==='fixo_mes'?'<span style="background:#EEEDFE;color:#534AB7;padding:1px 7px;border-radius:10px;font-size:10px">fixo</span>':f.pctAmostras+'% das amostras')
+          +(f.tipoTempo==='fixo_mes'?'<span style="background:#EEEDFE;color:#534AB7;padding:1px 7px;border-radius:10px;font-size:10px">fixo</span>':f.pctServicos+'% dos serviços')
         +'</td>'
         +'<td style="padding:7px 12px;font-size:11px;color:#374151;text-align:center">'
-          +(f.tipoTempo==='fixo_mes'?h(f.tempoMin)+'/mês':f.tempoMin+'min/amostra')
+          +(f.tipoTempo==='fixo_mes'?h(f.tempoMin)+'/mês':f.tempoMin+'min/serviço')
         +'</td>'
         +'<td style="padding:7px 12px;font-size:12px;font-weight:700;color:#1D9E75;text-align:center">'+h(cF)+'</td>'
         +'<td style="padding:7px 12px;font-size:11px;color:#6b7280">'+resps+'</td>'
@@ -8137,7 +8180,7 @@ function gerarRelatorioCapacidade(){
         +'<div style="font-size:9px;font-weight:700;color:#1D9E75;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">Laboratório Industrial de Qualidade · EMC &amp; Telecom</div>'
         +'<div style="font-size:26px;font-weight:900;color:#111827;margin-bottom:4px">Relatório de Gestão de Capacidade</div>'
         +'<div style="font-size:13px;color:#6b7280">Análise de carga de trabalho · Justificativa de dimensionamento</div>'
-        +'<div style="font-size:11px;color:#9ca3af;margin-top:4px">Gerado em '+dataHoje+' · Base: '+amostras+' amostras/mês</div>'
+        +'<div style="font-size:11px;color:#9ca3af;margin-top:4px">Gerado em '+dataHoje+' · Base: '+qtdServicos+' amostras/mês</div>'
       +'</div>'
       +'<div style="text-align:center;background:'+(deficit?'#FCEBEB':'#E1F5EE')+';border-radius:12px;padding:14px 22px;border:2px solid '+(deficit?'#A32D2D':'#1D9E75')+'">'
         +'<div style="font-size:36px;font-weight:900;color:'+(deficit?'#A32D2D':'#1D9E75')+'">'+pctUso+'%</div>'
@@ -8150,7 +8193,7 @@ function gerarRelatorioCapacidade(){
       +'<div style="background:#f9fafb;border-radius:10px;padding:14px;border-left:4px solid #1D9E75">'
         +'<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;margin-bottom:4px">⏱ Demanda Total</div>'
         +'<div style="font-size:26px;font-weight:900;color:#111827">'+h(totalMinFunc)+'</div>'
-        +'<div style="font-size:11px;color:#6b7280">horas/mês com '+amostras+' amostras</div>'
+        +'<div style="font-size:11px;color:#6b7280">horas/mês com '+qtdServicos+' serviços</div>'
       +'</div>'
       +'<div style="background:'+(deficit?'#FCEBEB':'#E1F5EE')+';border-radius:10px;padding:14px;border-left:4px solid '+(deficit?'#A32D2D':'#1D9E75')+'">'
         +'<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:'+(deficit?'#A32D2D':'#0F6E56')+';margin-bottom:4px">✅ Capacidade Instalada</div>'
@@ -8208,7 +8251,7 @@ function gerarRelatorioCapacidade(){
     // PÁGINA 3 — FUNÇÕES POR ÁREA
     +'<div style="page-break-before:always"></div>'
     +'<div style="font-size:14px;font-weight:800;color:#111827;margin-bottom:4px;padding-top:8px">Detalhamento de Funções por Área</div>'
-    +'<div style="font-size:11px;color:#6b7280;margin-bottom:14px">Base de cálculo: '+amostras+' amostras/mês · '+DIAS_UTEIS+' dias úteis</div>'
+    +'<div style="font-size:11px;color:#6b7280;margin-bottom:14px">Base de cálculo: '+qtdServicos+' amostras/mês · '+DIAS_UTEIS+' dias úteis</div>'
     +'<table style="margin-bottom:28px">'
       +'<thead><tr><th>Função</th><th style="text-align:center">Cobertura</th><th style="text-align:center">Tempo Unitário</th><th style="text-align:center">Total/mês</th><th>Responsáveis</th></tr></thead>'
       +'<tbody>'+funcRows+'</tbody>'
@@ -8219,7 +8262,7 @@ function gerarRelatorioCapacidade(){
         +'<div style="background:#FCEBEB;border-radius:12px;padding:20px 24px;border:2px solid #A32D2D;margin-bottom:20px">'
           +'<div style="font-size:16px;font-weight:800;color:#A32D2D;margin-bottom:8px">🔴 Justificativa de Contratação</div>'
           +'<div style="font-size:13px;color:#374151;line-height:1.7;margin-bottom:12px">'
-            +'Com o volume atual de <strong>'+amostras+' amostras/mês</strong>, a demanda total de trabalho é de <strong>'+h(totalMinFunc)+'/mês</strong>, '
+            +'Com o volume atual de <strong>'+qtdServicos+' amostras/mês</strong>, a demanda total de trabalho é de <strong>'+h(totalMinFunc)+'/mês</strong>, '
             +'enquanto a capacidade instalada é de <strong>'+(minDisp/60).toFixed(0)+'h/mês</strong> ('+(nFunc+nEst)+' pessoas). '
             +'Isso representa um <strong>déficit de '+(totalMinFunc-minDisp<0?0:h(totalMinFunc-minDisp))+'/mês ('+( pctUso-100)+'% acima da capacidade)</strong>.<br><br>'
             +'<strong>'+sobrecarregadas.length+' colaboradores</strong> operam acima de 100% de ocupação: '
