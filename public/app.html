@@ -1575,63 +1575,74 @@ function getPos(id){
 }
 
 function renderOrganograma(){
-  // Agrupar colaboradores ativos por área
+  // Mapa de ordem dos níveis (maior = mais alto na hierarquia)
+  const ordemNivel = {};
+  niveis.sort((a,b)=>a.ordem-b.ordem).forEach((n,i)=>{ ordemNivel[n.nome]=i; });
+
   const ativos = colaboradores.filter(c => c.status === 'Ativo');
-  const byArea = {};
-  ativos.forEach(c => {
-    if (!byArea[c.area]) byArea[c.area] = [];
-    byArea[c.area].push(c);
-  });
 
-  // Ordem das áreas
-  const ordemAreas = Object.keys(AREA_COLORS);
-  const areasPresentes = ordemAreas.filter(a => byArea[a] && byArea[a].length > 0);
-  // Adicionar áreas não mapeadas no AREA_COLORS
-  Object.keys(byArea).forEach(a => { if (!areasPresentes.includes(a)) areasPresentes.push(a); });
+  // Agrupar por nível (linhas) e dentro de cada linha por área (colunas)
+  const niveisList = niveis.slice().sort((a,b)=>b.ordem-a.ordem); // do maior para menor
+  const niveisPresenteIds = new Set(ativos.map(c=>c.nivel));
+  const niveisPresentes = niveisList.filter(n => niveisPresenteIds.has(n.nome));
 
-  const colunas = areasPresentes.map(area => {
-    const cols = byArea[area] || [];
-    const ac = AREA_COLORS[area] || {cor:'#5F5E5A', bg:'#D3D1C7'};
-    const cards = cols.map(c => {
-      const ns = NIVEL_STYLE[c.nivel] || {cor:'#888', bg:'#eee'};
-      const avsC = avaliacoes.filter(a => a.colaboradorId === c.id);
+  if (!ativos.length) return '<div class="empty-state">Nenhum colaborador ativo.</div>';
+
+  const linhas = niveisPresentes.map(nv => {
+    const pessoas = ativos.filter(c => c.nivel === nv.nome);
+    const ns = NIVEL_STYLE[nv.nome] || {cor:'#888', bg:'#eee'};
+
+    const cards = pessoas.map(col => {
+      const avsC = avaliacoes.filter(a => a.colaboradorId === col.id);
       const lastAv = avsC.length ? avsC[avsC.length-1] : null;
-      return `<div onclick="verCol('${c.id}')" style="background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;transition:box-shadow .15s;margin-bottom:8px" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow='none'">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-          ${av(c.nome, false, false)}
+      const ac = AREA_COLORS[col.area] || {cor:'#888', bg:'#eee'};
+      return `<div onclick="verCol('${col.id}')"
+        style="background:var(--bg);border:0.5px solid var(--border);border-radius:10px;
+               padding:10px 12px;cursor:pointer;transition:box-shadow .15s;width:160px;
+               flex-shrink:0;border-top:3px solid ${ns.cor}"
+        onmouseover="this.style.boxShadow='0 4px 14px rgba(0,0,0,.1)'"
+        onmouseout="this.style.boxShadow='none'">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+          ${av(col.nome, false, false)}
           <div style="flex:1;min-width:0">
-            <div style="font-size:12px;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.nome.split(' ').slice(0,2).join(' ')}</div>
-            <span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:20px;background:${ns.bg};color:${ns.cor};border:0.5px solid ${ns.cor}40">${c.nivel}</span>
+            <div style="font-size:11.5px;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+              ${col.nome.split(' ').slice(0,2).join(' ')}
+            </div>
+            <span style="font-size:8.5px;padding:1px 5px;border-radius:10px;background:${ac.bg};color:${ac.cor};border:0.5px solid ${ac.cor}40;white-space:nowrap">
+              ${col.area}
+            </span>
           </div>
-          ${lastAv ? `<span style="font-size:11px;font-weight:800;color:var(--green)">${lastAv.mediaGeral}</span>` : ''}
         </div>
-        ${c.gestor ? `<div style="font-size:9px;color:var(--txt3)">↑ ${c.gestor.split(' ')[0]}</div>` : ''}
+        ${lastAv ? `<div style="font-size:10px;font-weight:800;color:var(--green);text-align:right">${lastAv.mediaGeral}</div>` : ''}
+        ${col.gestor ? `<div style="font-size:9px;color:var(--txt3);margin-top:3px">↑ ${col.gestor.split(' ')[0]}</div>` : ''}
       </div>`;
     }).join('');
 
-    return `<div style="flex-shrink:0;width:200px">
-      <div style="background:${ac.bg};border-left:3px solid ${ac.cor};border-radius:8px;padding:8px 12px;margin-bottom:10px">
-        <div style="font-size:11px;font-weight:700;color:${ac.cor};text-transform:uppercase;letter-spacing:.06em">${area}</div>
-        <div style="font-size:10px;color:${ac.cor};opacity:.7">${cols.length} pessoa${cols.length!==1?'s':''}</div>
+    return `<div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;
+                     background:${ns.bg};color:${ns.cor};border:1px solid ${ns.cor}40;white-space:nowrap">
+          ${nv.nome}
+        </span>
+        <span style="font-size:10px;color:var(--txt3)">${pessoas.length} pessoa${pessoas.length!==1?'s':''}</span>
+        <div style="flex:1;height:1px;background:var(--border)"></div>
       </div>
-      ${cards}
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        ${cards}
+      </div>
     </div>`;
   }).join('');
 
   const totalAtivos = ativos.length;
-  const totalAreas = areasPresentes.length;
+  const niveisCount = niveisPresentes.length;
 
   return `
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-    <div style="font-size:12px;color:var(--txt2)">${totalAtivos} colaboradores · ${totalAreas} áreas</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      ${Object.entries(NIVEL_STYLE).map(([n,s])=>`<span style="font-size:9px;font-weight:600;padding:1px 8px;border-radius:20px;color:${s.cor};background:${s.bg};border:0.5px solid ${s.cor}60">${n}</span>`).join('')}
-    </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+    <div style="font-size:12px;color:var(--txt2)">${totalAtivos} colaboradores · ${niveisCount} níveis</div>
+    <div style="font-size:11px;color:var(--txt3)">Hierarquia do topo para a base</div>
   </div>
   <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:16px">
-    <div style="display:flex;gap:16px;min-width:max-content;align-items:flex-start;padding:4px 2px">
-      ${colunas}
-    </div>
+    ${linhas}
   </div>`;
 }
 
@@ -6272,14 +6283,14 @@ function _showColForm(id,c){
       +'<div class="field-group"><div class="field-label">Status</div><select id="fc-status">'+statusOpts+'</select></div>'
       +'<div class="field-group"><div class="field-label">Gestor direto</div><select id="fc-gestor"><option value="">— Sem gestor —</option>'+gestorOpts+'</select></div>'
     +'</div>'
-    +'<div style="display:flex;gap:8px;margin-top:14px;justify-content:space-between">'
-      +(id?'<button class="btn btn-danger btn-sm" onclick="delCol(\''+id+'\')">Excluir</button>':'<div></div>')
-      +'<div style="display:flex;gap:8px">'
-        +'<button class="btn" onclick="closeModal()">Cancelar</button>'
-        +'<button class="btn btn-primary" onclick="saveCol(\''+( id||'')+'\')">💾 Salvar</button>'
+    +(id
+      ?'<div style="margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">'
+        +'<button class="btn btn-sm" onclick="demitirCol(\''+id+'\')" style="border-color:#A32D2D;color:#A32D2D">🚪 Demitir</button>'
+        +'<button class="btn btn-sm" onclick="solicitouDemissaoCol(\''+id+'\')" style="border-color:#854F0B;color:#854F0B">✋ Solicitou Demissão</button>'
+        +'<button class="btn btn-danger btn-sm" onclick="delCol(\''+id+'\')">🗑 Excluir</button>'
       +'</div>'
-    +'</div>';
-  document.getElementById('modal').style.display='flex';
+      :'')    +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">'      +'<button class="btn" onclick="closeModal()">Cancelar</button>'      +'<button class="btn btn-primary" onclick="saveCol(\''+( id||'')+'\')">💾 Salvar</button>'    +'</div>';
+    document.getElementById('modal').style.display='flex';
 }
 
 function saveCol(id){
@@ -6373,6 +6384,41 @@ function desligarCol(id){
   if(token&&col._apiId){
     fetch(SQUADO_API+'/api/colaboradores/'+col._apiId,{method:'PUT',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({nome:col.nome,cargo:col.status,area:col.area||'',nivel:col.nivel||'',email:(col.perfil&&col.perfil.email)||'',whatsapp:(col.perfil&&col.perfil.celular)||'',ativo:false})}).catch(()=>{});
   }
+}
+
+function demitirCol(id){
+  if(!confirm('Confirmar demissão? O colaborador será marcado como Desligado e o histórico será registrado.')) return;
+  const col = colaboradores.find(x=>x.id===id); if(!col) return;
+  const dataHoje = new Date().toISOString().slice(0,10);
+  col.status = 'Desligado';
+  if(!col.historico) col.historico = [];
+  col.historico.push({tipo:'Desligamento', data: dataHoje, obs:'Demitido pela empresa', registradoPor: squadoGetUser()?.email||''});
+  saveAll();
+  // Atualizar na API
+  const token = squadoGetToken();
+  if(token && col._apiId){
+    fetch(SQUADO_API+'/api/colaboradores/'+col._apiId,{method:'PUT',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({ativo:false, status:'Desligado'})}).catch(()=>{});
+  }
+  closeModal();
+  toast('Colaborador desligado e histórico registrado.');
+  render(currentPage);
+}
+
+function solicitouDemissaoCol(id){
+  if(!confirm('Registrar que o colaborador solicitou demissão?')) return;
+  const col = colaboradores.find(x=>x.id===id); if(!col) return;
+  const dataHoje = new Date().toISOString().slice(0,10);
+  col.status = 'Desligado';
+  if(!col.historico) col.historico = [];
+  col.historico.push({tipo:'Desligamento', data: dataHoje, obs:'Pedido de demissão — solicitado pelo colaborador', registradoPor: squadoGetUser()?.email||''});
+  saveAll();
+  const token = squadoGetToken();
+  if(token && col._apiId){
+    fetch(SQUADO_API+'/api/colaboradores/'+col._apiId,{method:'PUT',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({ativo:false, status:'Desligado'})}).catch(()=>{});
+  }
+  closeModal();
+  toast('Pedido de demissão registrado no histórico.');
+  render(currentPage);
 }
 
 function excluirColPermanente(id){
@@ -7307,21 +7353,11 @@ function deletarFuncaoCapacidade(id) {
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobSidebar()"></div>
 <!-- Nav mobile inferior -->
 <nav class="mob-nav" id="mob-nav">
-  <div class="mob-nav-item" id="mobnav-dashboard" onclick="go('dashboard')"><span class="mob-nav-icon">📊</span><span>Início</span></div>
+  <div class="mob-nav-item" id="mobnav-mais" onclick="toggleMobSidebar()"><span class="mob-nav-icon">☰</span><span>Menu</span></div>
   <div class="mob-nav-item" id="mobnav-colaboradores" onclick="go('colaboradores')"><span class="mob-nav-icon">👥</span><span>Equipe</span></div>
   <div class="mob-nav-item" id="mobnav-avaliacao" onclick="go('avaliacao')"><span class="mob-nav-icon">📋</span><span>Avaliar</span></div>
   <div class="mob-nav-item" id="mobnav-agente" onclick="go('agente')"><span class="mob-nav-icon">🤖</span><span>IA</span></div>
-  <div class="mob-nav-item" id="mobnav-mais" onclick="toggleMobSidebar()"><span class="mob-nav-icon">☰</span><span>Menu</span></div>
-  <div style="display:none" id="mobnav-metas"></div>
-  <div style="display:none" id="mobnav-pdi"></div>
-  <div style="display:none" id="mobnav-capacidade"></div>
-  <div style="display:none" id="mobnav-organograma"></div>
-  <div style="display:none" id="mobnav-notas"></div>
-  <div style="display:none" id="mobnav-historico_aval"></div>
-  <div style="display:none" id="mobnav-valores"></div>
-  <div style="display:none" id="mobnav-ninebox"></div>
-  <div style="display:none" id="mobnav-competencias"></div>
-  <div style="display:none" id="mobnav-niveis"></div>
+  <div class="mob-nav-item" id="mobnav-dashboard" onclick="go('dashboard')"><span class="mob-nav-icon">📊</span><span>Início</span></div>
 </nav>
 <!-- Botão hambúrguer -->
 <button class="mob-menu-btn" id="mob-menu-btn" onclick="toggleMobSidebar()" title="Menu">☰</button>
