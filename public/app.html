@@ -7447,6 +7447,8 @@ async function apiCall(method, path, body) {
 // ─── CARREGAR DADOS DA NUVEM ───────────────────────────────────
 async function squadoCarregarDaNuvem() {
   if (!squadoGetToken()) return;
+  const _carregarUser = squadoGetUser();
+  console.log('[Squado Load] carregando conta:', _carregarUser?.email);
   try {
     toast('☁️ Sincronizando com a nuvem...');
 
@@ -7686,6 +7688,9 @@ let _syncEmAndamento = false; // evitar chamadas paralelas
 async function squadoSyncSnapshot(origem) {
   if (!squadoGetToken()) return;
   if (_syncEmAndamento) return; // já está sincronizando
+  // PROTEÇÃO: logar qual conta está sendo sincronizada
+  const _syncUser = squadoGetUser();
+  console.log('[Squado Sync] origem:', origem, '| conta:', _syncUser?.email, '| tenant:', _syncUser?.tenantId || 'N/A');
   _syncEmAndamento = true;
   // Mostrar "salvando..." imediatamente
   const ind = document.getElementById('sq-sync-ind');
