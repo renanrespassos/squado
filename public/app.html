@@ -7457,76 +7457,37 @@ async function apiCall(method, path, body) {
     headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) }
   };
   if (body) opts.body = JSON.stringify(body);
-  const r = await fetch(`${SQUADO_API}${path}`, opts);
-  return r.json();
+  try {
+    const r = await fetch(`${SQUADO_API}${path}`, opts);
+    if (!r.ok) {
+      const txt = await r.text().catch(() => '');
+      console.warn('[Squado API] ' + method + ' ' + path + ' → HTTP ' + r.status, txt.slice(0,100));
+      return null;
+    }
+    return await r.json();
+  } catch(e) {
+    console.warn('[Squado API] ' + method + ' ' + path + ' → erro rede:', e.message);
+    return null;
+  }
 }
 
 // ─── CARREGAR DADOS DA NUVEM ───────────────────────────────────
 async function squadoCarregarDaNuvem() {
   if (!squadoGetToken()) return;
-  const _carregarUser = squadoGetUser();
-  console.log('[Squado Load] carregando conta:', _carregarUser?.email);
+  console.log('[Squado Load] conta:', squadoGetUser()?.email);
   try {
     toast('☁️ Sincronizando com a nuvem...');
 
-    // Colaboradores — via snapshot (mais completo que API individual)
-    // A API /colaboradores não tem todos os campos (historico, perfil, etc.)
-    // Por isso priorizamos o snapshot da config
-    const cols = await apiCall('GET', '/api/colaboradores');
-    if (cols && Array.isArray(cols) && cols.length > 0 && colaboradores.length === 0) {
-      // Só usar API se snapshot não tiver dados
-      colaboradores = cols.map(c => ({
-        id: c.id, _apiId: c.id, nome: c.nome, cargo: c.cargo || '', area: c.area || '',
-        nivel: c.nivel || 'Assistente', email: c.email || '', whatsapp: c.whatsapp || '',
-        dataAdmissao: c.data_admissao || '', status: c.ativo ? 'Ativo' : 'Desligado',
-        historico: c.historico || [], obs: c.obs || '',
-        perfil: { email: c.email || '', celular: c.whatsapp || '' }
-      }));
-      lss('cols_v3', colaboradores);
-    } else if (cols && Array.isArray(cols) && cols.length === 0 && colaboradores.length === 0) {
-      colaboradores = [];
-      lss('cols_v3', []);
-    }
-
-    // Avaliações — carregar da API apenas se snapshot não existir depois
-    // (o snapshot da config tem o formato completo com secaoMedias, respostas, etc.)
-    const avals = await apiCall('GET', '/api/avaliacoes');
-    // Não sobrescrever aqui — deixar o snapshot_avaliacoes da config ter prioridade
-    // Só usa API como fallback se snapshot vier vazio
-
-    // Metas
-    const mts = await apiCall('GET', '/api/metas');
-    if (mts && Array.isArray(mts)) {
-      metas = mts.map(m => ({
-        id: m.id, colId: m.colaborador_id, titulo: m.titulo || '',
-        descricao: m.descricao || '', prazo: m.prazo || '', status: m.status || 'em_andamento',
-        data: m.criado_em
-      }));
-      lss('metas_v2', metas);
-    }
-
-    // PDIs
-    const pdisApi = await apiCall('GET', '/api/pdis');
-    if (pdisApi && Array.isArray(pdisApi)) {
-      const pdisLocal = pdisApi.map(p => ({
-        id: p.id, colId: p.colaborador_id, titulo: p.titulo || '',
-        acoes: p.acoes || [], status: p.status || 'ativo', data: p.criado_em
-      }));
-      lss('pdis_v1', pdisLocal);
-    }
-
-    // Notas
-    const ntApi = await apiCall('GET', '/api/notas');
-    if (ntApi && Array.isArray(ntApi)) {
-      notas = ntApi.map(n => ({
-        id: n.id, colId: n.colaborador_id, conteudo: n.conteudo || '',
-        tipo: n.tipo || 'geral', data: n.criado_em
-      }));
-      lss('notas', notas);
-    }
-
-    // Configurações (valores, competências, níveis, organograma, gestor, IA)
+    // Carregar TUDO de uma vez via /api/config (snapshot completo)
+    // Evita múltiplos requests que podem falhar individualmente
     const cfg = await apiCall('GET', '/api/config');
+    // Se cfg for null (erro de rede), usar dados locais silenciosamente
+    if (!cfg) {
+      console.warn('[Squado Load] /api/config retornou null — usando dados locais');
+      toast('⚠️ Sem conexão com servidor. Usando dados locais.');
+      render(currentPage || 'dashboard');
+      return;
+    }
     // Restaurar snapshot completo se existir
     if (cfg) {
       // Nuvem sempre vence ao carregar (login) — sem comparação de timestamp
@@ -7592,8 +7553,8 @@ async function squadoCarregarDaNuvem() {
     render(currentPage || 'dashboard');
     toast('✅ Dados sincronizados!');
   } catch(e) {
-    console.error('Erro ao sincronizar:', e);
-    toast('⚠️ Erro ao sincronizar. Usando dados locais.');
+    console.error('[Squado Load] Erro ao carregar da nuvem:', e.message, e.stack?.slice(0,300));
+    toast('⚠️ Sem conexão. Usando dados locais.');
   }
 }
 
@@ -7741,11 +7702,12 @@ async function squadoSyncSnapshot(origem) {
     const ind = document.getElementById('sq-sync-ind');
     if (ind) { ind.textContent = '✓ salvo'; ind.style.color = '#9FE1CB'; setTimeout(() => { if(ind.textContent==='✓ salvo') ind.textContent = ''; }, 4000); }
   } catch(e) {
-    console.error('Sync error:', e);
+    console.error('[Squado Sync] Erro:', e.message);
     const ind = document.getElementById('sq-sync-ind');
     if (ind) { ind.textContent = '⚠️ offline'; ind.style.color = 'rgba(255,200,50,.8)'; }
     // Reagendar em 30s se falhou
-    setTimeout(() => { if (_syncDirty) squadoSyncSnapshot('retry'); }, 30000);
+    _syncDirty = true;
+    setTimeout(() => { if (_syncDirty && squadoGetToken()) squadoSyncSnapshot('retry'); }, 30000);
   } finally {
     _syncEmAndamento = false;
   }
