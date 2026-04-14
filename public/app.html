@@ -6027,7 +6027,13 @@ function renderPerfilAba(id, aba){
           const carga=calcCargaFuncao(f,qtdServicos)*(pct/100);
           return '<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg2);border-radius:9px;margin-bottom:6px;border:0.5px solid var(--border)">'
             +'<div style="flex:1;min-width:0">'
-              +'<div style="font-size:13px;font-weight:600;color:var(--txt)">'+f.nome+'</div>'
+              +'<div style="font-size:13px;font-weight:600">'
+                +'<span onclick="abrirFuncaoDeColaborador(\''+encodeURIComponent(f.id)+'\')" '
+                  +'style="color:var(--blue);cursor:pointer;text-decoration:underline;text-underline-offset:2px" '
+                  +'title="Editar esta função">'+f.nome+'</span>'
+                +'<span onclick="abrirFuncaoDeColaborador(\''+encodeURIComponent(f.id)+'\')" '
+                  +'style="font-size:9px;color:var(--blue);opacity:.6;margin-left:5px;cursor:pointer">↗</span>'
+              +'</div>'
               +'<div style="font-size:10px;color:var(--txt3);margin-top:2px">'
                 +(f.tipoTempo==='fixo_mes'?'⏱ fixo':'⚡ '+f.pctServicos+'% dos serviços')+' · '+f.tempoMin+'min'
               +'</div>'
@@ -6751,7 +6757,7 @@ function renderCapacidade() {
   // Stats globais
   const totalFuncoes = funcoesV2.length;
   const pessoas = Object.keys(cargaPessoa);
-  const sobrecarregadas = pessoas.filter(p => cargaPessoa[p] > MIN_MES_DISPONIVEL);
+  const sobrecarregadas = pessoas.filter(p => cargaPessoa[p] > MIN_MES_DISPONIVEL).sort((a,b) => cargaPessoa[b] - cargaPessoa[a]);
   const totalMinFunc = funcoesV2.reduce((acc, f) => acc + calcCargaFuncao(f, amostras), 0);
 
   // Calcular capacidade disponível por tipo de contrato
@@ -7112,6 +7118,17 @@ function excluirFuncoesSelecionadas() {
   toast('✅ ' + ids.length + ' função(ões) excluída(s)!');
   render('capacidade');
   setTimeout(() => switchCapTab('areas'), 10);
+}
+
+function abrirFuncaoDeColaborador(encodedId) {
+  const id = decodeURIComponent(encodedId);
+  closeModal();
+  // Ir para capacidade, aba áreas, e abrir modal de edição da função
+  go('capacidade');
+  setTimeout(() => {
+    switchCapTab('areas');
+    setTimeout(() => editarFuncaoCapacidade(id), 300);
+  }, 150);
 }
 
 function editarFuncaoCapacidade(id) {
@@ -8183,7 +8200,7 @@ function gerarRelatorioCapacidade(){
   const deficit=totalMinFunc>minDisp;
   const faltam=deficit?((totalMinFunc-minDisp)/MIN_FUNC).toFixed(1):0;
   const pessoas=Object.keys(cargaPessoa).sort((a,b)=>cargaPessoa[b]-cargaPessoa[a]);
-  const sobrecarregadas=pessoas.filter(p=>cargaPessoa[p]>MIN_FUNC);
+  const sobrecarregadas=pessoas.filter(p=>cargaPessoa[p]>MIN_FUNC).sort((a,b)=>cargaPessoa[b]-cargaPessoa[a]);
   function h(min){return(min/60).toFixed(1)+'h';}
   function pct(min){return Math.round(min/MIN_FUNC*100);}
   function scC(p){return p>=100?'#A32D2D':p>=80?'#854F0B':p>=60?'#185FA5':'#1D9E75';}
