@@ -1172,6 +1172,20 @@ let perguntas=DEFAULT_PERGUNTAS;
 const _temToken = !!localStorage.getItem('squado_jwt_token');
 let colaboradores=ls('cols_v3', _temToken ? [] : SEED);
 let funcoes=ls('funcoes',buildDefaultFuncoes(SEED));
+// Auto-migrar funções legadas (por_amostra → por_servico)
+(function migrarFuncoesLegadas(){
+  let fv8 = ls('funcoes_v8', null);
+  if (!fv8) return;
+  let precisaMigrar = fv8.some(f => f.tipoTempo === 'por_amostra' || f.pctServicos === undefined);
+  if (!precisaMigrar) return;
+  const migradas = fv8.map(f => ({
+    ...f,
+    tipoTempo: f.tipoTempo === 'por_amostra' ? 'por_servico' : (f.tipoTempo || 'por_servico'),
+    pctServicos: f.pctServicos !== undefined ? f.pctServicos : (f.pctAmostras !== undefined ? f.pctAmostras : 100),
+  }));
+  lss('funcoes_v8', migradas);
+  console.log('[Squado] Migradas', migradas.filter((f,i)=>fv8[i].tipoTempo==='por_amostra'||fv8[i].pctServicos===undefined).length, 'funções legadas');
+})();
 let avaliacoes=ls('avaliacoes',[]);
 let metas=ls('metas_v2',[]);
 let feedbacks=ls('feedbacks',[]);
@@ -1189,7 +1203,8 @@ function squadoGetUser()  { try { return JSON.parse(localStorage.getItem('squado
 function saveAll(){
   lss('avaliacoes',avaliacoes);
   lss('metas_v2',metas);lss('feedbacks',feedbacks);lss('cols_v3',colaboradores);lss('funcoes',funcoes);lss('orgPos_v2',orgPositions);lss('orgConns',orgConnections);lss('notas',notas);lss('aiHistory',aiHistory);lss('qtdServicos',qtdServicos);
-
+  // Timestamp da última modificação local
+  lss('_lastSave', Date.now());
   // Marcar dados como sujos e agendar sync para a nuvem
   if(squadoGetToken()) agendarSync();
 }
@@ -6674,7 +6689,7 @@ function migrarFuncoes(){
     area: f.area,
     tempoMin: f.tempoMin,
     tipoTempo: f.tipoTempo || 'por_servico',
-    pctServicos: f.pctServicos,
+    pctServicos: f.pctServicos ?? f.pctAmostras ?? 100,
     responsaveis: f.responsaveis || [],
     colaboradores: (f.responsaveis||[]).map(r => {
       const col = colaboradores.find(c => c.nome === r.nome);
@@ -6692,8 +6707,13 @@ function migrarFuncoes(){
 const MIN_MES_DISPONIVEL = 9600; // 160h × 60min por pessoa por mês
 
 function calcCargaFuncao(f, amostras) {
-  if (f.tipoTempo === 'fixo_mes') return f.tempoMin;
-  return amostras * (f.pctServicos / 100) * f.tempoMin;
+  if (f.tipoTempo === 'fixo_mes') return f.tempoMin || 0;
+  // pctServicos pode ser undefined em funções antigas (era pctAmostras) — usar fallback
+  const pct = f.pctServicos ?? f.pctAmostras ?? 100;
+  const tempo = f.tempoMin || 0;
+  const qtd = amostras || 0;
+  const result = qtd * (pct / 100) * tempo;
+  return isNaN(result) ? 0 : result;
 }
 
 function calcCargaPorPessoa(amostras) {
@@ -6718,7 +6738,7 @@ function calcCargaPorPessoa(amostras) {
 // ═══════════════════════════════════════════════════════════════
 function renderCapacidade() {
   const funcoesV2 = ls('funcoes_v8', migrarFuncoes());
-  const amostras = qtdServicos;
+  const amostras = parseInt(qtdServicos) || 50;
   const cargaPessoa = calcCargaPorPessoa(amostras);
 
   // Agrupar por área
@@ -6855,8 +6875,15 @@ function renderCapacidade() {
       const piFunc = cF / MIN_FUNC_MES;
       // Só mostrar responsáveis que ainda existem e estão ativos
       const respAtivos = (f.responsaveis||[]).filter(r=>nomesAtivosSet.has(r.nome));
-      const respStr = respAtivos.map(r => r.nome.split(' ')[0]+'('+r.pct+'%)').join(', ') || '—';
+      const respStr = respAtivos.map(r => {
+        const colR = colaboradores.find(x=>x.nome===r.nome);
+        const nome = r.nome.split(' ')[0]+'('+r.pct+'%)';
+        return colR
+          ? '<span onclick="verCol(\''+colR.id+'\')" style="cursor:pointer;color:var(--blue);text-decoration:underline;text-underline-offset:2px">'+nome+'</span>'
+          : nome;
+      }).join(', ') || '—';
       return '<tr>'
+        + '<td style="padding:7px 4px 7px 10px;width:32px"><input type="checkbox" class="func-sel" data-fid="'+encodeURIComponent(f.id)+'" style="cursor:pointer;width:15px;height:15px" onchange="onFuncSelect()" /></td>'
         + '<td style="padding:7px 10px;font-size:12px;color:var(--txt)">'+f.nome+'</td>'
         + '<td style="padding:7px 10px;font-size:11px;color:var(--txt2);text-align:center">'
           + (f.tipoTempo==='fixo_mes'
@@ -6908,6 +6935,7 @@ function renderCapacidade() {
       + '<div style="overflow-x:auto;border-radius:8px;border:0.5px solid var(--border)">'
         + '<table style="width:100%;border-collapse:collapse;min-width:600px">'
           + '<thead><tr style="background:var(--bg2)">'
+            + '<th style="padding:7px 4px 7px 10px;width:32px"><input type="checkbox" style="cursor:pointer" title="Selecionar todas" onchange="toggleSelectAllFuncs(this)" /></th>'
             + '<th style="padding:7px 10px;text-align:left;font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Função</th>'
             + '<th style="padding:7px 10px;text-align:center;font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Cobertura</th>'
             + '<th style="padding:7px 10px;text-align:center;font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Tempo Unit.</th>'
@@ -6937,6 +6965,7 @@ function renderCapacidade() {
     + '<div style="margin-left:auto;display:flex;gap:8px">'
       + '<button class="btn btn-sm" onclick="gerarRelatorioCapacidade()" style="border-color:#185FA5;color:#185FA5">?? Relatório PDF</button>'
       + '<button class="btn btn-sm btn-primary" onclick="abrirNovaFuncaoCapacidade()">+ Nova Função</button>'
+      + '<button class="btn btn-sm btn-danger" id="btn-excluir-sel" onclick="excluirFuncoesSelecionadas()" style="display:none">🗑 Excluir selecionadas</button>'
     + '</div>'
   + '</div>'
 
@@ -7013,6 +7042,7 @@ function renderCapacidade() {
       + '<button id="tab-cap-pessoas" onclick="switchCapTab(\'pessoas\')" style="padding:7px 18px;border:none;font-size:12.5px;font-weight:600;cursor:pointer;background:var(--green);color:#fff;transition:all .15s">👥 Por Pessoa</button>'
       + '<button id="tab-cap-areas" onclick="switchCapTab(\'areas\')" style="padding:7px 18px;border:none;border-left:0.5px solid var(--border2);font-size:12.5px;font-weight:600;cursor:pointer;background:var(--bg2);color:var(--txt2);transition:all .15s">📋 Por Área / Função</button>'
     + '</div>'
+    + '<button class="btn btn-sm btn-danger" id="btn-excluir-selecionadas" onclick="excluirFuncoesSelecionadas()" style="display:none">🗑 Excluir selecionadas</button>'
     + '<button class="btn btn-sm" onclick="render(\'capacidade\')" style="display:flex;align-items:center;gap:5px;border-color:var(--green);color:var(--green)">🔄 Atualizar</button>'
   + '</div>'
 
@@ -7054,16 +7084,88 @@ function setServicos(val) {
 // ═══════════════════════════════════════════════════════════════
 // EDITAR FUNÇÃO DE CAPACIDADE (modal rico)
 // ═══════════════════════════════════════════════════════════════
+// ── Seleção múltipla de funções ───────────────────────
+function toggleSelectAllFuncs(checkbox) {
+  document.querySelectorAll('.func-sel').forEach(cb => { cb.checked = checkbox.checked; });
+  onFuncSelect();
+}
+function onFuncSelect() {
+  const sel = document.querySelectorAll('.func-sel:checked');
+  const btn = document.getElementById('btn-excluir-selecionadas');
+  if (btn) {
+    btn.style.display = sel.length > 0 ? '' : 'none';
+    btn.textContent = '🗑 Excluir ' + sel.length + (sel.length === 1 ? ' função' : ' funções');
+  }
+}
+function excluirFuncoesSelecionadas() {
+  const sel = Array.from(document.querySelectorAll('.func-sel:checked'));
+  if (!sel.length) return;
+  if (!confirm('Excluir ' + sel.length + ' função(ões) selecionada(s)?')) return;
+  const ids = sel.map(cb => decodeURIComponent(cb.dataset.fid));
+  let funcsAtual = ls('funcoes_v8', []);
+  funcsAtual = funcsAtual.filter(f => !ids.includes(f.id));
+  lss('funcoes_v8', funcsAtual);
+  if (squadoGetToken()) agendarSync();
+  toast('✅ ' + ids.length + ' função(ões) excluída(s)!');
+  render('capacidade');
+  setTimeout(() => switchCapTab('areas'), 10);
+}
+
+// ── Suporte a seleção múltipla na tabela de capacidade ──────────────
+function toggleSelectAreaFuncs(cb, area) {
+  const checkboxes = document.querySelectorAll('.func-sel');
+  checkboxes.forEach(el => {
+    const row = el.closest('tr');
+    if (!area || (row && row.dataset.area === area)) el.checked = cb.checked;
+  });
+  atualizarBtnExcluirSel();
+}
+function atualizarBtnExcluirSel() {
+  const sel = document.querySelectorAll('.func-sel:checked').length;
+  const btn = document.getElementById('btn-excluir-sel');
+  if (btn) {
+    btn.style.display = sel > 0 ? '' : 'none';
+    btn.textContent = '🗑 Excluir ' + sel + ' selecionada' + (sel !== 1 ? 's' : '');
+  }
+}
+function excluirFuncoesSelecionadas() {
+  const selecionadas = [...document.querySelectorAll('.func-sel:checked')].map(el => decodeURIComponent(el.dataset.fid));
+  if (!selecionadas.length) return;
+  if (!confirm('Excluir ' + selecionadas.length + ' função(ões)?')) return;
+  let funcs = ls('funcoes_v8', []);
+  funcs = funcs.filter(f => !selecionadas.includes(f.id));
+  lss('funcoes_v8', funcs);
+  saveAll();
+  toast('Excluídas ' + selecionadas.length + ' função(ões)!');
+  render(currentPage);
+}
+// ─────────────────────────────────────────────────────────────────────
+
 function editarFuncaoCapacidade(id) {
   const funcoesV2 = ls('funcoes_v8', migrarFuncoes());
-  // Buscar por ID exato — se não achar, tentar por índice codificado
   let f = funcoesV2.find(x => x.id === id);
   if (!f) {
-    // Fallback: ID pode ter sido truncado ou ter underscores
     f = funcoesV2.find(x => x.id === id || x.id.replace(/[^a-z0-9]/gi,'') === id.replace(/[^a-z0-9]/gi,''));
   }
   if (!f) return;
   _showFuncCapModal(f, false);
+}
+
+function excluirFuncoesSelecionadas() {
+  const checks = document.querySelectorAll('.func-check:checked');
+  if (!checks.length) { toast('Selecione ao menos uma função'); return; }
+  if (!confirm('Excluir ' + checks.length + ' função(ões) selecionada(s)?')) return;
+  const ids = Array.from(checks).map(c => c.dataset.id);
+  let funcs = ls('funcoes_v8', migrarFuncoes());
+  funcs = funcs.filter(f => !ids.includes(f.id));
+  lss('funcoes_v8', funcs);
+  saveAll();
+  toast('✅ ' + ids.length + ' função(ões) excluída(s)!');
+  render(currentPage);
+}
+
+function toggleTodosChecks(el) {
+  document.querySelectorAll('.func-check').forEach(c => c.checked = el.checked);
 }
 
 function abrirNovaFuncaoCapacidade() {
@@ -7386,21 +7488,23 @@ async function squadoCarregarDaNuvem() {
   try {
     toast('☁️ Sincronizando com a nuvem...');
 
-    // Colaboradores — SEMPRE sobrescrever ao logar (mesmo vazio)
+    // Colaboradores — via snapshot (mais completo que API individual)
+    // A API /colaboradores não tem todos os campos (historico, perfil, etc.)
+    // Por isso priorizamos o snapshot da config
     const cols = await apiCall('GET', '/api/colaboradores');
-    if (cols && Array.isArray(cols)) {
-      if (cols.length > 0) {
-        colaboradores = cols.map(c => ({
-          id: c.id, _apiId: c.id, nome: c.nome, cargo: c.cargo || '', area: c.area || '',
-          nivel: c.nivel || 'Assistente', email: c.email || '', whatsapp: c.whatsapp || '',
-          dataAdmissao: c.data_admissao || '', status: c.ativo ? 'Ativo' : 'Desligado',
-          historico: c.historico || [], obs: c.obs || '',
-          perfil: { email: c.email || '', celular: c.whatsapp || '' }
-        }));
-      } else {
-        colaboradores = []; // conta sem colaboradores — limpar o SEED
-      }
+    if (cols && Array.isArray(cols) && cols.length > 0 && colaboradores.length === 0) {
+      // Só usar API se snapshot não tiver dados
+      colaboradores = cols.map(c => ({
+        id: c.id, _apiId: c.id, nome: c.nome, cargo: c.cargo || '', area: c.area || '',
+        nivel: c.nivel || 'Assistente', email: c.email || '', whatsapp: c.whatsapp || '',
+        dataAdmissao: c.data_admissao || '', status: c.ativo ? 'Ativo' : 'Desligado',
+        historico: c.historico || [], obs: c.obs || '',
+        perfil: { email: c.email || '', celular: c.whatsapp || '' }
+      }));
       lss('cols_v3', colaboradores);
+    } else if (cols && Array.isArray(cols) && cols.length === 0 && colaboradores.length === 0) {
+      colaboradores = [];
+      lss('cols_v3', []);
     }
 
     // Avaliações — carregar da API apenas se snapshot não existir depois
@@ -7444,16 +7548,17 @@ async function squadoCarregarDaNuvem() {
     const cfg = await apiCall('GET', '/api/config');
     // Restaurar snapshot completo se existir
     if (cfg) {
+      // Nuvem sempre vence ao carregar (login) — sem comparação de timestamp
       if (cfg.snapshot_cols && Array.isArray(cfg.snapshot_cols)) {
-        colaboradores = cfg.snapshot_cols; // pode ser [] — limpa o SEED se conta vazia
+        colaboradores = cfg.snapshot_cols;
         lss('cols_v3', colaboradores);
       }
-      // Avaliações: snapshot tem formato completo — sempre priorizar sobre API legada
-      if (cfg.snapshot_avaliacoes && Array.isArray(cfg.snapshot_avaliacoes)) {
+      // Avaliações: snapshot tem formato completo — priorizar sobre API legada
+      if (cfg.snapshot_avaliacoes && Array.isArray(cfg.snapshot_avaliacoes) && cfg.snapshot_avaliacoes.length > 0) {
         avaliacoes = cfg.snapshot_avaliacoes;
         lss('avaliacoes', avaliacoes);
-      } else if (avals && Array.isArray(avals) && avals.length > 0) {
-        // Fallback: API legada (formato simplificado)
+      } else if (avals && Array.isArray(avals) && avals.length > 0 && avaliacoes.length === 0) {
+        // Fallback: API legada só se não há avaliações locais
         avaliacoes = avals.map(a => ({
           id: a.id, colaboradorId: a.colaborador_id, colaborador: '',
           periodo: a.periodo || '', notas: a.notas || {},
@@ -7474,7 +7579,13 @@ async function squadoCarregarDaNuvem() {
         lss('pdis_v1', cfg.snapshot_pdis);
       }
       if (cfg.snapshot_funcoes) {
-        lss('funcoes_v8', cfg.snapshot_funcoes);
+        // Migrar campos legados por_amostra → por_servico
+        const funcsNuvem = cfg.snapshot_funcoes.map(f => ({
+          ...f,
+          tipoTempo: f.tipoTempo === 'por_amostra' ? 'por_servico' : (f.tipoTempo || 'por_servico'),
+          pctServicos: f.pctServicos !== undefined ? f.pctServicos : (f.pctAmostras !== undefined ? f.pctAmostras : 100),
+        }));
+        lss('funcoes_v8', funcsNuvem);
       }
       if (cfg.snapshot_valores_empresa && Array.isArray(cfg.snapshot_valores_empresa) && cfg.snapshot_valores_empresa.length > 0) {
         lss('valores_empresa', cfg.snapshot_valores_empresa);
@@ -7614,6 +7725,9 @@ async function squadoSyncSnapshot(origem) {
   if (!squadoGetToken()) return;
   if (_syncEmAndamento) return; // já está sincronizando
   _syncEmAndamento = true;
+  // Mostrar "salvando..." imediatamente
+  const ind = document.getElementById('sq-sync-ind');
+  if (ind) { ind.textContent = '⏳ salvando...'; ind.style.color = 'rgba(255,255,255,.5)'; }
   try {
     await apiCall('PUT', '/api/config', {
       // Configurações
@@ -7626,6 +7740,7 @@ async function squadoSyncSnapshot(origem) {
       gestor_config:    ls('gestor_config_v1', null),
       historico_ia:     aiHistory,
       // Dados principais (snapshot completo)
+      _lastSave:           Date.now(),
       snapshot_cols:       colaboradores,
       snapshot_avaliacoes: avaliacoes,
       snapshot_metas:      ls('metas_v2', []),
@@ -7638,12 +7753,15 @@ async function squadoSyncSnapshot(origem) {
       snapshot_perguntas:      ls('perguntas_v3', null),
     });
     _syncDirty = false;
-    // Indicador visual discreto
+    // Indicador visual
     const ind = document.getElementById('sq-sync-ind');
-    if (ind) { ind.textContent = '☁️ salvo'; ind.style.color = '#1D9E75'; setTimeout(() => { ind.textContent = ''; }, 3000); }
+    if (ind) { ind.textContent = '✓ salvo'; ind.style.color = '#9FE1CB'; setTimeout(() => { if(ind.textContent==='✓ salvo') ind.textContent = ''; }, 4000); }
   } catch(e) {
+    console.error('Sync error:', e);
     const ind = document.getElementById('sq-sync-ind');
-    if (ind) { ind.textContent = '⚠️ sem sync'; ind.style.color = '#854F0B'; }
+    if (ind) { ind.textContent = '⚠️ offline'; ind.style.color = 'rgba(255,200,50,.8)'; }
+    // Reagendar em 30s se falhou
+    setTimeout(() => { if (_syncDirty) squadoSyncSnapshot('retry'); }, 30000);
   } finally {
     _syncEmAndamento = false;
   }
@@ -7653,7 +7771,7 @@ async function squadoSyncSnapshot(origem) {
 function agendarSync() {
   _syncDirty = true;
   clearTimeout(_syncTimer);
-  _syncTimer = setTimeout(() => squadoSyncSnapshot('debounce'), 3000);
+  _syncTimer = setTimeout(() => squadoSyncSnapshot('debounce'), 1500);
 }
 
 // Sync imediato (sem debounce) — para blur/fechar aba
@@ -7671,7 +7789,7 @@ function iniciarSyncPeriodico() {
   clearInterval(_syncPeriodic);
   _syncPeriodic = setInterval(() => {
     if (_syncDirty && squadoGetToken()) squadoSyncSnapshot('periodico');
-  }, 5 * 60 * 1000); // 5 minutos
+  }, 2 * 60 * 1000); // 2 minutos — mais frequente para mobile
 }
 
 function pararSyncPeriodico() {
