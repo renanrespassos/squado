@@ -6441,6 +6441,7 @@ function adicionarAFuncao(colId){
   if(!funcoesV4[idx].responsaveis)funcoesV4[idx].responsaveis=[];
   funcoesV4[idx].responsaveis.push({nome:col.nome,pct});
   lss('funcoes_v8',funcoesV4);
+  saveAll();
   toast('Adicionado à função! ✓');
   renderPerfilAba(colId,'funcoes_col');
 }
@@ -6481,6 +6482,7 @@ function removerDeFuncao(colId,funcId){
     r.nome.toLowerCase()!==nomeCol
   );
   lss('funcoes_v8',funcoesV4);
+  saveAll();
   toast('Removido da função!');
   renderPerfilAba(colId,'funcoes_col');
 }
@@ -7114,7 +7116,7 @@ function excluirFuncoesSelecionadas() {
   let funcsAtual = ls('funcoes_v8', []);
   funcsAtual = funcsAtual.filter(f => !ids.includes(f.id));
   lss('funcoes_v8', funcsAtual);
-  if (squadoGetToken()) agendarSync();
+  saveAll();
   toast('✅ ' + ids.length + ' função(ões) excluída(s)!');
   render('capacidade');
   setTimeout(() => switchCapTab('areas'), 10);
@@ -7281,8 +7283,9 @@ function salvarFuncaoCapacidade(id) {
     funcoesV2.push(obj);
   }
   lss('funcoes_v8', funcoesV2);
+  saveAll(); // persiste e agenda sync para nuvem
   closeModal();
-  toast('Função salva!');
+  toast('Função salva! ✓');
   render('capacidade');
 }
 
@@ -7291,6 +7294,7 @@ function deletarFuncaoCapacidade(id) {
   let funcoesV2 = ls('funcoes_v8', migrarFuncoes());
   funcoesV2 = funcoesV2.filter(x => x.id !== id);
   lss('funcoes_v8', funcoesV2);
+  saveAll();
   closeModal();
   toast('Excluída!');
   render('capacidade');
