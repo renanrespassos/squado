@@ -7091,11 +7091,14 @@ function toggleSelectAllFuncs(checkbox) {
 }
 function onFuncSelect() {
   const sel = document.querySelectorAll('.func-sel:checked');
-  const btn = document.getElementById('btn-excluir-selecionadas');
-  if (btn) {
-    btn.style.display = sel.length > 0 ? '' : 'none';
-    btn.textContent = '🗑 Excluir ' + sel.length + (sel.length === 1 ? ' função' : ' funções');
-  }
+  // Atualizar ambos os botões possíveis
+  ['btn-excluir-selecionadas','btn-excluir-sel'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) {
+      btn.style.display = sel.length > 0 ? '' : 'none';
+      btn.textContent = '🗑 Excluir ' + sel.length + (sel.length === 1 ? ' função' : ' funções');
+    }
+  });
 }
 function excluirFuncoesSelecionadas() {
   const sel = Array.from(document.querySelectorAll('.func-sel:checked'));
@@ -7111,36 +7114,6 @@ function excluirFuncoesSelecionadas() {
   setTimeout(() => switchCapTab('areas'), 10);
 }
 
-// ── Suporte a seleção múltipla na tabela de capacidade ──────────────
-function toggleSelectAreaFuncs(cb, area) {
-  const checkboxes = document.querySelectorAll('.func-sel');
-  checkboxes.forEach(el => {
-    const row = el.closest('tr');
-    if (!area || (row && row.dataset.area === area)) el.checked = cb.checked;
-  });
-  atualizarBtnExcluirSel();
-}
-function atualizarBtnExcluirSel() {
-  const sel = document.querySelectorAll('.func-sel:checked').length;
-  const btn = document.getElementById('btn-excluir-sel');
-  if (btn) {
-    btn.style.display = sel > 0 ? '' : 'none';
-    btn.textContent = '🗑 Excluir ' + sel + ' selecionada' + (sel !== 1 ? 's' : '');
-  }
-}
-function excluirFuncoesSelecionadas() {
-  const selecionadas = [...document.querySelectorAll('.func-sel:checked')].map(el => decodeURIComponent(el.dataset.fid));
-  if (!selecionadas.length) return;
-  if (!confirm('Excluir ' + selecionadas.length + ' função(ões)?')) return;
-  let funcs = ls('funcoes_v8', []);
-  funcs = funcs.filter(f => !selecionadas.includes(f.id));
-  lss('funcoes_v8', funcs);
-  saveAll();
-  toast('Excluídas ' + selecionadas.length + ' função(ões)!');
-  render(currentPage);
-}
-// ─────────────────────────────────────────────────────────────────────
-
 function editarFuncaoCapacidade(id) {
   const funcoesV2 = ls('funcoes_v8', migrarFuncoes());
   let f = funcoesV2.find(x => x.id === id);
@@ -7151,18 +7124,7 @@ function editarFuncaoCapacidade(id) {
   _showFuncCapModal(f, false);
 }
 
-function excluirFuncoesSelecionadas() {
-  const checks = document.querySelectorAll('.func-check:checked');
-  if (!checks.length) { toast('Selecione ao menos uma função'); return; }
-  if (!confirm('Excluir ' + checks.length + ' função(ões) selecionada(s)?')) return;
-  const ids = Array.from(checks).map(c => c.dataset.id);
-  let funcs = ls('funcoes_v8', migrarFuncoes());
-  funcs = funcs.filter(f => !ids.includes(f.id));
-  lss('funcoes_v8', funcs);
-  saveAll();
-  toast('✅ ' + ids.length + ' função(ões) excluída(s)!');
-  render(currentPage);
-}
+
 
 function toggleTodosChecks(el) {
   document.querySelectorAll('.func-check').forEach(c => c.checked = el.checked);
