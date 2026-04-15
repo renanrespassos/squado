@@ -514,8 +514,7 @@ input[type=range]:focus{box-shadow:none}
     <div class="nav-item" onclick="go('valores')"><span class="nav-icon">⭐</span>Valores</div>
     <div class="nav-item" onclick="go('ninebox')"><span class="nav-icon">🎯</span>Nine-Box</div>
     <div class="nav-item" onclick="go('competencias')"><span class="nav-icon">📊</span>Competências</div>
-    <div class="nav-item" onclick="go('niveis')"><span class="nav-icon">📈</span>Níveis de Cargo</div>
-    <div class="nav-item" onclick="go('areas')"><span class="nav-icon">🏷️</span>Áreas da Equipe</div>
+    <div class="nav-item" onclick="go('niveis')"><span class="nav-icon">📈</span>Níveis e Áreas</div>
   </nav>
   <div class="sidebar-footer" id="sq-sidebar-footer" style="display:flex;flex-direction:column;gap:6px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
@@ -1281,7 +1280,8 @@ function render(page,search=''){
     valores:{title:'Valores e Cultura',sub:'Valores PUCRS · Valores LABELO · Pilares · Não Negociamos',btn:null},
     ninebox:{title:'Nine-Box · Matriz de Talentos',sub:'Potencial × Desempenho',btn:null},
     competencias:{title:'Matriz de Competências',sub:'Perfis de cargo · Entregas · Competências por nível',btn:null},
-    niveis:{title:'Níveis de Cargo',sub:'Hierarquia de cargos',btn:'Novo Nível'},
+    niveis:{title:'Níveis de Cargo e Áreas',sub:'Hierarquia de cargos e áreas da equipe',btn:null},
+    areas:{title:'Níveis de Cargo e Áreas',sub:'Hierarquia de cargos e áreas da equipe',btn:null},
   }[page]||{title:page,sub:'',btn:null};
   document.getElementById('topbar-title').textContent=cfg.title;
   document.getElementById('topbar-sub').textContent=cfg.sub;
@@ -1300,7 +1300,7 @@ function render(page,search=''){
   else if(page==='valores')c.innerHTML=renderValores();
   else if(page==='ninebox')c.innerHTML=renderNineBox();
   else if(page==='competencias')c.innerHTML=renderCompetencias();
-  else if(page==='niveis')c.innerHTML=renderNiveis();
+  else if(page==='niveis'||page==='areas')c.innerHTML=renderNiveisAreas();
   else if(page==='capacidade'){c.innerHTML=renderCapacidade();if(_capTab&&_capTab!=='pessoas')setTimeout(()=>switchCapTab(_capTab),10);}
   else if(page==='agente'){c.innerHTML=renderAgente();setTimeout(function(){scrollAiToBottom();_bindAiEnter();},80);}
   else if(page==='notas')c.innerHTML=renderNotas(search);
@@ -3230,6 +3230,40 @@ function saveValores(obj){lss('valores_v1',obj);}
 // ══════════════════════════════════════════════════
 // GESTÃO DE ÁREAS
 // ══════════════════════════════════════════════════
+function renderNiveisAreas(){
+  const abaNiveis = `
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div style="font-size:12px;color:var(--txt2)">${niveis.length} níveis cadastrados</div>
+        <button class="btn btn-primary btn-sm" onclick="abrirFormNivel()">+ Novo Nível</button>
+      </div>
+      ${renderNiveis()}
+    </div>`;
+
+  const abaAreas = `
+    <div>
+      ${renderAreas()}
+    </div>`;
+
+  // Aba ativa baseada na página atual
+  const abaAtiva = currentPage === 'areas' ? 'areas' : 'niveis';
+
+  return `
+    <div style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;overflow:hidden;width:fit-content;margin-bottom:18px">
+      <button id="tab-niveis-btn" onclick="go('niveis')"
+        style="padding:8px 20px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;
+               ${abaAtiva==='niveis'?'background:var(--green);color:#fff':'background:var(--bg2);color:var(--txt2)'}">
+        📈 Níveis de Cargo
+      </button>
+      <button id="tab-areas-btn" onclick="go('areas')"
+        style="padding:8px 20px;border:none;border-left:0.5px solid var(--border2);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;
+               ${abaAtiva==='areas'?'background:var(--green);color:#fff':'background:var(--bg2);color:var(--txt2)'}">
+        🏷️ Áreas da Equipe
+      </button>
+    </div>
+    ${abaAtiva === 'niveis' ? abaNiveis : abaAreas}`;
+}
+
 function renderAreas(){
   const areas = Object.entries(AREA_COLORS);
   const rows = areas.map(([nome, s]) => {
