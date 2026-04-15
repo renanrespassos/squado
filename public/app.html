@@ -515,6 +515,7 @@ input[type=range]:focus{box-shadow:none}
     <div class="nav-item" onclick="go('ninebox')"><span class="nav-icon">🎯</span>Nine-Box</div>
     <div class="nav-item" onclick="go('competencias')"><span class="nav-icon">📊</span>Competências</div>
     <div class="nav-item" onclick="go('niveis')"><span class="nav-icon">📈</span>Níveis de Cargo</div>
+    <div class="nav-item" onclick="go('areas')"><span class="nav-icon">🏷️</span>Áreas da Equipe</div>
   </nav>
   <div class="sidebar-footer" id="sq-sidebar-footer" style="display:flex;flex-direction:column;gap:6px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
@@ -600,17 +601,43 @@ function areaBadge(area){
 // ═══════════════════════════════════════════════════════════════
 // DADOS
 // ═══════════════════════════════════════════════════════════════
-const AREA_COLORS={
-  'Gestao':           {cor:'#3B6D11',bg:'#EAF3DE'},
-  'EMC':              {cor:'#185FA5',bg:'#dbeafe'},
-  'Configuracao EMC': {cor:'#1e40af',bg:'#bfdbfe'},
-  'RF':               {cor:'#854F0B',bg:'#fef3c7'},
-  'Configuracao RF':  {cor:'#993C1D',bg:'#F5C4B3'},
+// Áreas padrão — substituídas pelas áreas salvas no localStorage
+const AREA_COLORS_DEFAULT={
+  'Gestao':             {cor:'#3B6D11',bg:'#EAF3DE'},
+  'EMC':                {cor:'#185FA5',bg:'#dbeafe'},
+  'Configuracao EMC':   {cor:'#1e40af',bg:'#bfdbfe'},
+  'RF':                 {cor:'#854F0B',bg:'#fef3c7'},
+  'Configuracao RF':    {cor:'#993C1D',bg:'#F5C4B3'},
   'Baterias e Acustica':{cor:'#7C3D8F',bg:'#F3E8FF'},
-  'Redes Moveis':     {cor:'#085041',bg:'#9FE1CB'},
-  'Outros Ensaios':   {cor:'#0F766E',bg:'#CCFBF1'},
+  'Redes Moveis':       {cor:'#085041',bg:'#9FE1CB'},
+  'Outros Ensaios':     {cor:'#0F766E',bg:'#CCFBF1'},
   'Entrada e Devolucao':{cor:'#5F5E5A',bg:'#D3D1C7'},
 };
+
+// Paleta de cores para novas áreas
+const AREA_PALETTE=[
+  {cor:'#185FA5',bg:'#dbeafe'},{cor:'#0F6E56',bg:'#E1F5EE'},
+  {cor:'#854F0B',bg:'#fef3c7'},{cor:'#7C3D8F',bg:'#F3E8FF'},
+  {cor:'#085041',bg:'#9FE1CB'},{cor:'#A32D2D',bg:'#FCEBEB'},
+  {cor:'#0F766E',bg:'#CCFBF1'},{cor:'#3B6D11',bg:'#C0DD97'},
+  {cor:'#534AB7',bg:'#EEEDFE'},{cor:'#993C1D',bg:'#F5C4B3'},
+  {cor:'#5F5E5A',bg:'#D3D1C7'},{cor:'#1e40af',bg:'#bfdbfe'},
+];
+
+// Carregar áreas salvas ou usar padrão
+function carregarAreas() {
+  const saved = ls('areas_config', null);
+  if (saved && typeof saved === 'object' && Object.keys(saved).length > 0) return saved;
+  return AREA_COLORS_DEFAULT;
+}
+let AREA_COLORS = carregarAreas();
+
+// Salvar áreas no localStorage e sincronizar
+function salvarAreas(areas) {
+  AREA_COLORS = areas;
+  lss('areas_config', areas);
+  saveAll();
+}
 
 const NIVEL_STYLE={
   'Coordenador':{cor:'#3B6D11',bg:'#C0DD97'},
@@ -3199,6 +3226,143 @@ function getValores(){
   return ls('valores_v1',null);
 }
 function saveValores(obj){lss('valores_v1',obj);}
+
+// ══════════════════════════════════════════════════
+// GESTÃO DE ÁREAS
+// ══════════════════════════════════════════════════
+function renderAreas(){
+  const areas = Object.entries(AREA_COLORS);
+  const rows = areas.map(([nome, s]) => {
+    const colsN = colaboradores.filter(c=>c.area===nome).length;
+    const funcsN = ls('funcoes_v8',[]).filter(f=>f.area===nome).length;
+    const enc = encodeURIComponent(nome);
+    const podeExcluir = colsN===0 && funcsN===0;
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border)">
+      <div style="width:28px;height:28px;border-radius:7px;background:${s.bg};border:2px solid ${s.cor};flex-shrink:0"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:var(--txt)">${nome}</div>
+        <div style="font-size:11px;color:var(--txt3)">${colsN} colaborador${colsN!==1?'es':''} · ${funcsN} função${funcsN!==1?'ões':''}</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <div style="width:14px;height:14px;border-radius:3px;background:${s.cor}"></div>
+        <span style="font-size:10px;color:var(--txt3);font-family:monospace">${s.cor}</span>
+      </div>
+      <button class="btn btn-xs" onclick="editarArea('${enc}')">✏️ Editar</button>
+      ${podeExcluir
+        ? `<button class="btn btn-xs btn-danger" onclick="excluirArea('${enc}')">🗑</button>`
+        : `<button class="btn btn-xs" disabled style="opacity:.3" title="Área em uso">🗑</button>`}
+    </div>`;
+  }).join('');
+
+  return `<div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:12px;color:var(--txt2)">${areas.length} áreas cadastradas</div>
+      <button class="btn btn-primary btn-sm" onclick="novaArea()">+ Nova Área</button>
+    </div>
+    <div style="border:0.5px solid var(--border);border-radius:10px;overflow:hidden">${rows}</div>
+    <div style="margin-top:14px;font-size:11px;color:var(--txt3)">
+      💡 As áreas aparecem automaticamente no organograma, capacidade e funções dos colaboradores.
+    </div>
+  </div>`;
+}
+
+function novaArea(){
+  const idx = Object.keys(AREA_COLORS).length % AREA_PALETTE.length;
+  const paleta = AREA_PALETTE[idx];
+  _showAreaModal(null, {cor: paleta.cor, bg: paleta.bg});
+}
+
+function editarArea(nomeEncoded){
+  const nome = decodeURIComponent(nomeEncoded);
+  const s = AREA_COLORS[nome] || {cor:'#5F5E5A', bg:'#D3D1C7'};
+  _showAreaModal(nome, s);
+}
+
+function excluirArea(nomeEncoded){
+  const nome = decodeURIComponent(nomeEncoded);
+  const colsNaArea = colaboradores.filter(c => c.area === nome).length;
+  const funcsNaArea = ls('funcoes_v8',[]).filter(f => f.area === nome).length;
+  if (colsNaArea > 0 || funcsNaArea > 0) {
+    toast('Área em uso — não pode excluir'); return;
+  }
+  if (!confirm('Excluir área "'+nome+'"?')) return;
+  const novas = {...AREA_COLORS};
+  delete novas[nome];
+  salvarAreas(novas);
+  toast('Área excluída!');
+  render('areas');
+}
+
+function _showAreaModal(nomeAtual, s){
+  document.getElementById('modal-title').textContent = nomeAtual ? 'Editar Área' : 'Nova Área';
+  document.getElementById('modal-box').classList.remove('modal-lg');
+  document.getElementById('modal-body').innerHTML =
+    '<div class="form-grid">'
+      + '<div class="field-group form-full"><div class="field-label">Nome da Área *</div>'
+        + '<input id="area-nome" value="'+(nomeAtual||'')+'" placeholder="Ex: Qualidade, Projetos..."/>'
+      + '</div>'
+      + '<div class="field-group"><div class="field-label">Cor principal (texto/borda)</div>'
+        + '<input id="area-cor" type="color" value="'+s.cor+'" style="width:100%;height:40px;border-radius:8px;border:0.5px solid var(--border);cursor:pointer;padding:2px"/>'
+      + '</div>'
+      + '<div class="field-group"><div class="field-label">Cor de fundo</div>'
+        + '<input id="area-bg" type="color" value="'+s.bg+'" style="width:100%;height:40px;border-radius:8px;border:0.5px solid var(--border);cursor:pointer;padding:2px"/>'
+      + '</div>'
+      + '<div class="field-group form-full">'
+        + '<div class="field-label">Prévia</div>'
+        + '<div id="area-preview" style="display:flex;gap:8px;align-items:center;padding:10px;background:var(--bg2);border-radius:8px">'
+          + '<div style="width:24px;height:24px;border-radius:6px;background:'+s.bg+';border:2px solid '+s.cor+'"></div>'
+          + '<span style="font-size:13px;font-weight:700;color:'+s.cor+'">'+( nomeAtual||'Nova Área')+'</span>'
+        + '</div>'
+      + '</div>'
+    + '</div>'
+    + '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">'
+      + '<button class="btn" onclick="closeModal()">Cancelar</button>'
+      + `<button class="btn btn-primary" onclick="salvarAreaModal('${encodeURIComponent(nomeAtual||'')}')">💾 Salvar</button>`
+    + '</div>';
+
+  // Preview ao vivo
+  const update = () => {
+    const cor = document.getElementById('area-cor').value;
+    const bg = document.getElementById('area-bg').value;
+    const nome = document.getElementById('area-nome').value || 'Nova Área';
+    document.getElementById('area-preview').innerHTML =
+      '<div style="width:24px;height:24px;border-radius:6px;background:'+bg+';border:2px solid '+cor+'"></div>'
+      + '<span style="font-size:13px;font-weight:700;color:'+cor+'">'+nome+'</span>';
+  };
+  document.getElementById('modal').style.display = 'flex';
+  setTimeout(() => {
+    document.getElementById('area-nome').addEventListener('input', update);
+    document.getElementById('area-cor').addEventListener('input', update);
+    document.getElementById('area-bg').addEventListener('input', update);
+  }, 100);
+}
+
+function salvarAreaModal(nomeAtualEncoded){
+  const nomeAtual = decodeURIComponent(nomeAtualEncoded);
+  const novoNome = (document.getElementById('area-nome').value||'').trim();
+  const cor = document.getElementById('area-cor').value;
+  const bg = document.getElementById('area-bg').value;
+  if (!novoNome) { alert('Nome obrigatório'); return; }
+
+  const novas = {...AREA_COLORS};
+
+  // Se renomeando, migrar colaboradores e funções
+  if (nomeAtual && nomeAtual !== novoNome) {
+    delete novas[nomeAtual];
+    // Migrar colaboradores
+    colaboradores.forEach(c => { if (c.area === nomeAtual) c.area = novoNome; });
+    // Migrar funções
+    let funcs = ls('funcoes_v8', []);
+    funcs.forEach(f => { if (f.area === nomeAtual) f.area = novoNome; });
+    lss('funcoes_v8', funcs);
+  }
+
+  novas[novoNome] = {cor, bg};
+  salvarAreas(novas);
+  closeModal();
+  toast('Área salva! ✓');
+  render('areas');
+}
 
 function renderValores(){
   const vCustom=getValores();
@@ -7582,6 +7746,10 @@ async function squadoCarregarDaNuvem() {
       if (cfg.snapshot_pdis && Array.isArray(cfg.snapshot_pdis)) {
         lss('pdis_v1', cfg.snapshot_pdis);
       }
+      if (cfg.snapshot_areas && typeof cfg.snapshot_areas === 'object') {
+        AREA_COLORS = cfg.snapshot_areas;
+        lss('areas_config', AREA_COLORS);
+      }
       if (cfg.snapshot_funcoes) {
         // Migrar campos legados por_amostra → por_servico
         const funcsNuvem = cfg.snapshot_funcoes.map(f => ({
@@ -7754,6 +7922,7 @@ async function squadoSyncSnapshot(origem) {
       snapshot_notas:      notas,
       snapshot_pdis:       ls('pdis_v1', []),
       snapshot_funcoes:    ls('funcoes_v8', null),
+      snapshot_areas:      ls('areas_config', null),
       snapshot_valores_empresa: ls('valores_empresa', []),
       snapshot_competencias:   ls('competencias_v2', []),
       snapshot_niveis:         ls('niveis_v2', []),
@@ -7822,6 +7991,7 @@ window.addEventListener('beforeunload', () => {
         snapshot_metas:      ls('metas_v2', []),
         snapshot_notas:      notas,
         snapshot_funcoes:    ls('funcoes_v8', null),
+      snapshot_areas:      ls('areas_config', null),
         snapshot_valores_empresa: ls('valores_empresa', []),
         snapshot_competencias:   ls('competencias_v2', []),
         snapshot_niveis:         ls('niveis_v2', []),
