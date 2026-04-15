@@ -513,6 +513,7 @@ input[type=range]:focus{box-shadow:none}
     <div class="nav-section">IA &amp; Anotações</div>
     <div class="nav-item" onclick="go('agente')"><span class="nav-icon">🤖</span>Agente IA</div>
     <div class="nav-item" onclick="go('notas')"><span class="nav-icon">📝</span>Bloco de Notas</div>
+    <div class="nav-item" onclick="abrirNotasParticulares()"><span class="nav-icon">🔒</span>Notas Particulares</div>
   </nav>
   <div class="sidebar-footer" id="sq-sidebar-footer" style="display:flex;flex-direction:column;gap:6px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
@@ -1284,6 +1285,9 @@ function render(page,search=''){
     competencias:{title:'Matriz de Competências',sub:'Perfis de cargo · Entregas · Competências por nível',btn:null},
     niveis:{title:'Níveis de Cargo e Áreas',sub:'Hierarquia de cargos e áreas da equipe',btn:null},
     avaliacao_hub:{title:'Avaliação',sub:'Avaliações de desempenho',btn:null},
+    avaliacao:{title:'Avaliação',sub:'Nova avaliação de desempenho',btn:null},
+    historico_aval:{title:'Avaliação',sub:'Histórico de avaliações',btn:null},
+    perguntas:{title:'Avaliação',sub:'Configurar perguntas por nível',btn:null},
     areas:{title:'Níveis de Cargo e Áreas',sub:'Hierarquia de cargos e áreas da equipe',btn:null},
   }[page]||{title:page,sub:'',btn:null};
   document.getElementById('topbar-title').textContent=cfg.title;
@@ -1365,118 +1369,99 @@ function renderDashboard(){
 // COLABORADORES — BUG CORRIGIDO
 // ══════════════════════════════════════════
 function renderColaboradores(search=''){
-  const verDesligados=window._verDesligados||false;
-  let list=verDesligados?colaboradores:colaboradores.filter(c=>c.status!=='Desligado');
-  if(search)list=list.filter(c=>
-    c.nome.toLowerCase().includes(search.toLowerCase())||
-    c.area.toLowerCase().includes(search.toLowerCase())||
-    c.nivel.toLowerCase().includes(search.toLowerCase())
+  const abaAtiva = window._colTab || 'ativos';
+  let list = abaAtiva === 'desligados'
+    ? colaboradores.filter(c => c.status === 'Desligado')
+    : colaboradores.filter(c => c.status !== 'Desligado');
+
+  if(search) list = list.filter(c =>
+    c.nome.toLowerCase().includes(search.toLowerCase()) ||
+    (c.area||'').toLowerCase().includes(search.toLowerCase()) ||
+    (c.nivel||'').toLowerCase().includes(search.toLowerCase())
   );
 
-  // Pré-carregar funcoes_v4 uma vez
-  const funcoesV4=ls('funcoes_v8',[]);
+  const totalAtivos = colaboradores.filter(c => c.status !== 'Desligado').length;
+  const totalDesligados = colaboradores.filter(c => c.status === 'Desligado').length;
 
-  // Para cada colaborador, buscar funções em capacidade pelo nome
-  function getFuncsCapacidade(c){
-    return funcoesV4.filter(f=>(f.responsaveis||[]).find(r=>
-      r.nome===c.nome||
-      r.nome.toLowerCase()===c.nome.toLowerCase()
-    ));
-  }
-
-  // Áreas presentes em capacidade
-  const areasCapacidade=new Set(funcoesV4.map(f=>f.area));
-
-  // Calcular carga total do colaborador
-  function cargaTotal(c){
-    let total=0;
-    getFuncsCapacidade(c).forEach(f=>{
-      const resp=(f.responsaveis||[]).find(r=>r.nome===c.nome);
-      total+=calcCargaFuncao(f,qtdServicos)*(resp?resp.pct/100:1);
-    });
-    return total;
-  }
-
-  const rows=list.map(c=>{
-    const avsC=avaliacoes.filter(a=>a.colaboradorId===c.id);
-    const lastAv=avsC.length?avsC[avsC.length-1]:null;
-    const funcsC=getFuncsCapacidade(c);
-    const nFuncs=funcsC.length;
-    const carga=cargaTotal(c);
-    const pctOcu=Math.round(carga/(8*60*22)*100);
-    const ocuCor=pctOcu>=100?'#A32D2D':pctOcu>=80?'#854F0B':pctOcu>=60?'#185FA5':'#1D9E75';
-    const c2=AREA_COLORS[c.area]||{cor:'#888',bg:'#eee'};
-
-    // Área — mostrar badge + indicador se está mapeada em capacidade
-    const areaCell='<div style="display:flex;flex-direction:column;gap:3px">'
-      +areaBadge(c.area)
-      +(areasCapacidade.has(c.area)
-        ?'<span style="font-size:9px;color:var(--green2)">✓ em capacidade</span>'
-        :'<span style="font-size:9px;color:var(--txt3)">sem mapeamento</span>')
-    +'</div>';
-
-    // Funções de capacidade — tags compactas com tooltip de área
-    const funcsCell=nFuncs===0
-      ?'<span style="font-size:10px;color:var(--txt3)">sem funções</span>'
-      :'<div style="display:flex;flex-direction:column;gap:3px">'
-        +funcsC.slice(0,3).map(f=>{
-          const resp=(f.responsaveis||[]).find(r=>r.nome===c.nome);
-          const pct=resp?resp.pct:100;
-          return '<div style="display:flex;align-items:center;gap:4px">'
-            +'<span style="font-size:10px;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px" title="'+f.area+'">'+f.nome+'</span>'
-            +'<span style="font-size:9px;color:var(--txt3);flex-shrink:0">'+pct+'%</span>'
-          +'</div>';
-        }).join('')
-        +(nFuncs>3?'<span style="font-size:9px;color:var(--blue)">+' +(nFuncs-3)+' mais</span>':'')
-      +'</div>';
-
-    // Carga/mês
-    const cargaCell=nFuncs===0
-      ?'<span style="font-size:10px;color:var(--txt3)">—</span>'
-      :'<div>'
-        +'<div style="font-size:13px;font-weight:800;color:'+ocuCor+'">'+pctOcu+'%</div>'
-        +'<div style="font-size:9px;color:var(--txt3)">'+(carga/60).toFixed(0)+'h/mês</div>'
-        +'<div style="width:50px;height:4px;background:var(--bg3);border-radius:2px;margin-top:3px;overflow:hidden">'
-          +'<div style="height:100%;width:'+Math.min(pctOcu,100)+'%;background:'+ocuCor+';border-radius:2px"></div>'
-        +'</div>'
-      +'</div>';
-
-    return '<tr>'
-      +'<td><div class="flex items-center gap-8">'+av(c.nome)
-        +'<div>'
-          +'<div style="font-weight:600;white-space:nowrap">'+c.nome+'</div>'
-          +'<div style="font-size:10px;color:var(--txt3)">'+c.status+'</div>'
-        +'</div>'
-      +'</div></td>'
-      +'<td>'+nivelBadge(c.nivel)+'</td>'
-      +'<td>'+areaCell+'</td>'
-      +'<td style="color:var(--txt2);white-space:nowrap;font-size:11px">'+(c.gestor||'—')+'</td>'
-      +'<td>'+funcsCell+'</td>'
-      +'<td style="text-align:center">'+cargaCell+'</td>'
-      +'<td><span class="badge badge-blue">'+(c.historico||[]).length+'</span></td>'
-      +'<td>'+(lastAv?'<span class="badge badge-green">'+lastAv.mediaGeral+'</span>':'<span style="font-size:10px;color:var(--txt3)">sem aval.</span>')+'</td>'
-      +'<td><div class="flex gap-6">'
-        +'<button class="btn btn-sm" onclick="verCol(\''+c.id+'\')">Ver</button>'
-        +'<button class="btn btn-sm btn-primary" onclick="iniciarAvaliacaoPara(\''+c.id+'\')">Avaliar</button>'
-      +'</div></td>'
-    +'</tr>';
+  const rows = list.map(c => {
+    const avsC = avaliacoes.filter(a => a.colaboradorId === c.id);
+    const lastAv = avsC.length ? avsC[avsC.length-1] : null;
+    return [
+      '<tr>',
+      '<td style="width:32px;text-align:center">',
+        '<input type="checkbox" class="col-sel" data-id="'+c.id+'" ',
+        'onchange="atualizarBtnExcluirCols()" style="cursor:pointer;width:15px;height:15px"/>',
+      '</td>',
+      '<td>',
+        '<span onclick="verCol(\''+c.id+'\')" ',
+        'style="cursor:pointer;font-weight:600;color:var(--blue);text-decoration:underline;text-underline-offset:2px">',
+        c.nome,
+        '</span>',
+      '</td>',
+      '<td>'+nivelBadge(c.nivel)+'</td>',
+      '<td>'+areaBadge(c.area)+'</td>',
+      '<td style="color:var(--txt2);font-size:12px">'+(c.gestor||'—')+'</td>',
+      '<td>'+(lastAv ? '<span class="badge badge-green">'+lastAv.mediaGeral+'</span>' : '<span style="font-size:10px;color:var(--txt3)">—</span>')+'</td>',
+      '<td>',
+        '<span style="font-size:11px;padding:2px 8px;border-radius:20px;',
+        'background:'+(c.status==='Ativo'?'var(--green-bg)':'var(--bg2)')+';',
+        'color:'+(c.status==='Ativo'?'var(--green2)':'var(--txt2)')+'">',
+        c.status,
+        '</span>',
+      '</td>',
+      '</tr>'
+    ].join('');
   }).join('');
 
-  return '<div class="card" style="padding:0;overflow:hidden"><div class="table-wrap"><table class="tbl">'
-    +'<thead><tr>'
-      +'<th>Colaborador</th>'
-      +'<th>Nível</th>'
-      +'<th>Área</th>'
-      +'<th>Gestor</th>'
-      +'<th>Funções (Capacidade)</th>'
-      +'<th style="text-align:center">Carga</th>'
-      +'<th>Movim.</th>'
-      +'<th>Última Aval.</th>'
-      +'<th>Ações</th>'
-    +'</tr></thead>'
-    +'<tbody>'+rows+'</tbody>'
-    +'</table></div></div>';
+  const tabBtn = (id, icon, label, count) =>
+    '<button onclick="window._colTab=\''+id+'\';render(\'colaboradores\')" style="padding:7px 18px;border:none;'+(abaAtiva===id?'background:var(--green);color:#fff':'background:var(--bg2);color:var(--txt2)')+';font-size:13px;font-weight:600;cursor:pointer;transition:all .15s">'
+    +icon+' '+label+' ('+count+')</button>';
+
+  return [
+    '<div>',
+    '<div style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;overflow:hidden;width:fit-content;margin-bottom:14px">',
+      tabBtn('ativos','👥','Ativos',totalAtivos),
+      '<span style="width:0.5px;background:var(--border2)"></span>',
+      tabBtn('desligados','🚪','Desligados',totalDesligados),
+    '</div>',
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">',
+      '<button class="btn btn-danger btn-sm" id="btn-excluir-cols" onclick="excluirColsSelecionados()" style="display:none">🗑 Excluir selecionados</button>',
+    '</div>',
+    '<div class="card" style="padding:0;overflow:hidden"><div class="table-wrap"><table class="tbl">',
+    '<thead><tr>',
+      '<th style="width:32px"><input type="checkbox" onchange="document.querySelectorAll(\'.col-sel\').forEach(cb=>cb.checked=this.checked);atualizarBtnExcluirCols()" style="cursor:pointer"/></th>',
+      '<th>Colaborador</th>',
+      '<th>Nível</th>',
+      '<th>Área</th>',
+      '<th>Gestor</th>',
+      '<th>Últ. Aval.</th>',
+      '<th>Status</th>',
+    '</tr></thead>',
+    '<tbody>'+rows+'</tbody>',
+    '</table></div></div>',
+    '</div>'
+  ].join('');
 }
+
+function atualizarBtnExcluirCols(){
+  const sel = document.querySelectorAll('.col-sel:checked').length;
+  const btn = document.getElementById('btn-excluir-cols');
+  if(btn){
+    btn.style.display = sel > 0 ? '' : 'none';
+    btn.textContent = '🗑 Excluir '+sel+' selecionado'+(sel!==1?'s':'');
+  }
+}
+
+function excluirColsSelecionados(){
+  const ids = [...document.querySelectorAll('.col-sel:checked')].map(cb => cb.dataset.id);
+  if(!ids.length){ toast('Selecione ao menos um'); return; }
+  if(!confirm('Excluir permanentemente '+ids.length+' colaborador(es)?')) return;
+  colaboradores = colaboradores.filter(c => !ids.includes(c.id));
+  saveAll();
+  toast('✅ '+ids.length+' colaborador(es) excluído(s)!');
+  render('colaboradores');
+}
+
 
 // ═══════════════════════════════════════════════════════════════
 // ORGANOGRAMA COM DRAG-AND-DROP
@@ -1651,7 +1636,7 @@ function renderOrganograma(){
         return `<div onclick="verCol('${col.id}')"
           style="background:var(--bg);border:0.5px solid var(--border);border-radius:10px;
                  padding:10px 12px;cursor:pointer;transition:box-shadow .15s;
-                 min-width:145px;max-width:180px;flex:1;border-top:3px solid ${ns.cor}"
+                 width:160px;flex-shrink:0;border-top:3px solid ${ns.cor}"
           onmouseover="this.style.boxShadow='0 4px 14px rgba(0,0,0,.1)'"
           onmouseout="this.style.boxShadow='none'">
           <div style="display:flex;align-items:center;gap:7px">
@@ -6877,6 +6862,106 @@ function initNavGroups(){
   });
 }
 
+// ══════════════════════════════════════════
+// NOTAS PARTICULARES (protegidas por senha)
+// ══════════════════════════════════════════
+function abrirNotasParticulares(){
+  const SENHA_KEY = 'squado_notas_senha';
+  const senhaAtual = localStorage.getItem(SENHA_KEY);
+
+  if(!senhaAtual){
+    // Primeira vez — definir senha
+    document.getElementById('modal-title').textContent = '🔒 Definir Senha das Notas Particulares';
+    document.getElementById('modal-box').classList.remove('modal-lg');
+    document.getElementById('modal-body').innerHTML =
+      '<div style="font-size:12px;color:var(--txt3);margin-bottom:12px">Esta senha protege suas notas particulares. Guarde-a em local seguro.</div>'      +'<div class="field-group"><div class="field-label">Nova senha</div><input id="np-senha1" type="password" placeholder="Mínimo 4 caracteres"/></div>'      +'<div class="field-group" style="margin-top:8px"><div class="field-label">Confirmar senha</div><input id="np-senha2" type="password" placeholder="Repita a senha"/></div>'      +'<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">'        +'<button class="btn" onclick="closeModal()">Cancelar</button>'        +'<button class="btn btn-primary" onclick="definirSenhaNP()">Definir e Abrir</button>'      +'</div>';
+    document.getElementById('modal').style.display='flex';
+  } else {
+    // Pedir senha
+    document.getElementById('modal-title').textContent = '🔒 Notas Particulares';
+    document.getElementById('modal-box').classList.remove('modal-lg');
+    document.getElementById('modal-body').innerHTML =
+      '<div style="font-size:12px;color:var(--txt3);margin-bottom:12px">Digite a senha para acessar suas notas particulares.</div>'      +'<div class="field-group"><div class="field-label">Senha</div><input id="np-senha-acesso" type="password" placeholder="Sua senha" autofocus/></div>'      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">'        +'<button class="btn btn-sm" onclick="resetarSenhaNP()" style="color:var(--txt3);border-color:var(--border);font-size:11px">Esqueci a senha</button>'        +'<div style="display:flex;gap:8px">'          +'<button class="btn" onclick="closeModal()">Cancelar</button>'          +'<button class="btn btn-primary" onclick="verificarSenhaNP()">Entrar</button>'        +'</div>'      +'</div>';
+    document.getElementById('modal').style.display='flex';
+    setTimeout(()=>{ const el=document.getElementById('np-senha-acesso'); if(el){el.focus();el.addEventListener('keydown',e=>{if(e.key==='Enter')verificarSenhaNP();});} },100);
+  }
+}
+
+function definirSenhaNP(){
+  const s1=(document.getElementById('np-senha1')||{}).value||'';
+  const s2=(document.getElementById('np-senha2')||{}).value||'';
+  if(s1.length<4){alert('Senha deve ter pelo menos 4 caracteres');return;}
+  if(s1!==s2){alert('As senhas não conferem');return;}
+  localStorage.setItem('squado_notas_senha', btoa(s1));
+  closeModal();
+  renderNotasParticulares();
+}
+
+function verificarSenhaNP(){
+  const digitada=(document.getElementById('np-senha-acesso')||{}).value||'';
+  const salva=localStorage.getItem('squado_notas_senha');
+  if(btoa(digitada)===salva){
+    closeModal();
+    renderNotasParticulares();
+  } else {
+    alert('Senha incorreta. Tente novamente.');
+    const el=document.getElementById('np-senha-acesso');
+    if(el){el.value='';el.focus();}
+  }
+}
+
+function resetarSenhaNP(){
+  if(!confirm('ATENÇÃO: Resetar a senha apagará TODAS as notas particulares permanentemente. Continuar?')) return;
+  localStorage.removeItem('squado_notas_senha');
+  localStorage.removeItem('squado_notas_part');
+  closeModal();
+  toast('Senha e notas particulares resetadas.');
+}
+
+function renderNotasParticulares(){
+  const notas_part = JSON.parse(localStorage.getItem('squado_notas_part')||'[]');
+  document.getElementById('modal-title').textContent = '🔒 Notas Particulares';
+  document.getElementById('modal-box').classList.add('modal-lg');
+
+  const rows = notas_part.map((n,i) => `
+    <div style="border:0.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;align-items:flex-start;gap:8px">
+        <div style="flex:1">
+          <div style="font-size:10px;color:var(--txt3);margin-bottom:4px">${n.data} ${n.hora?'· '+n.hora:''}</div>
+          <div style="font-size:13px;color:var(--txt);white-space:pre-wrap">${n.texto}</div>
+        </div>
+        <button class="btn btn-xs btn-danger" onclick="excluirNotaParticular(${i})">×</button>
+      </div>
+    </div>`).join('') || '<div style="text-align:center;color:var(--txt3);padding:24px">Nenhuma nota ainda.</div>';
+
+  document.getElementById('modal-body').innerHTML =
+    '<div style="margin-bottom:12px">'      +'<textarea id="np-nova" placeholder="Escreva sua nota particular..." style="min-height:80px;width:100%"></textarea>'      +'<div style="display:flex;justify-content:flex-end;margin-top:6px">'        +'<button class="btn btn-primary btn-sm" onclick="salvarNotaParticular()">💾 Salvar Nota</button>'      +'</div>'    +'</div>'    +'<div style="max-height:400px;overflow-y:auto">'+rows+'</div>'    +'<div style="display:flex;justify-content:space-between;margin-top:12px;border-top:0.5px solid var(--border);padding-top:10px">'      +'<button class="btn btn-sm" onclick="resetarSenhaNP()" style="color:var(--txt3);border-color:var(--border);font-size:11px">🔑 Alterar/Resetar senha</button>'      +'<button class="btn" onclick="closeModal()">Fechar</button>'    +'</div>';
+  document.getElementById('modal').style.display='flex';
+}
+
+function salvarNotaParticular(){
+  const texto=(document.getElementById('np-nova')||{}).value||'';
+  if(!texto.trim()){toast('Escreva algo antes de salvar');return;}
+  const notas_part = JSON.parse(localStorage.getItem('squado_notas_part')||'[]');
+  const agora = new Date();
+  notas_part.unshift({
+    texto: texto.trim(),
+    data: agora.toLocaleDateString('pt-BR'),
+    hora: agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})
+  });
+  localStorage.setItem('squado_notas_part', JSON.stringify(notas_part));
+  toast('Nota salva! 🔒');
+  renderNotasParticulares();
+}
+
+function excluirNotaParticular(idx){
+  if(!confirm('Excluir esta nota?')) return;
+  const notas_part = JSON.parse(localStorage.getItem('squado_notas_part')||'[]');
+  notas_part.splice(idx,1);
+  localStorage.setItem('squado_notas_part', JSON.stringify(notas_part));
+  renderNotasParticulares();
+}
+
 function toggleMobSidebar(){
   const sb=document.querySelector('.sidebar');
   const ov=document.getElementById('sidebar-overlay');
@@ -7646,7 +7731,7 @@ function deletarFuncaoCapacidade(id) {
 <nav class="mob-nav" id="mob-nav">
   <div class="mob-nav-item" id="mobnav-mais" onclick="toggleMobSidebar()"><span class="mob-nav-icon">☰</span><span>Menu</span></div>
   <div class="mob-nav-item" id="mobnav-colaboradores" onclick="go('colaboradores')"><span class="mob-nav-icon">👥</span><span>Equipe</span></div>
-  <div class="mob-nav-item" id="mobnav-avaliacao" onclick="go('avaliacao')"><span class="mob-nav-icon">📋</span><span>Avaliar</span></div>
+  <div class="mob-nav-item" id="mobnav-avaliacao" onclick="go('avaliacao_hub')"><span class="mob-nav-icon">📋</span><span>Avaliação</span></div>
   <div class="mob-nav-item" id="mobnav-agente" onclick="go('agente')"><span class="mob-nav-icon">🤖</span><span>IA</span></div>
   <div class="mob-nav-item" id="mobnav-dashboard" onclick="go('dashboard')"><span class="mob-nav-icon">📊</span><span>Início</span></div>
 </nav>
