@@ -502,15 +502,7 @@ input[type=range]:focus{box-shadow:none}
     <div class="nav-item" onclick="go('organograma')"><span class="nav-icon">🏗️</span>Organograma</div>
     <div class="nav-item" onclick="go('capacidade')"><span class="nav-icon">⚡</span>Capacidade</div>
     <div class="nav-section">Avaliação</div>
-    <div class="nav-item nav-group-toggle" onclick="toggleNavGroup('nav-aval-group')" id="nav-aval-toggle">
-      <span class="nav-icon">📋</span>Avaliação
-      <span style="margin-left:auto;font-size:10px;opacity:.6" id="nav-aval-arrow">▼</span>
-    </div>
-    <div id="nav-aval-group" style="overflow:hidden;transition:max-height .2s ease">
-      <div class="nav-item" onclick="go('avaliacao')" style="padding-left:28px"><span class="nav-icon">📋</span>Nova Avaliação</div>
-      <div class="nav-item" onclick="go('historico_aval')" style="padding-left:28px"><span class="nav-icon">🕐</span>Histórico</div>
-      <div class="nav-item" onclick="go('perguntas')" style="padding-left:28px"><span class="nav-icon">⚙️</span>Configurar Perguntas</div>
-    </div>
+    <div class="nav-item" onclick="go('avaliacao_hub')"><span class="nav-icon">📋</span>Avaliação</div>
     <div class="nav-section">Desenvolvimento</div>
     <div class="nav-item" onclick="go('metas')"><span class="nav-icon">🎯</span>Metas</div>
     <div class="nav-item" onclick="go('pdi')"><span class="nav-icon">🚀</span>PDI</div>
@@ -1256,7 +1248,11 @@ let currentPage='dashboard';
 function go(page){
   currentPage=page;
   document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
-  const el=document.querySelector(`.nav-item[onclick="go('${page}')"]`);
+  // Para sub-páginas de avaliação, marcar o item "avaliacao_hub"
+  const pageForNav = ['avaliacao','historico_aval','perguntas'].includes(page) ? 'avaliacao_hub' : page;
+  // Para sub-páginas de níveis/áreas, marcar "niveis"
+  const pageForNav2 = pageForNav === 'areas' ? 'niveis' : pageForNav;
+  const el=document.querySelector(`.nav-item[onclick="go('${pageForNav2}')"]`);
   if(el)el.classList.add('active');
   document.getElementById('page-content-wrap').scrollTop=0;
   render(page);
@@ -1287,6 +1283,7 @@ function render(page,search=''){
     ninebox:{title:'Nine-Box · Matriz de Talentos',sub:'Potencial × Desempenho',btn:null},
     competencias:{title:'Matriz de Competências',sub:'Perfis de cargo · Entregas · Competências por nível',btn:null},
     niveis:{title:'Níveis de Cargo e Áreas',sub:'Hierarquia de cargos e áreas da equipe',btn:null},
+    avaliacao_hub:{title:'Avaliação',sub:'Avaliações de desempenho',btn:null},
     areas:{title:'Níveis de Cargo e Áreas',sub:'Hierarquia de cargos e áreas da equipe',btn:null},
   }[page]||{title:page,sub:'',btn:null};
   document.getElementById('topbar-title').textContent=cfg.title;
@@ -1307,6 +1304,7 @@ function render(page,search=''){
   else if(page==='ninebox')c.innerHTML=renderNineBox();
   else if(page==='competencias')c.innerHTML=renderCompetencias();
   else if(page==='niveis'||page==='areas')c.innerHTML=renderNiveisAreas();
+  else if(page==='avaliacao_hub'||page==='avaliacao'||page==='historico_aval'||page==='perguntas')c.innerHTML=renderAvaliacaoHub();
   else if(page==='capacidade'){c.innerHTML=renderCapacidade();if(_capTab&&_capTab!=='pessoas')setTimeout(()=>switchCapTab(_capTab),10);}
   else if(page==='agente'){c.innerHTML=renderAgente();setTimeout(function(){scrollAiToBottom();_bindAiEnter();},80);}
   else if(page==='notas')c.innerHTML=renderNotas(search);
@@ -3239,6 +3237,44 @@ function saveValores(obj){lss('valores_v1',obj);}
 // ══════════════════════════════════════════════════
 // GESTÃO DE ÁREAS
 // ══════════════════════════════════════════════════
+function renderAvaliacaoHub(){
+  const abaAtiva = currentPage === 'historico_aval' ? 'historico_aval'
+                 : currentPage === 'perguntas'     ? 'perguntas'
+                 : 'avaliacao';
+
+  // Conteúdo de cada aba
+  let conteudo = '';
+  if (abaAtiva === 'avaliacao') {
+    carregarRascunhoAval();
+    conteudo = renderAvaliacao();
+  } else if (abaAtiva === 'historico_aval') {
+    conteudo = renderHistoricoAval('');
+  } else if (abaAtiva === 'perguntas') {
+    conteudo = renderPerguntas();
+  }
+
+  const tabs = [
+    {id:'avaliacao',     icon:'📋', label:'Nova Avaliação'},
+    {id:'historico_aval',icon:'🕐', label:'Histórico'},
+    {id:'perguntas',     icon:'⚙️', label:'Configurar Perguntas'},
+  ];
+
+  const tabButtons = tabs.map(t => `
+    <button onclick="go('${t.id}')"
+      style="padding:8px 20px;border:none;${tabs.indexOf(t)>0?'border-left:0.5px solid var(--border2);':''}
+             font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;
+             ${abaAtiva===t.id?'background:var(--green);color:#fff':'background:var(--bg2);color:var(--txt2)'}">
+      ${t.icon} ${t.label}
+    </button>`).join('');
+
+  return `
+    <div style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;
+                overflow:hidden;width:fit-content;margin-bottom:18px">
+      ${tabButtons}
+    </div>
+    ${conteudo}`;
+}
+
 function renderNiveisAreas(){
   const abaNiveis = `
     <div>
