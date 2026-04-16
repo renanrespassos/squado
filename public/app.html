@@ -6189,8 +6189,8 @@ function renderPerfilAba(id, aba){
   // ── ABA DADOS PESSOAIS ──────────────────────────────────────
   else if(aba==='pessoal'){
     // Token inclui: colId | tenantId | timestamp
-    const _ltUser = squadoGetUser();
-    const _ltTenant = _ltUser?.tenantId || _ltUser?.tenant_id || '';
+    const _ltRawToken = squadoGetToken();
+    const _ltTenant = _ltRawToken ? JSON.parse(atob(_ltRawToken.split('.')[1])).tenantId || '' : '';
     const linkToken = btoa(id + '|' + _ltTenant + '|' + Date.now());
     const linkUrl = 'https://squado.com.br/formulario?col=' + linkToken;
     conteudo=
