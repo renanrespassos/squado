@@ -7211,6 +7211,7 @@ function renderCapacidade() {
   // Stats globais
   const totalFuncoes = funcoesV2.length;
   const pessoas = Object.keys(cargaPessoa);
+  const MIN_MES_PESSOA = 8 * 60 * _diasUteis;
   const LIMITE_SOBRECARGA = MIN_MES_PESSOA * (_sobrecarrPct / 100);
   const sobrecarregadas = pessoas.filter(p => cargaPessoa[p] > LIMITE_SOBRECARGA).sort((a,b) => cargaPessoa[b] - cargaPessoa[a]);
   const totalMinFunc = funcoesV2.reduce((acc, f) => acc + calcCargaFuncao(f, amostras), 0);
@@ -7243,7 +7244,6 @@ function renderCapacidade() {
     return '#E1F5EE';
   }
   function horas(min) { return (min/60).toFixed(1)+'h'; }
-  const MIN_MES_PESSOA = 8 * 60 * _diasUteis;
   function pctOcu(min) { return Math.round(min/MIN_MES_PESSOA*100); }
 
   // Cards de pessoas — incluir TODOS os colaboradores ativos (mesmo os sem funções = 0%)
