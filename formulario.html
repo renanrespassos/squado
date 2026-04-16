@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Squado · Atualizar Meus Dados</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0efea;min-height:100vh;display:flex;flex-direction:column}
+  .header{background:#0F6E56;padding:16px 20px;display:flex;align-items:center;gap:12px}
+  .header-logo{background:#fff;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#0F6E56;flex-shrink:0}
+  .header-text{color:#fff;font-size:15px;font-weight:700}
+  .header-sub{color:#9FE1CB;font-size:11px}
+  .container{max-width:600px;margin:0 auto;padding:24px 16px;flex:1}
+  .card{background:#fff;border-radius:14px;padding:24px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .hero{text-align:center;margin-bottom:8px}
+  .hero-avatar{width:64px;height:64px;border-radius:50%;background:#0F6E56;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;margin:0 auto 12px}
+  .hero-nome{font-size:20px;font-weight:800;color:#1a1a18}
+  .hero-cargo{font-size:13px;color:#5a5a56;margin-top:4px}
+  .section-title{font-size:11px;font-weight:700;color:#0F6E56;text-transform:uppercase;letter-spacing:.08em;margin:20px 0 12px;padding-bottom:6px;border-bottom:1.5px solid #E1F5EE}
+  .field-group{margin-bottom:14px}
+  .field-label{font-size:12px;font-weight:600;color:#5a5a56;margin-bottom:5px}
+  input,textarea,select{width:100%;padding:10px 12px;border:1px solid #e0e0d8;border-radius:8px;font-size:13px;color:#1a1a18;background:#fff;font-family:inherit;transition:border-color .15s}
+  input:focus,textarea:focus{outline:none;border-color:#0F6E56;box-shadow:0 0 0 3px rgba(15,110,86,.1)}
+  textarea{min-height:80px;resize:vertical}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:480px){.grid-2{grid-template-columns:1fr}}
+  .btn-submit{width:100%;padding:14px;background:#0F6E56;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;transition:background .15s}
+  .btn-submit:hover{background:#085041}
+  .btn-submit:disabled{background:#9a9a94;cursor:not-allowed}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a18;color:#fff;padding:12px 24px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+  .toast.show{opacity:1}
+  .loading{text-align:center;padding:48px 16px}
+  .loading-spinner{width:40px;height:40px;border:3px solid #E1F5EE;border-top-color:#0F6E56;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .error-box{text-align:center;padding:48px 16px}
+  .error-icon{font-size:48px;margin-bottom:12px}
+  .success-box{text-align:center;padding:48px 16px}
+  .success-icon{font-size:64px;margin-bottom:16px}
+  .success-title{font-size:22px;font-weight:800;color:#0F6E56;margin-bottom:8px}
+  .success-sub{font-size:14px;color:#5a5a56}
+  .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+  .info-bar{background:#E1F5EE;border:0.5px solid rgba(15,110,86,.2);border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:#0F6E56}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">S</div>
+  <div>
+    <div class="header-text">Squado</div>
+    <div class="header-sub">Gestão de Equipes</div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="app">
+    <div class="card loading">
+      <div class="loading-spinner"></div>
+      <div style="font-size:14px;color:#5a5a56">Carregando seus dados...</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://squado-api-936751823867.us-central1.run.app';
+let _colData = null;
+let _tenantToken = null;
+let _colId = null;
+
+function toast(msg, dur=3000){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), dur);
+}
+
+function initials(nome){
+  const parts = (nome||'').split(' ').filter(Boolean);
+  if(parts.length >= 2) return parts[0][0]+parts[parts.length-1][0];
+  return (parts[0]||'?')[0];
+}
+
+async function init(){
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('col');
+  
+  if(!token){
+    showError('Link inválido', 'Este link não contém as informações necessárias. Solicite um novo link ao seu gestor.');
+    return;
+  }
+
+  try {
+    // Decodificar o token: base64 de "colId|tenantId|timestamp"
+    const decoded = atob(token);
+    const parts = decoded.split('|');
+    _colId = parts[0];
+    const tenantId = parts[1];
+    const ts = parseInt(parts[2] || parts[1]); // compatibilidade com formato antigo
+
+    // Validar que não expirou (link válido por 30 dias)
+    if(parts.length >= 3){
+      const age = Date.now() - parseInt(parts[2]);
+      if(age > 30 * 24 * 60 * 60 * 1000){
+        showError('Link expirado', 'Este link expirou após 30 dias. Solicite um novo link ao seu gestor.');
+        return;
+      }
+    }
+
+    // Buscar dados do colaborador via API pública de formulário
+    const res = await fetch(`${API}/api/formulario/${token}`);
+    if(!res.ok){
+      const err = await res.json().catch(()=>({}));
+      showError('Link inválido', err.erro || 'Este link não é válido ou expirou. Solicite um novo ao seu gestor.');
+      return;
+    }
+    
+    const data = await res.json();
+    _colData = data.colaborador;
+    _tenantToken = data.formToken;
+    
+    renderForm();
+  } catch(e) {
+    // Se a API não tem a rota, tentar modo offline com dados do token
+    try {
+      const decoded = atob(token);
+      const parts = decoded.split('|');
+      _colId = parts[0];
+      _tenantToken = token;
+      // Sem dados do colaborador — formulário genérico
+      _colData = { id: _colId, nome: '', perfil: {} };
+      renderForm();
+    } catch(e2) {
+      showError('Erro ao carregar', 'Não foi possível carregar seus dados. Verifique sua conexão e tente novamente.');
+    }
+  }
+}
+
+function showError(title, msg){
+  document.getElementById('app').innerHTML = `
+    <div class="card error-box">
+      <div class="error-icon">⚠️</div>
+      <div style="font-size:18px;font-weight:800;color:#A32D2D;margin-bottom:8px">${title}</div>
+      <div style="font-size:14px;color:#5a5a56">${msg}</div>
+    </div>`;
+}
+
+function renderForm(){
+  const c = _colData;
+  const p = c.perfil || {};
+  const nome = c.nome || 'Colaborador';
+  const cargo = c.cargo || c.nivel || '';
+  const area = c.area || '';
+
+  document.getElementById('app').innerHTML = `
+    <div class="card">
+      <div class="hero">
+        <div class="hero-avatar">${initials(nome).toUpperCase()}</div>
+        <div class="hero-nome">${nome}</div>
+        ${cargo ? `<div class="hero-cargo">${cargo}${area ? ' · '+area : ''}</div>` : ''}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="info-bar">
+        ✅ Este formulário é pessoal e seguro. Seus dados serão salvos diretamente no sistema de gestão da sua equipe.
+      </div>
+
+      <div class="section-title">📱 Contato</div>
+      <div class="grid-2">
+        <div class="field-group">
+          <div class="field-label">Email pessoal</div>
+          <input type="email" id="f-email" value="${p.email||''}" placeholder="seu@email.com"/>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Celular / WhatsApp</div>
+          <input type="tel" id="f-celular" value="${p.celular||''}" placeholder="(51) 9 9999-9999"/>
+        </div>
+      </div>
+
+      <div class="section-title">📋 Dados Pessoais</div>
+      <div class="grid-2">
+        <div class="field-group">
+          <div class="field-label">Data de Nascimento</div>
+          <input type="date" id="f-nasc" value="${p.nascimento||''}"/>
+        </div>
+        <div class="field-group">
+          <div class="field-label">CPF (opcional)</div>
+          <input type="text" id="f-cpf" value="${p.cpf||''}" placeholder="000.000.000-00"/>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Endereço completo</div>
+        <input type="text" id="f-end" value="${p.endereco||''}" placeholder="Rua, número, bairro, cidade, CEP"/>
+      </div>
+
+      <div class="section-title">🎓 Formação & Conhecimentos</div>
+      <div class="field-group">
+        <div class="field-label">Formação Acadêmica</div>
+        <textarea id="f-form" placeholder="Ex: Técnico em Eletrônica – SENAI 2018&#10;Graduação em Engenharia Elétrica – PUCRS 2023">${p.formacao||''}</textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Conhecimentos / Certificações / Idiomas</div>
+        <textarea id="f-conhec" placeholder="Ex: Habilitado para ensaios de imunidade conduzida&#10;Curso de metrologia – INMETRO&#10;Inglês intermediário">${p.conhecimentos||''}</textarea>
+      </div>
+
+      <div class="section-title">📝 Observações</div>
+      <div class="field-group">
+        <div class="field-label">Informações adicionais (opcional)</div>
+        <textarea id="f-obs" placeholder="Qualquer informação que queira compartilhar com seu gestor...">${p.obs||''}</textarea>
+      </div>
+
+      <button class="btn-submit" id="btn-salvar" onclick="salvar()">
+        💾 Salvar meus dados
+      </button>
+    </div>
+  `;
+}
+
+async function salvar(){
+  const btn = document.getElementById('btn-salvar');
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
+
+  const dados = {
+    email:        (document.getElementById('f-email')||{}).value || '',
+    celular:      (document.getElementById('f-celular')||{}).value || '',
+    nascimento:   (document.getElementById('f-nasc')||{}).value || '',
+    cpf:          (document.getElementById('f-cpf')||{}).value || '',
+    endereco:     (document.getElementById('f-end')||{}).value || '',
+    formacao:     (document.getElementById('f-form')||{}).value || '',
+    conhecimentos:(document.getElementById('f-conhec')||{}).value || '',
+    obs:          (document.getElementById('f-obs')||{}).value || '',
+  };
+
+  try {
+    const res = await fetch(`${API}/api/formulario/${_tenantToken}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ colId: _colId, perfil: dados })
+    });
+
+    if(res.ok){
+      showSuccess();
+    } else {
+      const err = await res.json().catch(()=>({}));
+      toast('❌ Erro ao salvar: ' + (err.erro || 'tente novamente'));
+      btn.disabled = false;
+      btn.textContent = '💾 Salvar meus dados';
+    }
+  } catch(e) {
+    toast('❌ Sem conexão. Verifique a internet e tente novamente.');
+    btn.disabled = false;
+    btn.textContent = '💾 Salvar meus dados';
+  }
+}
+
+function showSuccess(){
+  document.getElementById('app').innerHTML = `
+    <div class="card success-box">
+      <div class="success-icon">✅</div>
+      <div class="success-title">Dados salvos com sucesso!</div>
+      <div class="success-sub">Suas informações foram atualizadas no sistema de gestão da equipe.<br><br>Pode fechar esta página.</div>
+    </div>`;
+}
+
+init();
+</script>
+</body>
+</html>

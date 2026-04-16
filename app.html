@@ -1666,7 +1666,7 @@ function renderOrganograma(){
     }).join('');
 
     return `<div style="background:var(--bg);border:0.5px solid var(--border);
-                border-radius:14px;overflow:hidden;flex-shrink:0;min-width:220px;max-width:280px">
+                border-radius:14px;overflow:hidden;flex-shrink:0;min-width:200px">
       <div style="background:${ac.bg};border-bottom:2px solid ${ac.cor};
                   padding:10px 16px;display:flex;align-items:center;gap:10px">
         <div style="font-size:13px;font-weight:700;color:${ac.cor}">${area}</div>
@@ -6187,7 +6187,11 @@ function renderPerfilAba(id, aba){
 
   // ── ABA DADOS PESSOAIS ──────────────────────────────────────
   else if(aba==='pessoal'){
-    const linkToken = btoa(id+'|'+Date.now());
+    // Token inclui: colId | tenantId | timestamp
+    const _ltUser = squadoGetUser();
+    const _ltTenant = _ltUser?.tenantId || _ltUser?.tenant_id || '';
+    const linkToken = btoa(id + '|' + _ltTenant + '|' + Date.now());
+    const linkUrl = 'https://squado.com.br/formulario?col=' + linkToken;
     conteudo=
       // Alerta de link de autopreenchimento
       '<div style="background:linear-gradient(135deg,#E6F1FB,#EEEDFE);border:0.5px solid rgba(24,95,165,.2);border-radius:10px;padding:14px;margin-bottom:16px">'
@@ -6195,11 +6199,11 @@ function renderPerfilAba(id, aba){
         +'<div style="font-size:11.5px;color:var(--txt2);margin-bottom:10px">Envie este link para o colaborador preencher os próprios dados (celular, endereço, formação, etc.)</div>'
         +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
           +(p.email?
-            '<a href="mailto:'+p.email+'?subject=Atualize+seu+perfil&body=Ol%C3%A1+'+encodeURIComponent(c.nome.split(' ')[0])+'%2C%0APor+favor+acesse+o+link+abaixo+para+atualizar+seus+dados+no+sistema.%0A%0ALink+de+acesso+seguro+para+preenchimento." '
+            '<a href="mailto:'+p.email+'?subject=Atualize+seu+perfil&body='+encodeURIComponent('Olá '+c.nome.split(' ')[0]+',\n\nPor favor acesse o link abaixo para atualizar seus dados cadastrais no sistema de gestão.\n\n👉 '+linkUrl+'\n\nEste link é pessoal e já vem com seus dados pré-identificados.\n\nAtt,\nEquipe de Gestão')+'" '
             +'style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:var(--blue);color:#fff;border-radius:7px;font-size:12px;font-weight:600;text-decoration:none">✉️ Enviar por email</a>'
           :'<span style="font-size:11px;color:var(--txt3)">⚠️ Cadastre o email para enviar</span>')
           +(p.celular?
-            '<a href="https://wa.me/55'+p.celular.replace(/\D/g,'')+encodeURIComponent('?text=Olá '+c.nome.split(' ')[0]+', por favor acesse o link para atualizar seu perfil no sistema de gestão do laboratório.') +'" target="_blank" '
+            '<a href="https://wa.me/55'+p.celular.replace(/\D/g,'')+'?text='+encodeURIComponent('Olá '+c.nome.split(' ')[0]+', por favor acesse o link abaixo para atualizar seu perfil no sistema de gestão:\n\n'+linkUrl)+'" target="_blank" '
             +'style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:#25D366;color:#fff;border-radius:7px;font-size:12px;font-weight:600;text-decoration:none">📱 WhatsApp</a>'
           :'<span style="font-size:11px;color:var(--txt3)">⚠️ Cadastre o celular para WhatsApp</span>')
         +'</div>'
@@ -6841,6 +6845,27 @@ function closeModal(){
 
 render('dashboard');
 initNavGroups();
+
+// Verificar link de autopreenchimento
+if (window._autoFillToken) {
+  setTimeout(() => {
+    try {
+      const decoded = atob(window._autoFillToken);
+      const colId = decoded.split('|')[0];
+      const col = colaboradores.find(c => c.id === colId);
+      if (col) {
+        verCol(colId);
+        setTimeout(() => renderPerfilAba(colId, 'pessoal'), 300);
+        toast('✅ Link reconhecido! Preencha seus dados abaixo.');
+      } else {
+        toast('⚠️ Link expirado ou colaborador não encontrado.');
+      }
+    } catch(e) {
+      toast('⚠️ Link inválido.');
+    }
+    window._autoFillToken = null;
+  }, 1500);
+}
 
 // ═══════════════════════════════════════════════════════
 // MOBILE NAV
@@ -7977,6 +8002,19 @@ async function squadoCarregarDaNuvem() {
 
     render(currentPage || 'dashboard');
     toast('✅ Dados sincronizados!');
+    // Abrir formulário de autopreenchimento se veio de link
+    if (window._autoFillToken) {
+      setTimeout(() => {
+        try {
+          const decoded = atob(window._autoFillToken);
+          const colId = decoded.split('|')[0];
+          const col = colaboradores.find(c => c.id === colId);
+          if (col) { verCol(colId); setTimeout(() => renderPerfilAba(colId, 'pessoal'), 300); toast('✅ Link reconhecido! Preencha seus dados.'); }
+          else { toast('⚠️ Link expirado ou inválido.'); }
+        } catch(e) { toast('⚠️ Link inválido.'); }
+        window._autoFillToken = null;
+      }, 500);
+    }
   } catch(e) {
     console.error('[Squado Load] Erro ao carregar da nuvem:', e.message, e.stack?.slice(0,300));
     toast('⚠️ Sem conexão. Usando dados locais.');
@@ -8374,6 +8412,15 @@ function squadoLogout() {
 
 // Inicializar ao carregar
 document.addEventListener('DOMContentLoaded', function() {
+  // Verificar se há link de autopreenchimento na URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const colToken = urlParams.get('col');
+  if (colToken) {
+    window._autoFillToken = colToken;
+    // Remover da URL sem recarregar a página
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
   const token = squadoGetToken();
   const user  = squadoGetUser();
   if (token && user) {
