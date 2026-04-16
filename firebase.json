@@ -2,16 +2,36 @@
   "hosting": {
     "site": "squado-493016",
     "public": "public",
-    "ignore": ["firebase.json", "**/.*"],
+    "ignore": [
+      "firebase.json",
+      "**/.*"
+    ],
     "rewrites": [
-      {"source": "/app", "destination": "/app.html"},
-      {"source": "/app/**", "destination": "/app.html"}
+      {
+        "source": "/app",
+        "destination": "/app.html"
+      },
+      {
+        "source": "/app/**",
+        "destination": "/app.html"
+      },
+      {
+        "source": "/formulario",
+        "destination": "/formulario.html"
+      },
+      {
+        "source": "/formulario/**",
+        "destination": "/formulario.html"
+      }
     ],
     "headers": [
       {
         "source": "**",
         "headers": [
-          {"key": "Cache-Control", "value": "no-cache, no-store, must-revalidate"}
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
         ]
       }
     ]
