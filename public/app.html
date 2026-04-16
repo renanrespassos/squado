@@ -1433,6 +1433,7 @@ function renderColaboradores(search=''){
       '<th>Área</th>',
       '<th>Gestor</th>',
       '<th>Últ. Aval.</th>',
+      '<th>Movim.</th>',
       '<th>Status</th>',
     '</tr></thead>',
     '<tbody>'+rows+'</tbody>',
@@ -7195,6 +7196,8 @@ function calcCargaPorPessoa(amostras) {
 function renderCapacidade() {
   const funcoesV2 = ls('funcoes_v8', migrarFuncoes());
   const amostras = parseInt(qtdServicos) || 50;
+  const _diasUteis = parseInt(ls('cap_dias_uteis', 22)) || 22;
+  const _sobrecarrPct = parseInt(ls('cap_sobrecarga_pct', 100)) || 100;
   const cargaPessoa = calcCargaPorPessoa(amostras);
 
   // Agrupar por área
@@ -7207,12 +7210,12 @@ function renderCapacidade() {
   // Stats globais
   const totalFuncoes = funcoesV2.length;
   const pessoas = Object.keys(cargaPessoa);
-  const sobrecarregadas = pessoas.filter(p => cargaPessoa[p] > MIN_MES_DISPONIVEL).sort((a,b) => cargaPessoa[b] - cargaPessoa[a]);
+  const LIMITE_SOBRECARGA = MIN_MES_DISPONIVEL * (_sobrecarrPct / 100);
+  const sobrecarregadas = pessoas.filter(p => cargaPessoa[p] > LIMITE_SOBRECARGA).sort((a,b) => cargaPessoa[b] - cargaPessoa[a]);
   const totalMinFunc = funcoesV2.reduce((acc, f) => acc + calcCargaFuncao(f, amostras), 0);
 
   // Calcular capacidade disponível por tipo de contrato
-  // 22 dias úteis/mês em média
-  const DIAS_UTEIS = 22;
+  const DIAS_UTEIS = _diasUteis;
   const MIN_FUNCIONARIO = 8 * 60 * DIAS_UTEIS;  // 8h/dia = 10560 min/mês
   const MIN_ESTAGIARIO  = 6 * 60 * DIAS_UTEIS;  // 6h/dia = 7920 min/mês
   const NIVEIS_EST = ['Estagiário'];
@@ -7417,12 +7420,19 @@ function renderCapacidade() {
         + 'onchange="setServicos(this.value)" oninput="setServicos(this.value)"/>'
       + '<button class="btn btn-sm" onclick="ajustarServicos(5)" style="font-size:16px;padding:4px 10px">+</button>'
     + '</div>'
-    + '<div style="font-size:11px;color:var(--txt3)">→ Todos os cálculos atualizam em tempo real</div>'
+    + '<div style="font-size:11px;color:var(--txt3)">→ Cálculos atualizam automaticamente</div>'
     + '<div style="margin-left:auto;display:flex;gap:8px">'
       + '<button class="btn btn-sm" onclick="gerarRelatorioCapacidade()" style="border-color:#185FA5;color:#185FA5">?? Relatório PDF</button>'
       + '<button class="btn btn-sm btn-primary" onclick="abrirNovaFuncaoCapacidade()">+ Nova Função</button>'
       + '<button class="btn btn-sm btn-danger" id="btn-excluir-sel" onclick="excluirFuncoesSelecionadas()" style="display:none">🗑 Excluir selecionadas</button>'
     + '</div>'
+  + '<div style="border-top:0.5px solid var(--border);padding-top:10px;margin-top:10px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">'
+    + '<span style="font-size:12px;font-weight:600;color:var(--txt2)">📅 Dias úteis:</span>'
+    + '<input type="number" value="'+_diasUteis+'" min="1" max="31" style="width:55px;text-align:center;font-size:14px;font-weight:700;border:1.5px solid var(--border2);border-radius:7px;padding:3px 6px" onchange="setCapConfig(\'dias\',this.value)" oninput="setCapConfig(\'dias\',this.value)"/>'
+    + '<span style="font-size:12px;font-weight:600;color:var(--txt2)">⚠️ Limite sobrecarga:</span>'
+    + '<input type="number" value="'+_sobrecarrPct+'" min="50" max="200" step="5" style="width:64px;text-align:center;font-size:14px;font-weight:700;border:1.5px solid var(--border2);border-radius:7px;padding:3px 6px" onchange="setCapConfig(\'sobre\',this.value)" oninput="setCapConfig(\'sobre\',this.value)"/>'
+    + '<span style="font-size:12px;color:var(--txt3)">%</span>'
+  + '</div>'
   + '</div>'
 
   // Stats macro — 6 cards
@@ -7432,6 +7442,7 @@ function renderCapacidade() {
       + '<div style="font-size:10px;color:var(--txt2);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em;font-weight:600">⏱ Demanda Total</div>'
       + '<div style="font-size:22px;font-weight:800;color:var(--txt)">'+horas(totalMinFunc)+'</div>'
       + '<div style="font-size:10px;color:var(--txt3)">horas/mês com '+qtdServicos+' serviços</div>'
+      + '<div style="margin-top:5px;font-size:11px;font-weight:600;color:var(--blue)">👤 '+Math.ceil(totalMinFunc/(8*60*_diasUteis))+' pessoa'+(Math.ceil(totalMinFunc/(8*60*_diasUteis))!==1?'s':'')+' ideais</div>'
     + '</div>'
     // Card 2: Capacidade disponível
     + '<div style="background:'+(deficit?'#FCEBEB':'var(--green-bg)')+';border:0.5px solid '+(deficit?'rgba(163,45,45,.3)':'rgba(29,158,117,.3)')+';border-radius:10px;padding:13px">'
@@ -7526,6 +7537,15 @@ function ajustarServicos(delta) {
   qtdServicos = Math.max(1, qtdServicos + delta);
   lss('qtdServicos', qtdServicos);
   render('capacidade');
+}
+
+function setCapConfig(tipo, val) {
+  const n = parseInt(val);
+  if (isNaN(n) || n < 1) return;
+  if (tipo === 'dias') lss('cap_dias_uteis', Math.min(31, Math.max(1, n)));
+  else if (tipo === 'sobre') lss('cap_sobrecarga_pct', Math.min(200, Math.max(50, n)));
+  clearTimeout(window._capConfigTimer);
+  window._capConfigTimer = setTimeout(() => render('capacidade'), 600);
 }
 
 function setServicos(val) {
