@@ -92,7 +92,6 @@ async function init(){
   _token = params.get('col');
   if(!_token){ showErr('Link inválido','Este link não contém as informações necessárias.<br>Solicite um novo link ao seu gestor.'); return; }
 
-  // Validar expiração localmente
   try {
     const parts = atob(_token).split('|');
     if(parts[2] && Date.now()-parseInt(parts[2]) > 30*24*60*60*1000){
@@ -189,7 +188,6 @@ function renderForm(){
       </button>
     </div>`;
 
-  // Máscara CPF
   document.getElementById('f-cpf').addEventListener('input',function(){
     let v=this.value.replace(/\D/g,'').slice(0,11);
     if(v.length>9) v=v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/,'$1.$2.$3-$4');
