@@ -1299,9 +1299,7 @@ function render(page,search=''){
   if(page==='dashboard')c.innerHTML=renderDashboard();
   else if(page==='colaboradores')c.innerHTML=renderColaboradores(search);
   else if(page==='organograma'){c.innerHTML=renderOrganograma();}
-  else if(page==='avaliacao'){carregarRascunhoAval();c.innerHTML=renderAvaliacao();}
-  else if(page==='historico_aval')c.innerHTML=renderHistoricoAval(search);
-  else if(page==='perguntas')c.innerHTML=renderPerguntas();
+  // avaliacao/historico_aval/perguntas → tratados pelo hub abaixo
   else if(page==='metas')c.innerHTML=renderMetas(search);
   else if(page==='pdi')c.innerHTML=renderPDI(search);
   else if(page==='valores')c.innerHTML=renderValores();
@@ -1661,7 +1659,7 @@ function renderOrganograma(){
           </span>
           <div style="flex:1;height:1px;background:${ns.cor}20"></div>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px">${cards}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">${cards}</div>
       </div>`;
     }).join('');
 
@@ -2252,7 +2250,10 @@ function renderHistoricoAval(search=''){
         <td>${nivelBadge(a.nivel)}</td><td style="color:var(--txt2);white-space:nowrap">${a.data}</td>
         ${['Versatilidade','Trabalho em Equipe','Responsabilidade','Foco em Resultados','Norma 17025','Técnica'].map(s=>`<td class="${sc((a.secaoMedias&&a.secaoMedias[s])||5)}">${(a.secaoMedias&&a.secaoMedias[s])||'—'}</td>`).join('')}
         <td><span class="badge badge-green" style="font-size:12px">${a.mediaGeral}</span></td>
-        <td><button class="btn btn-sm" onclick="verAvaliacao('${a.id}')">Ver</button></td>
+        <td><div style="display:flex;gap:4px">
+          <button class="btn btn-sm" onclick="verAvaliacao('${a.id}')">Ver</button>
+          <button class="btn btn-sm btn-danger" onclick="if(confirm('Excluir esta avaliação?')){avaliacoes=avaliacoes.filter(x=>x.id!=='${a.id}');saveAll();render('historico_aval');toast('Avaliação excluída!')}" title="Excluir">🗑</button>
+        </div></td>
       </tr>`).join('')}</tbody>
     </table></div>`}
   </div>`;
@@ -6187,8 +6188,11 @@ function renderPerfilAba(id, aba){
 
   // ── ABA DADOS PESSOAIS ──────────────────────────────────────
   else if(aba==='pessoal'){
-    const linkToken = btoa(id+'|'+Date.now());
-    const linkUrl = 'https://squado.com.br/app?col=' + linkToken;
+    // Token inclui: colId | tenantId | timestamp
+    const _ltUser = squadoGetUser();
+    const _ltTenant = _ltUser?.tenantId || _ltUser?.tenant_id || '';
+    const linkToken = btoa(id + '|' + _ltTenant + '|' + Date.now());
+    const linkUrl = 'https://squado.com.br/formulario?col=' + linkToken;
     conteudo=
       // Alerta de link de autopreenchimento
       '<div style="background:linear-gradient(135deg,#E6F1FB,#EEEDFE);border:0.5px solid rgba(24,95,165,.2);border-radius:10px;padding:14px;margin-bottom:16px">'
@@ -7975,6 +7979,7 @@ async function squadoCarregarDaNuvem() {
           pctServicos: f.pctServicos !== undefined ? f.pctServicos : (f.pctAmostras !== undefined ? f.pctAmostras : 100),
         }));
         lss('funcoes_v8', funcsNuvem);
+        console.log('[Squado Load] funcoes da nuvem:', funcsNuvem.length, funcsNuvem.map(f=>f.nome).join(', ').slice(0,100));
       }
       if (cfg.snapshot_valores_empresa && Array.isArray(cfg.snapshot_valores_empresa) && cfg.snapshot_valores_empresa.length > 0) {
         lss('valores_empresa', cfg.snapshot_valores_empresa);
