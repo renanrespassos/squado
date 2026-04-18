@@ -1737,10 +1737,13 @@ function renderColaboradores(search=''){
 
   return [
     '<div>',
-    '<div style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;overflow:hidden;width:fit-content;margin-bottom:14px">',
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">',
+    '<div style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;overflow:hidden;width:fit-content">',
       tabBtn('ativos','👥','Ativos',totalAtivos),
       '<span style="width:0.5px;background:var(--border2)"></span>',
       tabBtn('desligados','🚪','Desligados',totalDesligados),
+    '</div>',
+    '<button onclick="openColForm()" style="background:#0F6E56;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;display:flex;align-items:center;gap:6px"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"><line x1=\"12\" y1=\"5\" x2=\"12\" y2=\"19\"/><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/></svg> Novo Colaborador</button>',
     '</div>',
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">',
       '<button class="btn btn-danger btn-sm" id="btn-excluir-cols" onclick="excluirColsSelecionados()" style="display:none">🗑 Excluir selecionados</button>',
