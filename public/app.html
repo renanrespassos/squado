@@ -35,12 +35,12 @@
 </script>
 <title>Squado · Gestão de Equipes</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Archivo+Narrow:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
-body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0efea}
-:root{
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0efea}
+:root{--ink-900:#0E0E0E;--ink-800:#1A1F1D;--ink-600:#3A4240;--ink-400:#6B7370;--ink-200:#C4C7C5;--ink-100:#E0E2E0;--ink-50:#F4F3EE;--cream:#FCFCFA;--brand:#0F6E56;--brand-dark:#084231;--brand-light:#E6EFEB;--font-display:'Archivo',sans-serif;--font-sans:'Inter',sans-serif;--font-mono:'JetBrains Mono',monospace;
   --bg:#fff;--bg2:#f0efea;--bg3:#e4e3de;
   --txt:#1a1a18;--txt2:#5a5a56;--txt3:#9a9a94;
   --border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.18);
@@ -484,6 +484,107 @@ input[type=range]:focus{box-shadow:none}
 
 @media(max-width:640px){.tbl td:nth-child(5),.tbl th:nth-child(5),.tbl td:nth-child(6),.tbl th:nth-child(6),.tbl td:nth-child(7),.tbl th:nth-child(7){display:none}.content{padding:12px 10px}.tbl{font-size:12px}}
 .nav-svg{width:16px!important;height:16px!important;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}
+
+.sq-login-ticker{background:#0E0E0E;color:#FCFCFA;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:8px 0;overflow:hidden;white-space:nowrap;flex-shrink:0}
+.sq-login-ticker-inner{display:inline-block;animation:ticker 25s linear infinite}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.sq-login-grid{display:grid;grid-template-columns:1fr 1fr 1fr;min-height:calc(100vh - 37px)}
+.sq-col-premissa{background:#FCFCFA;padding:48px 40px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid #E8E5DD}
+.sq-col-identidade{background:#0E0E0E;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;border-right:1px solid #2A2A2A}
+.sq-col-acesso{background:#FCFCFA;padding:48px 44px;display:flex;flex-direction:column;justify-content:center}
+.sq-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#595959;margin-bottom:28px;display:flex;align-items:center;gap:10px}
+.sq-label-dot{width:8px;height:8px;background:#0F6E56;flex-shrink:0}
+.sq-headline{font-family:'Archivo',sans-serif;font-size:clamp(36px,4vw,56px);font-weight:900;line-height:.92;letter-spacing:-.02em;color:#0E0E0E;margin-bottom:28px;text-transform:uppercase}
+.sq-headline em{color:#0F6E56;font-style:normal}
+.sq-headline .dim{color:#B5B5B5;font-style:italic}
+.sq-desc{font-size:14px;line-height:1.65;color:#595959;max-width:320px;margin-bottom:40px;font-family:'Inter',sans-serif}
+.sq-metrics{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#E8E5DD;border:1px solid #E8E5DD}
+.sq-metric{background:#0F6E56;padding:20px 22px}
+.sq-metric-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:rgba(255,255,255,.55);text-transform:uppercase;margin-bottom:6px}
+.sq-metric-val{font-family:'Archivo',sans-serif;font-size:32px;font-weight:800;color:#fff;line-height:1}
+.sq-login-title{font-family:'Archivo',sans-serif;font-size:clamp(28px,3vw,40px);font-weight:900;letter-spacing:-.02em;color:#0E0E0E;text-transform:uppercase;margin-bottom:6px}
+.sq-login-sub{font-size:13px;color:#6B7370;margin-bottom:28px;font-family:'Inter',sans-serif}
+.sq-tabs{display:flex;border-bottom:1px solid #E0E2E0;margin-bottom:24px}
+.sq-tab{padding:10px 0;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;border:none;background:transparent;cursor:pointer;color:#9BA09E;margin-right:24px;border-bottom:2px solid transparent;transition:all .15s}
+.sq-tab.active{color:#0F6E56;border-bottom-color:#0F6E56;font-weight:700}
+.sq-field{margin-bottom:18px}
+.sq-field-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.sq-field-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#6B7370}
+.sq-field-link{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.08em;color:#0F6E56;cursor:pointer;background:none;border:none;padding:0}
+.sq-input{width:100%;background:#FAFAF7;border:none;border-bottom:1.5px solid #C4C7C5;padding:11px 0;font-size:14px;color:#0E0E0E;outline:none;transition:border-color .15s;font-family:'Inter',sans-serif;box-sizing:border-box}
+.sq-input:focus{border-bottom-color:#0F6E56}
+.sq-input::placeholder{color:#9BA09E}
+.sq-checkbox-row{display:flex;align-items:center;gap:8px;margin-bottom:24px}
+.sq-checkbox{width:14px;height:14px;accent-color:#0F6E56}
+.sq-checkbox-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;color:#6B7370;text-transform:uppercase}
+.sq-btn-login{width:100%;background:#0F6E56;color:#fff;border:none;padding:14px 20px;font-family:'Archivo',sans-serif;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.sq-btn-login:hover{background:#084231}
+.sq-divider{display:flex;align-items:center;gap:12px;margin-bottom:16px;color:#9BA09E;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em}
+.sq-divider::before,.sq-divider::after{content:'';flex:1;height:1px;background:#E0E2E0}
+.sq-sso-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:24px}
+.sq-sso-btn{border:1px solid #C4C7C5;background:#fff;padding:10px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#3A4240;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.sq-sso-btn:hover{border-color:#0F6E56}
+.sq-login-footer-txt{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.06em;color:#9BA09E;text-align:center}
+.sq-login-footer-txt a{color:#0F6E56;text-decoration:underline;cursor:pointer}
+@media(max-width:900px){.sq-login-grid{grid-template-columns:1fr}.sq-col-premissa,.sq-col-identidade{display:none}}
+/* Colabs v2 */
+.colabs-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.colabs-header h1{font-family:'Archivo',sans-serif;font-size:26px;font-weight:900;letter-spacing:-.02em;color:#0E0E0E;margin:0 0 4px}
+.colabs-subtitle{font-size:11px;color:#6B7370;font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+.colabs-subtitle b{color:#1A1F1D;font-weight:600}
+.colabs-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-export,.btn-import{padding:8px 14px;border:1px solid #C4C7C5;background:#fff;color:#3A4240;font-size:11px;font-weight:500;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;text-transform:uppercase}
+.btn-novo-col{padding:8px 16px;border:none;background:#0F6E56;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:'Archivo',sans-serif;letter-spacing:.06em;text-transform:uppercase}
+.colabs-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#C4C7C5;border:1px solid #C4C7C5;margin-bottom:20px}
+.colabs-metric{background:#fff;padding:16px 20px}
+.colabs-metric-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#6B7370;margin-bottom:8px}
+.colabs-metric-val{font-family:'Archivo',sans-serif;font-size:26px;font-weight:800;color:#0E0E0E;letter-spacing:-.02em;line-height:1;margin-bottom:4px}
+.colabs-metric-sub{font-size:11px;color:#6B7370;font-family:'Inter',sans-serif}
+.colabs-metric-sub.up{color:#0F6E56}
+.colabs-filters{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.filter-tabs{display:flex;border:1px solid #C4C7C5}
+.filter-tab{padding:7px 14px;border:none;background:#fff;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;color:#6B7370;cursor:pointer;border-right:1px solid #C4C7C5;transition:all .15s}
+.filter-tab:last-child{border-right:none}
+.filter-tab.active{background:#0E0E0E;color:#fff}
+.filter-tab .badge-count{display:inline-flex;align-items:center;justify-content:center;background:#0F6E56;color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;padding:0 4px;margin-left:5px}
+.filter-tab.active .badge-count{background:#fff;color:#0E0E0E}
+.filter-search{flex:1;max-width:260px;padding:7px 12px;border:1px solid #C4C7C5;background:#fff;font-size:12px;color:#1A1F1D;outline:none;font-family:'Inter',sans-serif;margin-left:auto}
+.filter-search:focus{border-color:#0F6E56}
+.colabs-table-wrap{background:#fff;border:1px solid #C4C7C5}
+.colabs-table{width:100%;border-collapse:collapse}
+.colabs-table thead th{background:#F4F3EE;border-bottom:1px solid #C4C7C5;padding:9px 12px;text-align:left;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#6B7370;font-weight:500;white-space:nowrap}
+.colabs-table tbody tr{border-bottom:1px solid #E0E2E0;transition:background .1s;cursor:pointer}
+.colabs-table tbody tr:hover{background:#F4F3EE}
+.colabs-table tbody td{padding:11px 12px;font-size:13px;color:#1A1F1D;vertical-align:middle}
+.col-avatar{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:'Archivo',sans-serif;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.col-name{font-weight:600;color:#0E0E0E;font-size:13px;font-family:'Inter',sans-serif}
+.col-email{font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7370;letter-spacing:.02em}
+.fn-badge{display:inline-flex;padding:3px 8px;border:1px solid #E0E2E0;font-size:11px;color:#3A4240;background:#fff;font-family:'Inter',sans-serif;white-space:nowrap}
+.area-text{font-size:12px;color:#6B7370;font-family:'Inter',sans-serif}
+.movim-badge{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:20px;background:#E0E2E0;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:#3A4240}
+.cap-bar-wrap{min-width:80px}
+.cap-pct{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;margin-bottom:2px}
+.cap-pct.ok{color:#0F6E56}.cap-pct.warn{color:#B45309}.cap-pct.over{color:#DC2626}
+.cap-bar{height:3px;background:#E0E2E0}
+.cap-bar-fill{height:3px}
+.cap-bar-fill.ok{background:#0F6E56}.cap-bar-fill.warn{background:#F59E0B}.cap-bar-fill.over{background:#DC2626}
+.aval-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7370}
+.status-dot{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;font-family:'Inter',sans-serif}
+.status-dot::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.status-ativo::before{background:#0F6E56}.status-ativo{color:#0F6E56}
+.status-inativo::before{background:#6B7370}.status-inativo{color:#6B7370}
+.status-atencao::before{background:#F59E0B}.status-atencao{color:#B45309}
+.status-sobrecarga::before{background:#DC2626}.status-sobrecarga{color:#DC2626}
+.status-onboarding::before{background:#6366F1}.status-onboarding{color:#6366F1}
+.col-actions{display:flex;gap:4px;opacity:0;transition:opacity .15s}
+.colabs-table tbody tr:hover .col-actions{opacity:1}
+.action-btn{padding:4px 8px;border:1px solid #C4C7C5;background:#fff;font-size:10px;cursor:pointer;color:#3A4240;font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+.colabs-pagination{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid #E0E2E0;font-size:11px;color:#6B7370;font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+.pag-btns{display:flex;gap:2px}
+.pag-btn{padding:5px 10px;border:1px solid #C4C7C5;background:#fff;cursor:pointer;font-size:10px;font-family:'JetBrains Mono',monospace;color:#3A4240}
+.pag-btn.active{background:#0E0E0E;color:#fff;border-color:#0E0E0E}
+@media(max-width:900px){.colabs-metrics{grid-template-columns:1fr 1fr}.colabs-table thead th:nth-child(n+5),.colabs-table tbody td:nth-child(n+5){display:none}}
+
 </style>
 </head>
 <body>
@@ -7802,117 +7903,94 @@ function deletarFuncaoCapacidade(id) {
 <!-- TELA DE LOGIN / REGISTRO SQUADO                                -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <div id="squado-auth-overlay" style="display:none;position:fixed;inset:0;z-index:99999;background:#0F6E56;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow-y:auto">
-  <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px">
-
-    <!-- Logo -->
-    <div style="text-align:center;margin-bottom:32px">
-      <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:8px">
-        <div style="width:56px;height:56px;background:#1D9E75;border-radius:14px;display:flex;align-items:center;justify-content:center">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" width="40" height="40"><line x1="11" y1="13" x2="17" y2="11" stroke="#9FE1CB" stroke-width="1.5" opacity="0.8"/><line x1="17" y1="11" x2="23" y2="13" stroke="#9FE1CB" stroke-width="1.5" opacity="0.8"/><line x1="9" y1="20" x2="11" y2="13" stroke="#5DCAA5" stroke-width="1.5" opacity="0.7"/><line x1="9" y1="20" x2="13" y2="27" stroke="#5DCAA5" stroke-width="1.5" opacity="0.7"/><line x1="13" y1="27" x2="20" y2="25" stroke="#fff" stroke-width="1.5" opacity="0.8"/><line x1="20" y1="25" x2="27" y2="27" stroke="#5DCAA5" stroke-width="1.5" opacity="0.7"/><line x1="27" y1="27" x2="31" y2="34" stroke="#5DCAA5" stroke-width="1.5" opacity="0.7"/><line x1="17" y1="35" x2="23" y2="37" stroke="#9FE1CB" stroke-width="1.5" opacity="0.8"/><line x1="23" y1="37" x2="29" y2="35" stroke="#9FE1CB" stroke-width="1.5" opacity="0.8"/><circle cx="11" cy="13" r="4" fill="#9FE1CB"/><circle cx="17" cy="11" r="4" fill="#9FE1CB"/><circle cx="23" cy="13" r="4" fill="#9FE1CB"/><circle cx="9" cy="20" r="4" fill="#5DCAA5"/><circle cx="13" cy="27" r="5" fill="#fff"/><circle cx="13" cy="25" r="2" fill="#0F6E56"/><circle cx="20" cy="25" r="5" fill="#fff"/><circle cx="20" cy="23" r="2" fill="#0F6E56"/><circle cx="27" cy="27" r="4" fill="#5DCAA5"/><circle cx="31" cy="34" r="4" fill="#5DCAA5"/><circle cx="17" cy="35" r="4" fill="#9FE1CB"/><circle cx="23" cy="37" r="4" fill="#9FE1CB"/><circle cx="29" cy="35" r="4" fill="#9FE1CB"/></svg>
-        </div>
-        <div style="font-size:44px;font-weight:800;color:#fff;letter-spacing:-1px">squado</div>
-      </div>
-      <div style="color:#9FE1CB;font-size:14px;margin-top:4px">Do líder para a equipe.</div>
+<style>
+#squado-auth-overlay{font-family:'Archivo',sans-serif}
+</style>
+<!-- Ticker animado -->
+<div class="sq-login-ticker">
+  <div class="sq-login-ticker-inner">
+    CICLO Q2 ABERTO &nbsp;·&nbsp; UPTIME 99.97% &nbsp;·&nbsp; SP · BRASIL &nbsp;·&nbsp; &gt; NOVA RELEASE · V6.0 &nbsp;·&nbsp; 240 EMPRESAS ATIVAS &nbsp;·&nbsp;
+    CICLO Q2 ABERTO &nbsp;·&nbsp; UPTIME 99.97% &nbsp;·&nbsp; SP · BRASIL &nbsp;·&nbsp; &gt; NOVA RELEASE · V6.0 &nbsp;·&nbsp; 240 EMPRESAS ATIVAS &nbsp;·&nbsp;
+  </div>
+</div>
+<div class="sq-login-grid">
+  <div class="sq-col-premissa">
+    <div>
+      <div class="sq-label"><div class="sq-label-dot"></div>001 / PREMISSA</div>
+      <div class="sq-headline">GENTE<br><em>NÃO É</em><br><span class="dim">PLANILHA.</span></div>
+      <div class="sq-desc">Squado é o sistema operacional para empresas que tratam talento como ativo estratégico — com método, evidência e ritmo.</div>
     </div>
-
-    <!-- Card -->
-    <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
-
-      <!-- Tabs -->
-      <div style="display:flex;gap:0;margin-bottom:28px;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb">
-        <button id="tab-login" onclick="squadoShowTab('login')"
-          style="flex:1;padding:10px;font-size:14px;font-weight:600;border:none;cursor:pointer;background:#0F6E56;color:#fff;transition:all .2s">
-          Entrar
-        </button>
-        <button id="tab-registro" onclick="squadoShowTab('registro')"
-          style="flex:1;padding:10px;font-size:14px;font-weight:600;border:none;cursor:pointer;background:#f9fafb;color:#6b7280;transition:all .2s">
-          Criar conta
-        </button>
+    <div class="sq-metrics">
+      <div class="sq-metric"><div class="sq-metric-label">Companhias</div><div class="sq-metric-val">240+</div></div>
+      <div class="sq-metric"><div class="sq-metric-label">Avaliações/mês</div><div class="sq-metric-val">12k</div></div>
+    </div>
+  </div>
+  <div class="sq-col-identidade">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:rgba(255,255,255,.35);margin-bottom:32px;align-self:flex-start">002 / IDENTIDADE</div>
+    <svg width="180" height="180" viewBox="0 0 200 200" fill="none" style="margin-bottom:32px">
+      <rect x="30" y="30" width="140" height="30" fill="#0F6E56"/>
+      <rect x="30" y="30" width="30" height="80" fill="#0F6E56"/>
+      <rect x="30" y="90" width="140" height="30" fill="#0F6E56"/>
+      <rect x="140" y="90" width="30" height="80" fill="#0F6E56"/>
+      <rect x="30" y="140" width="140" height="30" fill="#0F6E56"/>
+      <circle cx="160" cy="45" r="12" fill="#FCFCFA"/>
+    </svg>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;width:100%">
+      <div style="background:#0F6E56;padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;letter-spacing:.06em">0F6E56</div>
+      <div style="background:#FCFCFA;padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#0E0E0E;letter-spacing:.06em">FCFCFA</div>
+    </div>
+  </div>
+  <div class="sq-col-acesso">
+    <div class="sq-label"><div class="sq-label-dot"></div>003 / ACESSO</div>
+    <div class="sq-login-title">ENTRAR.</div>
+    <div class="sq-login-sub">Acesse o sistema com sua conta corporativa.</div>
+    <div class="sq-tabs">
+      <button class="sq-tab active" id="tab-login" onclick="squadoShowTab('login')">Entrar</button>
+      <button class="sq-tab" id="tab-registro" onclick="squadoShowTab('registro')">Criar conta</button>
+    </div>
+    <div id="form-login">
+      <div class="sq-field">
+        <div class="sq-field-header"><span class="sq-field-label">E-mail</span><span class="sq-field-label" style="opacity:.5">OBRIGATÓRIO</span></div>
+        <input id="sq-login-email" type="email" class="sq-input" placeholder="voce@empresa.com" autocomplete="email"/>
       </div>
-
-      <!-- Form Login -->
-      <div id="form-login">
-        <div style="margin-bottom:16px">
-          <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px">Email</label>
-          <input id="sq-login-email" type="email" placeholder="seu@email.com"
-            style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;outline:none"
-            onkeydown="if(event.key==='Enter')squadoLogin()">
-        </div>
-        <div style="margin-bottom:8px">
-          <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px">Senha</label>
-          <input id="sq-login-senha" type="password" placeholder="••••••••"
-            style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;outline:none"
-            onkeydown="if(event.key==='Enter')squadoLogin()">
-        </div>
-        <div id="sq-login-erro" style="display:none;color:#dc2626;font-size:13px;margin-bottom:12px;padding:8px 12px;background:#fef2f2;border-radius:6px"></div>
-        <button onclick="squadoLogin()" id="sq-login-btn"
-          style="width:100%;padding:12px;background:#0F6E56;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px">
-          Entrar
-        </button>
-        <div style="text-align:center;margin-top:16px">
-          <button onclick="squadoShowTab('registro')" style="background:none;border:none;color:#0F6E56;font-size:13px;cursor:pointer;text-decoration:underline">
-            Não tem conta? Criar agora gratuitamente
-          </button>
-        </div>
+      <div class="sq-field">
+        <div class="sq-field-header"><span class="sq-field-label">Senha</span><button class="sq-field-link" onclick="document.getElementById('squado-forgot-pw').style.display='block'">RECUPERAR</button></div>
+        <input id="sq-login-password" type="password" class="sq-input" placeholder="••••••••" autocomplete="current-password"/>
       </div>
-
-      <!-- Form Registro -->
-      <div id="form-registro" style="display:none">
-        <div style="margin-bottom:14px">
-          <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px">Seu nome</label>
-          <input id="sq-reg-nome" type="text" placeholder="Nome completo"
-            style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;outline:none">
-        </div>
-        <div style="margin-bottom:14px">
-          <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px">Email</label>
-          <input id="sq-reg-email" type="email" placeholder="seu@email.com"
-            style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;outline:none">
-        </div>
-        <div style="margin-bottom:14px">
-          <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px">Empresa / Laboratório</label>
-          <input id="sq-reg-empresa" type="text" placeholder="Nome da empresa"
-            style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;outline:none">
-        </div>
-        <div style="margin-bottom:14px">
-          <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px">Senha</label>
-          <input id="sq-reg-senha" type="password" placeholder="Mínimo 6 caracteres"
-            style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;outline:none"
-            onkeydown="if(event.key==='Enter')squadoRegistro()">
-        </div>
-        <div id="sq-reg-erro" style="display:none;color:#dc2626;font-size:13px;margin-bottom:12px;padding:8px 12px;background:#fef2f2;border-radius:6px"></div>
-        <button onclick="squadoRegistro()" id="sq-reg-btn"
-          style="width:100%;padding:12px;background:#0F6E56;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">
-          Criar conta grátis · 7 dias trial
-        </button>
-        <div style="text-align:center;margin-top:12px">
-          <span style="font-size:12px;color:#9ca3af">Sem cartão de crédito · Cancele quando quiser</span>
-        </div>
+      <div class="sq-checkbox-row">
+        <input type="checkbox" class="sq-checkbox" id="sq-remember"/><label for="sq-remember" class="sq-checkbox-label">Manter conectado</label>
+      </div>
+      <button class="sq-btn-login" onclick="squadoFazerLogin()">ENTRAR NA PLATAFORMA <span>↗</span></button>
+      <div class="sq-divider">— OU VIA SSO —</div>
+      <div class="sq-sso-grid">
+        <button class="sq-sso-btn">↳ Google</button>
+        <button class="sq-sso-btn">⊞ Microsoft</button>
+      </div>
+      <div class="sq-login-footer-txt">Sem conta? <a onclick="squadoShowTab('registro')">Solicitar acesso</a></div>
+      <div id="squado-forgot-pw" style="display:none;margin-top:16px;padding:16px;background:#F4F3EE;border:1px solid #E0E2E0">
+        <div class="sq-field-label" style="margin-bottom:10px">RECUPERAR SENHA</div>
+        <input id="sq-forgot-email" type="email" class="sq-input" placeholder="seu@email.com" style="margin-bottom:12px"/>
+        <button class="sq-btn-login" style="margin-bottom:0" onclick="squadoRecuperarSenha()">ENVIAR LINK <span>→</span></button>
       </div>
     </div>
-
-    <!-- Info planos -->
-    <div style="margin-top:24px;text-align:center;color:#9FE1CB;font-size:12px">
-      Trial gratuito por 7 dias · Squado Pro a partir de R$149/mês
+    <div id="form-registro" style="display:none">
+      <div class="sq-field">
+        <div class="sq-field-header"><span class="sq-field-label">Nome completo</span></div>
+        <input id="sq-reg-nome" type="text" class="sq-input" placeholder="Seu nome"/>
+      </div>
+      <div class="sq-field">
+        <div class="sq-field-header"><span class="sq-field-label">E-mail corporativo</span></div>
+        <input id="sq-reg-email" type="email" class="sq-input" placeholder="voce@empresa.com"/>
+      </div>
+      <div class="sq-field">
+        <div class="sq-field-header"><span class="sq-field-label">Senha</span></div>
+        <input id="sq-reg-pass" type="password" class="sq-input" placeholder="Mínimo 8 caracteres"/>
+      </div>
+      <button class="sq-btn-login" onclick="squadoFazerRegistro()">CRIAR CONTA <span>↗</span></button>
+      <div class="sq-login-footer-txt" style="margin-top:12px">Já tem conta? <a onclick="squadoShowTab('login')">Entrar</a></div>
     </div>
   </div>
 </div>
-
-<!-- Badge do usuário logado (canto superior direito) -->
-<div id="squado-user-badge" style="display:none;position:fixed;top:8px;right:8px;z-index:9999;background:#0F6E56;color:#fff;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)" onclick="squadoToggleUserMenu(event)">
-  <span id="squado-user-nome">Usuário</span> ▾
-</div>
-
-<!-- Menu do usuário -->
-<div id="squado-user-menu" style="display:none;position:fixed;top:44px;right:8px;z-index:10000;background:#fff;border-radius:10px;padding:8px;box-shadow:0 8px 30px rgba(0,0,0,.2);min-width:220px">
-  <div style="padding:8px 12px;font-size:13px;color:#6b7280;border-bottom:1px solid #f3f4f6;margin-bottom:4px">
-    <div id="squado-menu-email" style="font-weight:600;color:#111827;font-size:12px"></div>
-    <div id="squado-menu-plano" style="font-size:11px;margin-top:2px"></div>
-  </div>
-  <button onmousedown="squadoLogout()" ontouchstart="squadoLogout()" style="width:100%;text-align:left;padding:10px 12px;border:none;background:none;cursor:pointer;font-size:14px;color:#dc2626;border-radius:6px;display:block">
-    🚪 Sair da conta
-  </button>
-</div>
-
 <!-- Botão sair mobile removido — integrado na nav inferior -->
 <div id="squado-sair-mobile" style="display:none"></div>
 
