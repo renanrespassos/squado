@@ -1488,6 +1488,7 @@ let perguntas=DEFAULT_PERGUNTAS;
 // Se tem token salvo, começa com localStorage (pode estar vazio — nuvem preenche)
 // Se não tem token, usa SEED como demo local
 const _temToken = !!localStorage.getItem('squado_jwt_token');
+let _squadoSessionToken = 0; // incrementado a cada login/logout para cancelar fetches antigos
 let colaboradores=ls('cols_v3', _temToken ? [] : SEED);
 let funcoes=ls('funcoes',buildDefaultFuncoes(SEED));
 // Auto-migrar funções legadas (por_amostra → por_servico)
@@ -8209,6 +8210,7 @@ async function apiCall(method, path, body) {
 // ─── CARREGAR DADOS DA NUVEM ───────────────────────────────────
 async function squadoCarregarDaNuvem() {
   if (!squadoGetToken()) return;
+  const _sessionSnap = _squadoSessionToken; // capturar token desta sessão
   const _user = squadoGetUser();
   console.log('[Squado Load] conta:', _user?.email, '| tenant:', _user?.tenantId);
   try {
@@ -8221,6 +8223,11 @@ async function squadoCarregarDaNuvem() {
 
     // Carregar TUDO de uma vez via /api/config (snapshot completo)
     const cfg = await apiCall('GET', '/api/config');
+    // Sessão expirou? Descartar resultado (outro usuário logou)
+    if (_sessionSnap !== _squadoSessionToken) {
+      console.warn('[Squado] Sessão mudou durante carregamento — descartando dados antigos');
+      return;
+    }
     // Se cfg for null (erro de rede), usar dados locais silenciosamente
     if (!cfg) {
       console.warn('[Squado Load] /api/config retornou null — usando dados locais');
@@ -8686,6 +8693,7 @@ function squadoToggleUserMenu(e) {
 function squadoShowUserMenu() { squadoToggleUserMenu(); }
 
 function squadoLogout() {
+  _squadoSessionToken++; // invalida fetches em andamento
   pararSyncPeriodico();
   // CRÍTICO: limpar todos os dados locais ao sair para evitar vazamento entre contas
   const keysToRemove = [
