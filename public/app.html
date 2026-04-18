@@ -741,6 +741,17 @@ input[type=number]{
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="squado-block" viewBox="0 0 40 40">
+      <rect x="6" y="6" width="28" height="6" fill="currentColor"/>
+      <rect x="6" y="6" width="6" height="14" fill="currentColor"/>
+      <rect x="6" y="17" width="28" height="6" fill="currentColor"/>
+      <rect x="28" y="20" width="6" height="14" fill="currentColor"/>
+      <rect x="6" y="28" width="28" height="6" fill="currentColor"/>
+    </symbol>
+  </defs>
+</svg>
 <div class="shell">
 <aside class="sidebar">
   <!-- Alça visual mobile — só aparece no mobile -->
@@ -749,7 +760,7 @@ input[type=number]{
   </div>
   <div class="sidebar-logo">
     <div class="logo-mark">
-      <div class="logo-icon" style="background:#1D9E75;padding:4px;border-radius:4px"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="6" stroke="rgba(255,255,255,0.95)" stroke-width="1.8"/><circle cx="11" cy="11" r="2.2" fill="white"/><circle cx="11" cy="3" r="1.6" fill="rgba(255,255,255,0.7)"/><circle cx="19" cy="11" r="1.6" fill="rgba(255,255,255,0.7)"/><circle cx="3" cy="11" r="1.6" fill="rgba(255,255,255,0.7)"/><circle cx="11" cy="19" r="1.6" fill="rgba(255,255,255,0.7)"/><line x1="11" y1="4.6" x2="11" y2="8" stroke="rgba(255,255,255,0.35)" stroke-width="1"/><line x1="17.4" y1="11" x2="14" y2="11" stroke="rgba(255,255,255,0.35)" stroke-width="1"/><line x1="4.6" y1="11" x2="8" y2="11" stroke="rgba(255,255,255,0.35)" stroke-width="1"/><line x1="11" y1="17.4" x2="11" y2="14" stroke="rgba(255,255,255,0.35)" stroke-width="1"/></svg></div>
+      <div class="logo-icon" style="background:#1D9E75;padding:2px"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="6" stroke="rgba(255,255,255,0.95)" stroke-width="1.8"/><circle cx="11" cy="11" r="2.2" fill="white"/><circle cx="11" cy="3" r="1.6" fill="rgba(255,255,255,0.7)"/><circle cx="19" cy="11" r="1.6" fill="rgba(255,255,255,0.7)"/><circle cx="3" cy="11" r="1.6" fill="rgba(255,255,255,0.7)"/><circle cx="11" cy="19" r="1.6" fill="rgba(255,255,255,0.7)"/><line x1="11" y1="4.6" x2="11" y2="8" stroke="rgba(255,255,255,0.35)" stroke-width="1"/><line x1="17.4" y1="11" x2="14" y2="11" stroke="rgba(255,255,255,0.35)" stroke-width="1"/><line x1="4.6" y1="11" x2="8" y2="11" stroke="rgba(255,255,255,0.35)" stroke-width="1"/><line x1="11" y1="17.4" x2="11" y2="14" stroke="rgba(255,255,255,0.35)" stroke-width="1"/></svg></div>
       <div><div class="logo-text">Squado</div><div class="logo-sub">Do líder para a equipe.</div></div>
     </div>
   </div>
@@ -2924,19 +2935,7 @@ function gerarPDFAvaliacao(id){
       +'<span>Laboratório Industrial de Qualidade (EMC &amp; Telecom) · Gestão de Pessoas</span>'
       +'<span>'+dataHoje+'</span>'
     +'</div>'
-    +'
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <symbol id="squado-block" viewBox="0 0 40 40">
-      <rect x="6" y="6" width="28" height="6" fill="currentColor"/>
-      <rect x="6" y="6" width="6" height="14" fill="currentColor"/>
-      <rect x="6" y="17" width="28" height="6" fill="currentColor"/>
-      <rect x="28" y="20" width="6" height="14" fill="currentColor"/>
-      <rect x="6" y="28" width="28" height="6" fill="currentColor"/>
-    </symbol>
-  </defs>
-</svg>
-</body></html>';
+    +'</body></html>';
 
   var win=window.open('','_blank','width=1000,height=780');
   if(!win){alert('Permita pop-ups para gerar o relatório.');return;}
