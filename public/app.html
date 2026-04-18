@@ -742,7 +742,7 @@ input[type=number]{
 </style>
 </head>
 <body>
-<div id="squado-loading-overlay" style="display:none;position:fixed;inset:0;background:#FFFFFF;z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:16px">
+<div id="squado-loading-overlay" style="display:none;position:fixed;inset:0;background:#FFFFFF;z-index:99999;flex-direction:column;align-items:center;justify-content:center;gap:16px">
   <div style="width:36px;height:36px;background:#0F6E56;border-radius:6px;display:flex;align-items:center;justify-content:center">
     <svg aria-hidden="true" width="20" height="20" style="color:#fff"><use href="#squado-block"/></svg>
   </div>
@@ -8662,9 +8662,16 @@ function squadoEntrar(user) {
   if(_mob) _mob.style.display = 'block';
   // Carregar dados da nuvem após login — mostrar loading até terminar
   const _loadingEl = document.getElementById('squado-loading-overlay');
-  if(_loadingEl) _loadingEl.style.display = 'flex';
-  squadoCarregarDaNuvem().finally(()=>{
-    if(_loadingEl) _loadingEl.style.display = 'none';
+  if(_loadingEl){ _loadingEl.style.display = 'flex'; }
+  // requestAnimationFrame garante que o browser repinta o overlay antes de iniciar o fetch
+  requestAnimationFrame(()=>{
+    const _t0 = Date.now();
+    squadoCarregarDaNuvem().finally(()=>{
+      // Mínimo 600ms de loading para evitar flash
+      const elapsed = Date.now() - _t0;
+      const delay = Math.max(0, 600 - elapsed);
+      setTimeout(()=>{ if(_loadingEl) _loadingEl.style.display = 'none'; }, delay);
+    });
   });
   iniciarSyncPeriodico();
 }
