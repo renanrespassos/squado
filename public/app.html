@@ -823,14 +823,33 @@ input[type=number]{
       <input id="search-input" placeholder="Buscar colaboradores, áreas..." oninput="handleSearch(this.value)" style="background:transparent;border:none;outline:none;color:#1A1F1D;font-family:'Inter',sans-serif;font-size:13px;flex:1">
       <kbd style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7370;background:#F5F6F4;padding:2px 6px;border-radius:3px;border:1px solid #E0E2E0;flex-shrink:0">⌘ K</kbd>
     </div>
-    <div id="squado-user-badge" style="display:none;align-items:center;gap:8px;padding:0 16px;border-left:1px solid #E0E2E0;cursor:pointer;height:100%;flex-shrink:0">
+    <div id="squado-user-badge" style="display:none;align-items:center;gap:8px;padding:0 16px;border-left:1px solid #E0E2E0;cursor:pointer;height:100%;flex-shrink:0;position:relative" onclick="toggleUserMenu()">
       <div style="width:28px;height:28px;background:#0F6E56;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff" id="squado-user-avatar-initials">?</div>
       <div style="line-height:1.25">
         <div style="font-size:13px;font-weight:500;color:#1A1F1D;white-space:nowrap" id="squado-user-nome">...</div>
         <div style="font-size:11px;color:#6B7370" id="squado-menu-email"></div>
       </div>
     </div>
-    <button class="btn" id="topbar-btn" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.25);color:#fff;font-weight:700" onclick="handleTopAction()" style="display:none">+<span id="topbar-btn-label">Novo</span></button>
+    <!-- Dropdown menu usuário -->
+    <div id="squado-user-menu" style="display:none;position:fixed;top:56px;right:0;background:#fff;border:1px solid #E0E2E0;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.08);min-width:220px;z-index:9000;margin-right:8px;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid #F0F1EF">
+        <div style="font-size:13px;font-weight:600;color:#1A1F1D" id="squado-menu-nome-full">Renan</div>
+        <div style="font-size:11px;color:#6B7370" id="squado-menu-plano">Pro</div>
+      </div>
+      <div style="padding:6px">
+        <button onclick="toggleUserMenu();go('configuracoes')" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:none;background:transparent;cursor:pointer;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;color:#3A4240;text-align:left" onmouseover="this.style.background='#F5F6F4'" onmouseout="this.style.background='transparent'">
+          ⚙️ Configurações
+        </button>
+        <button onclick="showApiKeyModal();toggleUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:none;background:transparent;cursor:pointer;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;color:#3A4240;text-align:left" onmouseover="this.style.background='#F5F6F4'" onmouseout="this.style.background='transparent'">
+          🔑 Configurar IA
+        </button>
+        <div style="height:1px;background:#F0F1EF;margin:4px 0"></div>
+        <button onclick="squadoLogout()" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:none;background:transparent;cursor:pointer;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;color:#A6311F;text-align:left" onmouseover="this.style.background='#FEF2F0'" onmouseout="this.style.background='transparent'">
+          🚪 Sair
+        </button>
+      </div>
+    </div>
+    <button class="btn" id="topbar-btn" style="background:#0F6E56;border-color:#0F6E56;color:#fff;font-weight:600;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;padding:6px 14px" onclick="handleTopAction()" style="display:none">+<span id="topbar-btn-label">Novo</span></button>
   </header>
   <div class="content" id="page-content-wrap">
     <div class="content-inner" id="page-content"></div>
@@ -1542,6 +1561,12 @@ function areaBadge(area){const c=AREA_COLORS[area]||{cor:'#888',bg:'#eee'};retur
 let currentPage='dashboard';
 function go(page){
   currentPage=page;
+  // Mostrar search box apenas em colaboradores
+  const _sb = document.querySelector('.search-box');
+  if(_sb) _sb.style.display = page === 'colaboradores' ? 'flex' : 'none';
+  // Esconder botão de ação no topbar para colaboradores (vai na página)
+  const _tbBtn = document.getElementById('topbar-btn');
+  if(_tbBtn && page === 'colaboradores') _tbBtn.style.display = 'none';
   document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
   // Para sub-páginas de avaliação, marcar o item "avaliacao_hub"
   const pageForNav = ['avaliacao','historico_aval','perguntas'].includes(page) ? 'avaliacao_hub' : page;
@@ -9199,5 +9224,23 @@ function gerarRelatorioCapacidade(){
   if(!w){alert('Permita pop-ups para gerar o relatório.');return;}
   w.document.write(html);
   w.document.close();
+}
+
+function toggleUserMenu(){
+  const m = document.getElementById('squado-user-menu');
+  if(!m) return;
+  const isOpen = m.style.display === 'block';
+  m.style.display = isOpen ? 'none' : 'block';
+  // Fechar ao clicar fora
+  if(!isOpen){
+    setTimeout(()=>{
+      document.addEventListener('click', function _close(e){
+        if(!e.target.closest('#squado-user-badge') && !e.target.closest('#squado-user-menu')){
+          m.style.display='none';
+          document.removeEventListener('click',_close);
+        }
+      });
+    },0);
+  }
 }
 </script>
