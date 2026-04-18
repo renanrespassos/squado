@@ -8451,8 +8451,8 @@ async function squadoSyncSnapshot(origem) {
       historico_ia:     aiHistory,
       // Dados principais (snapshot completo)
       _lastSave:           Date.now(),
-      snapshot_cols:       colaboradores,
-      snapshot_avaliacoes: avaliacoes,
+      snapshot_cols:       colaboradores.length > 0 ? colaboradores : undefined,
+      snapshot_avaliacoes: avaliacoes.length > 0 ? avaliacoes : undefined,
       snapshot_metas:      ls('metas_v2', []),
       snapshot_notas:      notas,
       snapshot_pdis:       ls('pdis_v1', []),
