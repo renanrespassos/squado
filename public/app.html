@@ -1515,8 +1515,8 @@ function renderColaboradores(search=''){
       '</td>',
       '<td>'+nivelBadge(c.nivel)+'</td>',
       '<td>'+areaBadge(c.area)+'</td>',
-      '<td style="color:var(--txt2);font-size:12px">'+(c.gestor||'â')+'</td>',
-      '<td>'+(lastAv ? '<span class="badge badge-green">'+lastAv.mediaGeral+'</span>' : '<span style="font-size:10px;color:var(--txt3)">â</span>')+'</td>',
+      '<td style="color:var(--txt2);font-size:12px">'+(c.gestor||'—')+'</td>',
+      '<td>'+(lastAv ? '<span class="badge badge-green">'+lastAv.mediaGeral+'</span>' : '<span style="font-size:10px;color:var(--txt3)">—</span>')+'</td>',
       '<td><span class="badge badge-blue">'+(c.historico||[]).length+'</span></td>',
       '<td>',
         '<span style="font-size:11px;padding:2px 8px;border-radius:20px;',
@@ -1536,21 +1536,21 @@ function renderColaboradores(search=''){
   return [
     '<div>',
     '<div style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;overflow:hidden;width:fit-content;margin-bottom:14px">',
-      tabBtn('ativos','ð¥','Ativos',totalAtivos),
+      tabBtn('ativos','👥','Ativos',totalAtivos),
       '<span style="width:0.5px;background:var(--border2)"></span>',
-      tabBtn('desligados','ðª','Desligados',totalDesligados),
+      tabBtn('desligados','🚪','Desligados',totalDesligados),
     '</div>',
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">',
-      '<button class="btn btn-danger btn-sm" id="btn-excluir-cols" onclick="excluirColsSelecionados()" style="display:none">ð Excluir selecionados</button>',
+      '<button class="btn btn-danger btn-sm" id="btn-excluir-cols" onclick="excluirColsSelecionados()" style="display:none">🗑 Excluir selecionados</button>',
     '</div>',
     '<div class="card" style="padding:0;overflow:hidden"><div class="table-wrap"><table class="tbl">',
     '<thead><tr>',
       '<th style="width:32px"><input type="checkbox" onchange="document.querySelectorAll(\'.col-sel\').forEach(cb=>cb.checked=this.checked);atualizarBtnExcluirCols()" style="cursor:pointer"/></th>',
       '<th>Colaborador</th>',
-      '<th>NÃ­vel</th>',
-      '<th>Ãrea</th>',
+      '<th>Nível</th>',
+      '<th>Área</th>',
       '<th>Gestor</th>',
-      '<th>Ãlt. Aval.</th>',
+      '<th>Últ. Aval.</th>',
       '<th>Movim.</th>',
       '<th>Status</th>',
     '</tr></thead>',
@@ -1565,7 +1565,7 @@ function atualizarBtnExcluirCols(){
   const btn = document.getElementById('btn-excluir-cols');
   if(btn){
     btn.style.display = sel > 0 ? '' : 'none';
-    btn.textContent = 'ð Excluir '+sel+' selecionado'+(sel!==1?'s':'');
+    btn.textContent = '🗑 Excluir '+sel+' selecionado'+(sel!==1?'s':'');
   }
 }
 
@@ -1575,25 +1575,25 @@ function excluirColsSelecionados(){
   if(!confirm('Excluir permanentemente '+ids.length+' colaborador(es)?')) return;
   colaboradores = colaboradores.filter(c => !ids.includes(c.id));
   saveAll();
-  toast('â '+ids.length+' colaborador(es) excluÃ­do(s)!');
+  toast('✅ '+ids.length+' colaborador(es) excluído(s)!');
   render('colaboradores');
 }
 
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════════════════════════
 // ORGANOGRAMA COM DRAG-AND-DROP
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-// Estrutura: nÃ³s virtuais para divisÃµes + colaboradores
+// ═══════════════════════════════════════════════════════════════
+// Estrutura: nós virtuais para divisões + colaboradores
 // orgPositions: { nodeId: {x,y} }
 
 const NODE_W=170, NODE_H_BASE=100;
 const CANVAS_W=3000, CANVAS_H=2000;
 
-// Gera posiÃ§Ãµes padrÃ£o se nÃ£o existirem
+// Gera posições padrão se não existirem
 function defaultPositions(){
   const pos={};
-  const CW=190;   // largura cÃ©lula colaborador
-  const RH=130;   // altura por linha de nÃ­vel
+  const CW=190;   // largura célula colaborador
+  const RH=130;   // altura por linha de nível
   const GW=60;    // gap horizontal entre grupos
   const DIV_Y=220;
   const COL_Y_START=390;
@@ -1602,7 +1602,7 @@ function defaultPositions(){
     'Coordenador','Gerente','Especialista',
     'Analista III','Analista II','Analista I',
     'Assistente III','Assistente II','Assistente I','Assistente',
-    'EstagiÃ¡rio'
+    'Estagiário'
   ];
 
   const grupos={
@@ -1621,35 +1621,35 @@ function defaultPositions(){
   const membros={};
   Object.keys(grupos).forEach(gid=>{ membros[gid]=[]; });
   colaboradores.forEach(c=>{
-    if(c.area==='Gestao') return; // coordenaÃ§Ã£o no topo
+    if(c.area==='Gestao') return; // coordenação no topo
     for(const [gid,areas] of Object.entries(grupos)){
       if(areas.includes(c.area)){ membros[gid].push(c); break; }
     }
   });
 
-  // Para cada grupo: agrupar colaboradores POR NÃVEL,
-  // cada nÃ­vel em uma linha â lado a lado apenas mesmo nÃ­vel.
-  // A largura do grupo = mÃ¡x colaboradores num mesmo nÃ­vel Ã CW
+  // Para cada grupo: agrupar colaboradores POR NÍVEL,
+  // cada nível em uma linha — lado a lado apenas mesmo nível.
+  // A largura do grupo = máx colaboradores num mesmo nível × CW
   function calcGroupLayout(colList){
-    // Ordenar por nÃ­vel
+    // Ordenar por nível
     const sorted=colList.slice().sort((a,b)=>{
       const ia=ordemNivel.indexOf(a.nivel); const ib=ordemNivel.indexOf(b.nivel);
       return (ia<0?99:ia)-(ib<0?99:ib);
     });
-    // Agrupar por nÃ­vel
+    // Agrupar por nível
     const byNivel={};
     sorted.forEach(c=>{
       if(!byNivel[c.nivel]) byNivel[c.nivel]=[];
       byNivel[c.nivel].push(c);
     });
-    // NÃ­veis em ordem
+    // Níveis em ordem
     const niveisPresentes=ordemNivel.filter(n=>byNivel[n]);
-    // Largura mÃ¡xima = maior linha
+    // Largura máxima = maior linha
     const maxCols=Math.max(1,...niveisPresentes.map(n=>byNivel[n].length));
     return {sorted,byNivel,niveisPresentes,maxCols};
   }
 
-  // Calcular larguras e posiÃ§Ãµes X de cada grupo
+  // Calcular larguras e posições X de cada grupo
   const groupLayouts={};
   let curX=60;
   const groupX={};
@@ -1665,15 +1665,15 @@ function defaultPositions(){
   const totalW=curX;
   const coordX=Math.round(totalW/2)-90;
 
-  // CoordenaÃ§Ã£o no topo centro
+  // Coordenação no topo centro
   pos['div_coord']={x:coordX, y:40};
 
-  // Colaboradores de GestÃ£o junto ao div_coord
+  // Colaboradores de Gestão junto ao div_coord
   gestaoCol.forEach((c,i)=>{
     pos['c_'+c.id]={x:coordX-30+i*CW, y:180};
   });
 
-  // Posicionar cada divisÃ£o e seus colaboradores
+  // Posicionar cada divisão e seus colaboradores
   Object.keys(grupos).forEach(gid=>{
     pos[gid]={x:groupX[gid], y:DIV_Y};
 
@@ -1683,7 +1683,7 @@ function defaultPositions(){
 
     niveisPresentes.forEach(nivel=>{
       const colsNesteNivel=byNivel[nivel];
-      // Centralizar o grupo de mesmo nÃ­vel dentro da coluna da divisÃ£o
+      // Centralizar o grupo de mesmo nível dentro da coluna da divisão
       const totalW=colsNesteNivel.length*CW;
       const layoutMaxW=groupLayouts[gid].maxCols*CW;
       const offsetX=Math.round((layoutMaxW-totalW)/2);
@@ -1691,7 +1691,7 @@ function defaultPositions(){
       colsNesteNivel.forEach((c,i)=>{
         pos['c_'+c.id]={x:startX+offsetX+i*CW, y:rowY};
       });
-      rowY+=RH; // prÃ³xima linha = prÃ³ximo nÃ­vel
+      rowY+=RH; // próxima linha = próximo nível
     });
   });
 
