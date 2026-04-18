@@ -8130,7 +8130,8 @@ function deletarFuncaoCapacidade(id) {
       <div class="sq-checkbox-row">
         <input type="checkbox" class="sq-checkbox" id="sq-remember"/><label for="sq-remember" class="sq-checkbox-label">Manter conectado</label>
       </div>
-      <button class="sq-btn-login" onclick="squadoLogin()">ENTRAR NA PLATAFORMA <span>↗</span></button>
+      <div id="sq-login-erro" style="display:none;color:#A6311F;font-size:12px;padding:4px 0;font-family:'Inter',sans-serif"></div>
+      <button class="sq-btn-login" id="sq-login-btn" onclick="squadoLogin()">ENTRAR NA PLATAFORMA <span>↗</span></button>
       <div class="sq-divider">— OU VIA SSO —</div>
       <div class="sq-sso-grid">
         <button class="sq-sso-btn">↳ Google</button>
