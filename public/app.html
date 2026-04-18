@@ -585,15 +585,6 @@ input[type=range]:focus{box-shadow:none}
 .pag-btn.active{background:#0E0E0E;color:#fff;border-color:#0E0E0E}
 @media(max-width:900px){.colabs-metrics{grid-template-columns:1fr 1fr}.colabs-table thead th:nth-child(n+5),.colabs-table tbody td:nth-child(n+5){display:none}}
 
-
-/* ── Override overlay login ── */
-#squado-auth-overlay{
-  background:#FCFCFA !important;
-  flex-direction:column !important;
-  font-family:'Archivo',sans-serif !important;
-}
-.sq-login-grid{width:100%!important;flex:1}
-
 </style>
 </head>
 <body>
@@ -1500,216 +1491,117 @@ function renderColaboradores(search=''){
     (c.nivel||'').toLowerCase().includes(search.toLowerCase())
   );
 
-  const totalAtivos = colaboradores.filter(c => c.status !== 'Desligado').length;
-  const totalDesligados = colaboradores.filter(c => c.status === 'Desligado').length;
+  function initials(n){const p=(n||'').split(' ').filter(Boolean);return p.length>=2?p[0][0]+p[p.length-1][0]:(p[0]||'?')[0];}
+  function avatarColor(n){const cols=['#0F6E56','#084231','#1A5276','#6C3483','#7D6608','#1A5F7A','#943126','#1D6A39'];let h=0;for(let i=0;i<(n||'').length;i++)h=(h*31+n.charCodeAt(i))&0xFFFFFF;return cols[Math.abs(h)%cols.length];}
 
-  const rows = list.map(c => {
-    const avsC = avaliacoes.filter(a => a.colaboradorId === c.id);
-    const lastAv = avsC.length ? avsC[avsC.length-1] : null;
-    return [
-      '<tr>',
-      '<td style="width:32px;text-align:center">',
-        '<input type="checkbox" class="col-sel" data-id="'+c.id+'" ',
-        'onchange="atualizarBtnExcluirCols()" style="cursor:pointer;width:15px;height:15px"/>',
-      '</td>',
-      '<td>',
-        '<span onclick="verCol(\''+c.id+'\')" ',
-        'style="cursor:pointer;font-weight:600;color:var(--blue);text-decoration:underline;text-underline-offset:2px">',
-        c.nome,
-        '</span>',
-      '</td>',
-      '<td>'+nivelBadge(c.nivel)+'</td>',
-      '<td>'+areaBadge(c.area)+'</td>',
-      '<td style="color:var(--txt2);font-size:12px">'+(c.gestor||'—')+'</td>',
-      '<td>'+(lastAv ? '<span class="badge badge-green">'+lastAv.mediaGeral+'</span>' : '<span style="font-size:10px;color:var(--txt3)">—</span>')+'</td>',
-      '<td><span class="badge badge-blue">'+(c.historico||[]).length+'</span></td>',
-      '<td>',
-        '<span style="font-size:11px;padding:2px 8px;border-radius:20px;',
-        'background:'+(c.status==='Ativo'?'var(--green-bg)':'var(--bg2)')+';',
-        'color:'+(c.status==='Ativo'?'var(--green2)':'var(--txt2)')+'">',
-        c.status,
-        '</span>',
-      '</td>',
-      '</tr>'
-    ].join('');
+  const funcoesV8 = ls('funcoes_v8',[]);
+  const capPessoa = {};
+  funcoesV8.forEach(f=>{
+    (f.responsaveis||[]).forEach(r=>{
+      const min=calcCargaFuncao(f,parseInt(qtdServicos)||50)*(r.pct/100);
+      capPessoa[r.nome]=(capPessoa[r.nome]||0)+min;
+    });
+  });
+  const _diasUteis=parseInt(ls('cap_dias_uteis',22))||22;
+  const MIN_PESSOA=8*60*_diasUteis;
+  function capPct(n){return MIN_PESSOA>0?Math.round((capPessoa[n]||0)/MIN_PESSOA*100):0;}
+  function capCls(p){return p>=100?'over':p>=80?'warn':'ok';}
+
+  const nAtivos=colaboradores.filter(c=>c.status!=='Desligado').length;
+  const nDeslig=colaboradores.filter(c=>c.status==='Desligado').length;
+  const emAval=avaliacoes.length;
+  const sobreCount=colaboradores.filter(c=>c.status!=='Desligado'&&capPct(c.nome)>=100).length;
+  const capMedia=nAtivos>0?Math.round(Object.values(capPessoa).reduce((a,v)=>a+v,0)/nAtivos/MIN_PESSOA*100):0;
+
+  const rows=list.map(col=>{
+    const avC=avaliacoes.filter(a=>a.colaboradorId===col.id);
+    const lastAv=avC.length?avC[avC.length-1]:null;
+    const pct=capPct(col.nome);
+    const cls=capCls(pct);
+    const mov=(col.historico||[]).length;
+    const avDate=lastAv?lastAv.data:'—';
+    const bg=avatarColor(col.nome);
+    const ini=initials(col.nome).toUpperCase();
+    let sLabel,sCls;
+    if(col.status==='Desligado'){sLabel='Inativo';sCls='status-inativo';}
+    else if(pct>=100){sLabel='Sobrecarga';sCls='status-sobrecarga';}
+    else if(pct>=80){sLabel='Atenção';sCls='status-atencao';}
+    else{sLabel='Ativo';sCls='status-ativo';}
+    return `<tr onclick="verCol('${col.id}')">
+      <td><div style="display:flex;align-items:center;gap:10px">
+        <div class="col-avatar" style="background:${bg}">${ini}</div>
+        <div><div class="col-name">${col.nome}</div><div class="col-email">${(col.perfil&&col.perfil.email)||col.email||''}</div></div>
+      </div></td>
+      <td><span class="fn-badge">${col.nivel||'—'}</span></td>
+      <td><span class="area-text">${col.area||'—'}</span></td>
+      <td><span class="movim-badge">${mov}</span></td>
+      <td><div class="cap-bar-wrap">
+        <div class="cap-pct ${cls}">${pct}%</div>
+        <div class="cap-bar"><div class="cap-bar-fill ${cls}" style="width:${Math.min(pct,100)}%"></div></div>
+      </div></td>
+      <td><div class="aval-date">${avDate}</div></td>
+      <td><div class="status-dot ${sCls}">${sLabel}</div></td>
+      <td><div class="col-actions">
+        <button class="action-btn" onclick="event.stopPropagation();verCol('${col.id}')">Ver</button>
+        <button class="action-btn" onclick="event.stopPropagation();iniciarAvaliacaoPara('${col.id}')">Avaliar</button>
+      </div></td>
+    </tr>`;
   }).join('');
 
-  const tabBtn = (id, icon, label, count) =>
-    '<button onclick="window._colTab=\''+id+'\';render(\'colaboradores\')" style="padding:7px 18px;border:none;'+(abaAtiva===id?'background:var(--green);color:#fff':'background:var(--bg2);color:var(--txt2)')+';font-size:13px;font-weight:600;cursor:pointer;transition:all .15s">'
-    +icon+' '+label+' ('+count+')</button>';
-
-  return [
-    '<div>',
-    '<div style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;overflow:hidden;width:fit-content;margin-bottom:14px">',
-      tabBtn('ativos','👥','Ativos',totalAtivos),
-      '<span style="width:0.5px;background:var(--border2)"></span>',
-      tabBtn('desligados','🚪','Desligados',totalDesligados),
-    '</div>',
-    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">',
-      '<button class="btn btn-danger btn-sm" id="btn-excluir-cols" onclick="excluirColsSelecionados()" style="display:none">🗑 Excluir selecionados</button>',
-    '</div>',
-    '<div class="card" style="padding:0;overflow:hidden"><div class="table-wrap"><table class="tbl">',
-    '<thead><tr>',
-      '<th style="width:32px"><input type="checkbox" onchange="document.querySelectorAll(\'.col-sel\').forEach(cb=>cb.checked=this.checked);atualizarBtnExcluirCols()" style="cursor:pointer"/></th>',
-      '<th>Colaborador</th>',
-      '<th>Nível</th>',
-      '<th>Área</th>',
-      '<th>Gestor</th>',
-      '<th>Últ. Aval.</th>',
-      '<th>Movim.</th>',
-      '<th>Status</th>',
-    '</tr></thead>',
-    '<tbody>'+rows+'</tbody>',
-    '</table></div></div>',
-    '</div>'
-  ].join('');
-}
-
-function atualizarBtnExcluirCols(){
-  const sel = document.querySelectorAll('.col-sel:checked').length;
-  const btn = document.getElementById('btn-excluir-cols');
-  if(btn){
-    btn.style.display = sel > 0 ? '' : 'none';
-    btn.textContent = '🗑 Excluir '+sel+' selecionado'+(sel!==1?'s':'');
-  }
-}
-
-function excluirColsSelecionados(){
-  const ids = [...document.querySelectorAll('.col-sel:checked')].map(cb => cb.dataset.id);
-  if(!ids.length){ toast('Selecione ao menos um'); return; }
-  if(!confirm('Excluir permanentemente '+ids.length+' colaborador(es)?')) return;
-  colaboradores = colaboradores.filter(c => !ids.includes(c.id));
-  saveAll();
-  toast('✅ '+ids.length+' colaborador(es) excluído(s)!');
-  render('colaboradores');
-}
-
-
-// ═══════════════════════════════════════════════════════════════
-// ORGANOGRAMA COM DRAG-AND-DROP
-// ═══════════════════════════════════════════════════════════════
-// Estrutura: nós virtuais para divisões + colaboradores
-// orgPositions: { nodeId: {x,y} }
-
-const NODE_W=170, NODE_H_BASE=100;
-const CANVAS_W=3000, CANVAS_H=2000;
-
-// Gera posições padrão se não existirem
-function defaultPositions(){
-  const pos={};
-  const CW=190;   // largura célula colaborador
-  const RH=130;   // altura por linha de nível
-  const GW=60;    // gap horizontal entre grupos
-  const DIV_Y=220;
-  const COL_Y_START=390;
-
-  const ordemNivel=[
-    'Coordenador','Gerente','Especialista',
-    'Analista III','Analista II','Analista I',
-    'Assistente III','Assistente II','Assistente I','Assistente',
-    'Estagiário'
-  ];
-
-  const grupos={
-    'div_emc':     ['EMC','Configuracao EMC'],
-    'div_rf':      ['RF','Configuracao RF'],
-    'div_redes':   ['Redes Moveis'],
-    'div_bat':     ['Baterias e Acustica','Ensaios Acusticos','Baterias'],
-    'div_outros':  ['Outros Ensaios','TV'],
-    'div_entrada': ['Entrada e Devolucao'],
-  };
-
-  // Separar Gestao (Coordenador vai para div_coord separado)
-  const gestaoCol=colaboradores.filter(c=>c.area==='Gestao');
-
-  // Montar membros por grupo
-  const membros={};
-  Object.keys(grupos).forEach(gid=>{ membros[gid]=[]; });
-  colaboradores.forEach(c=>{
-    if(c.area==='Gestao') return; // coordenação no topo
-    for(const [gid,areas] of Object.entries(grupos)){
-      if(areas.includes(c.area)){ membros[gid].push(c); break; }
-    }
-  });
-
-  // Para cada grupo: agrupar colaboradores POR NÍVEL,
-  // cada nível em uma linha — lado a lado apenas mesmo nível.
-  // A largura do grupo = máx colaboradores num mesmo nível × CW
-  function calcGroupLayout(colList){
-    // Ordenar por nível
-    const sorted=colList.slice().sort((a,b)=>{
-      const ia=ordemNivel.indexOf(a.nivel); const ib=ordemNivel.indexOf(b.nivel);
-      return (ia<0?99:ia)-(ib<0?99:ib);
-    });
-    // Agrupar por nível
-    const byNivel={};
-    sorted.forEach(c=>{
-      if(!byNivel[c.nivel]) byNivel[c.nivel]=[];
-      byNivel[c.nivel].push(c);
-    });
-    // Níveis em ordem
-    const niveisPresentes=ordemNivel.filter(n=>byNivel[n]);
-    // Largura máxima = maior linha
-    const maxCols=Math.max(1,...niveisPresentes.map(n=>byNivel[n].length));
-    return {sorted,byNivel,niveisPresentes,maxCols};
-  }
-
-  // Calcular larguras e posições X de cada grupo
-  const groupLayouts={};
-  let curX=60;
-  const groupX={};
-
-  Object.keys(grupos).forEach(gid=>{
-    const layout=calcGroupLayout(membros[gid]);
-    groupLayouts[gid]=layout;
-    const groupW=Math.max(layout.maxCols*CW, 180);
-    groupX[gid]=curX;
-    curX+=groupW+GW;
-  });
-
-  const totalW=curX;
-  const coordX=Math.round(totalW/2)-90;
-
-  // Coordenação no topo centro
-  pos['div_coord']={x:coordX, y:40};
-
-  // Colaboradores de Gestão junto ao div_coord
-  gestaoCol.forEach((c,i)=>{
-    pos['c_'+c.id]={x:coordX-30+i*CW, y:180};
-  });
-
-  // Posicionar cada divisão e seus colaboradores
-  Object.keys(grupos).forEach(gid=>{
-    pos[gid]={x:groupX[gid], y:DIV_Y};
-
-    const {byNivel,niveisPresentes}=groupLayouts[gid];
-    const startX=groupX[gid];
-    let rowY=COL_Y_START;
-
-    niveisPresentes.forEach(nivel=>{
-      const colsNesteNivel=byNivel[nivel];
-      // Centralizar o grupo de mesmo nível dentro da coluna da divisão
-      const totalW=colsNesteNivel.length*CW;
-      const layoutMaxW=groupLayouts[gid].maxCols*CW;
-      const offsetX=Math.round((layoutMaxW-totalW)/2);
-
-      colsNesteNivel.forEach((c,i)=>{
-        pos['c_'+c.id]={x:startX+offsetX+i*CW, y:rowY};
-      });
-      rowY+=RH; // próxima linha = próximo nível
-    });
-  });
-
-  return pos;
-}
-
-function getPos(id){
-  if(!orgPositions[id]){
-    const def=defaultPositions();
-    if(def[id])orgPositions[id]=def[id];
-    else orgPositions[id]={x:100,y:100};
-  }
-  return orgPositions[id];
+  return `
+  <div class="colabs-header">
+    <div>
+      <h1 style="font-family:'Archivo',sans-serif;font-size:26px;font-weight:900;letter-spacing:-.02em;color:#0E0E0E;margin:0 0 4px">Colaboradores</h1>
+      <div class="colabs-subtitle">${nAtivos} colaboradores ativos · última atualização <b>há pouco</b></div>
+    </div>
+    <div class="colabs-actions">
+      <button class="btn-export">↓ Exportar</button>
+      <button class="btn-novo-col" onclick="abrirNovoColaborador()">+ Novo colaborador</button>
+    </div>
+  </div>
+  <div class="colabs-metrics">
+    <div class="colabs-metric">
+      <div class="colabs-metric-label">Total ativos</div>
+      <div class="colabs-metric-val">${nAtivos}</div>
+      <div class="colabs-metric-sub up">↑ equipe ativa</div>
+    </div>
+    <div class="colabs-metric">
+      <div class="colabs-metric-label">Em avaliação</div>
+      <div class="colabs-metric-val">${emAval}</div>
+      <div class="colabs-metric-sub">${nAtivos>0?Math.round(emAval/nAtivos*100):0}% do total</div>
+    </div>
+    <div class="colabs-metric">
+      <div class="colabs-metric-label">Capacidade média</div>
+      <div class="colabs-metric-val">${capMedia}<span style="font-size:16px;font-weight:500">%</span></div>
+      <div class="colabs-metric-sub">Limite saudável</div>
+    </div>
+    <div class="colabs-metric">
+      <div class="colabs-metric-label">Em sobrecarga</div>
+      <div class="colabs-metric-val" style="color:#DC2626">${sobreCount}</div>
+      <div class="colabs-metric-sub">Acima de 100%</div>
+    </div>
+  </div>
+  <div class="colabs-filters">
+    <div class="filter-tabs">
+      <button class="filter-tab ${abaAtiva!=='desligados'?'active':''}" onclick="window._colTab='ativos';render('colaboradores')">Todos <span class="badge-count">${nAtivos}</span></button>
+      <button class="filter-tab ${abaAtiva==='desligados'?'active':''}" onclick="window._colTab='desligados';render('colaboradores')">Inativos <span class="badge-count">${nDeslig}</span></button>
+    </div>
+    <input class="filter-search" placeholder="Buscar nome, área..." value="${search}" oninput="render('colaboradores',this.value)"/>
+  </div>
+  <div class="colabs-table-wrap">
+    <table class="colabs-table">
+      <thead><tr>
+        <th>Colaborador</th><th>Função</th><th>Área</th>
+        <th>Movim.</th><th>Capacidade</th><th>Última avaliação</th><th>Status</th><th></th>
+      </tr></thead>
+      <tbody>${rows||'<tr><td colspan="8" style="text-align:center;padding:40px;color:#6B7370">Nenhum colaborador.</td></tr>'}</tbody>
+    </table>
+    <div class="colabs-pagination">
+      <span>Mostrando ${list.length} de ${list.length}</span>
+      <div class="pag-btns"><button class="pag-btn active">1</button></div>
+      <span>Por página: ${list.length}</span>
+    </div>
+  </div>`;
 }
 
 function renderOrganograma(){
