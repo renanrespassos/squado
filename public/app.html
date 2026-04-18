@@ -84,7 +84,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .topbar-info{flex:1;min-width:0;display:flex;align-items:center;padding:0 20px}
 .topbar-title{font-size:15px;font-weight:600;color:#1A1F1D;font-family:'Inter',sans-serif;letter-spacing:-.015em;white-space:nowrap}
 .topbar-sub{font-size:10px;color:rgba(255,255,255,.5);font-weight:500}
-.search-box{display:flex;align-items:center;padding:0 20px;gap:10px;border-right:1px solid #E0E2E0;flex:1}
+.search-box{display:flex;align-items:center;padding:0 20px;gap:10px;flex:1;min-width:0}
 .search-box input{background:transparent;border:none;outline:none;color:#1A1F1D;font-family:'Inter',sans-serif;font-size:13px;flex:1;min-width:0}
 .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer;transition:all .15s;border:0.5px solid var(--border2);background:var(--bg);color:var(--txt);white-space:nowrap;font-family:inherit}
 .btn:hover{background:var(--bg2)}
@@ -400,7 +400,7 @@ select:focus{border-bottom-color:#0F6E56;outline:none}
   /* ── Topbar — sem deslocamento pelo hambúrguer ── */
   .topbar{padding:0 14px;gap:8px;height:52px}
   .topbar-sub{display:none}
-  .search-box{display:flex;align-items:center;padding:0 20px;gap:10px;border-right:1px solid #E0E2E0;flex:1}
+  .search-box{display:flex;align-items:center;padding:0 20px;gap:10px;flex:1;min-width:0}
 
   /* ── Nav items maiores e mais confortáveis ── */
   .mob-nav{min-height:64px;padding:0 0 env(safe-area-inset-bottom,0px)}
@@ -808,7 +808,11 @@ input[type=number]{
       <div class="topbar-title" id="topbar-title">Dashboard</div>
       <div class="topbar-sub" id="topbar-sub">Visão geral</div>
     </div>
-    <div class="search-box">🔍<input id="search-input" placeholder="Buscar..." oninput="handleSearch(this.value)"/></div>
+    <div class="search-box">
+      <span style="color:#9BA09E;display:flex;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></span>
+      <input id="search-input" placeholder="Buscar colaboradores, áreas..." oninput="handleSearch(this.value)" style="background:transparent;border:none;outline:none;color:#1A1F1D;font-family:'Inter',sans-serif;font-size:13px;flex:1">
+      <kbd style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7370;background:#F5F6F4;padding:2px 6px;border-radius:3px;border:1px solid #E0E2E0;flex-shrink:0">⌘ K</kbd>
+    </div>
     <div id="squado-user-badge" style="display:none;align-items:center;gap:8px;padding:0 16px;border-left:1px solid #E0E2E0;cursor:pointer;height:100%;flex-shrink:0">
       <div style="width:28px;height:28px;background:#0F6E56;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff" id="squado-user-avatar-initials">?</div>
       <div style="line-height:1.25">
