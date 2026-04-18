@@ -1564,9 +1564,9 @@ function go(page){
   // Mostrar search box apenas em colaboradores
   const _sb = document.querySelector('.search-box');
   if(_sb) _sb.style.display = page === 'colaboradores' ? 'flex' : 'none';
-  // Esconder botão de ação no topbar para colaboradores (vai na página)
+  // Topbar-btn sempre escondido — botão de ação fica dentro da página
   const _tbBtn = document.getElementById('topbar-btn');
-  if(_tbBtn && page === 'colaboradores') _tbBtn.style.display = 'none';
+  if(_tbBtn) _tbBtn.style.display = 'none';
   document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
   // Para sub-páginas de avaliação, marcar o item "avaliacao_hub"
   const pageForNav = ['avaliacao','historico_aval','perguntas'].includes(page) ? 'avaliacao_hub' : page;
@@ -8533,6 +8533,22 @@ function pararSyncPeriodico() {
   clearInterval(_syncPeriodic);
   _syncPeriodic = null;
 }
+function toggleUserMenu(){
+  const m = document.getElementById('squado-user-menu');
+  if(!m) return;
+  const isOpen = m.style.display === 'block';
+  m.style.display = isOpen ? 'none' : 'block';
+  if(!isOpen){
+    setTimeout(()=>{
+      document.addEventListener('click', function _close(e){
+        if(!e.target.closest('#squado-user-badge') && !e.target.closest('#squado-user-menu')){
+          m.style.display='none';
+          document.removeEventListener('click',_close);
+        }
+      });
+    },0);
+  }
+}
 
 // Sync ao trocar/sair da aba (visibilitychange)
 document.addEventListener('visibilitychange', () => {
@@ -9226,21 +9242,4 @@ function gerarRelatorioCapacidade(){
   w.document.close();
 }
 
-function toggleUserMenu(){
-  const m = document.getElementById('squado-user-menu');
-  if(!m) return;
-  const isOpen = m.style.display === 'block';
-  m.style.display = isOpen ? 'none' : 'block';
-  // Fechar ao clicar fora
-  if(!isOpen){
-    setTimeout(()=>{
-      document.addEventListener('click', function _close(e){
-        if(!e.target.closest('#squado-user-badge') && !e.target.closest('#squado-user-menu')){
-          m.style.display='none';
-          document.removeEventListener('click',_close);
-        }
-      });
-    },0);
-  }
-}
 </script>
