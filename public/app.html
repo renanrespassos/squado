@@ -488,7 +488,7 @@ input[type=range]:focus{box-shadow:none}
 .sq-login-ticker{background:#0E0E0E;color:#FCFCFA;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:8px 0;overflow:hidden;white-space:nowrap;flex-shrink:0}
 .sq-login-ticker-inner{display:inline-block;animation:ticker 25s linear infinite}
 @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.sq-login-grid{display:grid;grid-template-columns:1fr 1fr 1fr;min-height:calc(100vh - 37px)}
+.sq-login-grid{display:grid;grid-template-columns:1fr 1fr 1fr;min-height:calc(100vh - 37px);width:100%}
 .sq-col-premissa{background:#FCFCFA;padding:48px 40px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid #E8E5DD}
 .sq-col-identidade{background:#0E0E0E;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;border-right:1px solid #2A2A2A}
 .sq-col-acesso{background:#FCFCFA;padding:48px 44px;display:flex;flex-direction:column;justify-content:center}
@@ -7902,7 +7902,7 @@ function deletarFuncaoCapacidade(id) {
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- TELA DE LOGIN / REGISTRO SQUADO                                -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<div id="squado-auth-overlay" style="display:none;position:fixed;inset:0;z-index:99999;background:#0F6E56;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow-y:auto">
+<div id="squado-auth-overlay" style="display:none;position:fixed;inset:0;z-index:99999;background:#FCFCFA;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow-y:auto">
 <style>
 #squado-auth-overlay{font-family:'Archivo',sans-serif}
 </style>
