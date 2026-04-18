@@ -8675,6 +8675,8 @@ function squadoLogout() {
     SQUADO_TOKEN_KEY, SQUADO_USER_KEY
   ];
   keysToRemove.forEach(k => localStorage.removeItem(k));
+  // Limpar TODOS os outros keys para garantir isolamento total entre contas
+  localStorage.clear();
   // Resetar variáveis em memória
   colaboradores = []; avaliacoes = []; metas = []; notas = []; niveis = [];
   const badge = document.getElementById('squado-user-badge');
