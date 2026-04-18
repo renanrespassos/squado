@@ -620,6 +620,37 @@ select:focus{border-bottom-color:#0F6E56;outline:none}
 /* Override overlay login */
 #squado-auth-overlay{background:#FCFCFA!important;flex-direction:column!important;font-family:'Archivo',sans-serif!important}
 .sq-login-grid{display:grid!important;grid-template-columns:1fr 1fr 1fr!important;width:100%!important;flex:1}
+
+/* ── Capacidade + Organograma: override inline border-radius ── */
+#page-content [style*="border-radius:11px"]{border-radius:0!important}
+#page-content [style*="border-radius:10px"]{border-radius:0!important}
+#page-content [style*="border-radius:8px"]{border-radius:0!important}
+#page-content [style*="border-radius:7px"]{border-radius:2px!important}
+#page-content [style*="border-radius:12px"]{border-radius:0!important}
+#page-content [style*="border-radius:6px"]{border-radius:2px!important}
+
+/* Manter avatars circulares e barras */
+#page-content [style*="border-radius:50%"]{border-radius:50%!important}
+#page-content [style*="border-radius:3px"]{border-radius:0!important}
+#page-content [style*="border-radius:4px"]{border-radius:2px!important}
+
+/* Fonts dos títulos de seção inline */
+#page-content [style*="font-size:10px"][style*="font-weight:600"]{
+  font-family:'JetBrains Mono',monospace!important;
+  letter-spacing:.08em!important;
+  text-transform:uppercase!important;
+}
+
+/* Sidebar mais escura */
+.sidebar{background:#0A3D2B!important}
+.sidebar .nav-section{color:rgba(255,255,255,.3)!important}
+.sidebar .nav-item{color:rgba(255,255,255,.55)!important}
+.sidebar .nav-item.active,.sidebar .nav-item:hover{background:rgba(255,255,255,.1)!important;color:#fff!important}
+.nav-svg{stroke:currentColor!important}
+
+/* Avatar tamanho consistente */
+.avatar{font-family:'Archivo',sans-serif!important;font-weight:800!important}
+
 </style>
 </head>
 <body>
