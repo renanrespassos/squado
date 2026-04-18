@@ -742,6 +742,16 @@ input[type=number]{
 </style>
 </head>
 <body>
+<div id="squado-loading-overlay" style="display:none;position:fixed;inset:0;background:#FFFFFF;z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:16px">
+  <div style="width:36px;height:36px;background:#0F6E56;border-radius:6px;display:flex;align-items:center;justify-content:center">
+    <svg aria-hidden="true" width="20" height="20" style="color:#fff"><use href="#squado-block"/></svg>
+  </div>
+  <div style="font-family:'Inter',sans-serif;font-size:14px;color:#6B7370">Carregando dados...</div>
+  <div style="width:120px;height:3px;background:#E0E2E0;border-radius:2px;overflow:hidden">
+    <div style="height:100%;background:#0F6E56;border-radius:2px;animation:sq-load 1.5s ease-in-out infinite" id="sq-load-bar"></div>
+  </div>
+</div>
+<style>@keyframes sq-load{0%{width:0;margin-left:0}50%{width:60%;margin-left:20%}100%{width:0;margin-left:100%}}</style>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
     <symbol id="squado-block" viewBox="0 0 40 40">
@@ -8650,8 +8660,12 @@ function squadoEntrar(user) {
   // Mostrar botao sair mobile
   const _mob = document.getElementById('squado-sair-mobile');
   if(_mob) _mob.style.display = 'block';
-  // Carregar dados da nuvem após login
-  setTimeout(() => squadoCarregarDaNuvem(), 500);
+  // Carregar dados da nuvem após login — mostrar loading até terminar
+  const _loadingEl = document.getElementById('squado-loading-overlay');
+  if(_loadingEl) _loadingEl.style.display = 'flex';
+  squadoCarregarDaNuvem().finally(()=>{
+    if(_loadingEl) _loadingEl.style.display = 'none';
+  });
   iniciarSyncPeriodico();
 }
 
