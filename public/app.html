@@ -1737,14 +1737,19 @@ function renderColaboradores(search=''){
 
   return [
     '<div>',
-    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">',
-    '<div style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;overflow:hidden;width:fit-content">',
-      tabBtn('ativos','👥','Ativos',totalAtivos),
-      '<span style="width:0.5px;background:var(--border2)"></span>',
-      tabBtn('desligados','🚪','Desligados',totalDesligados),
+    '<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">',
+    '<div style="display:flex;align-items:center;gap:8px;background:#F5F6F4;border:1px solid #E0E2E0;border-radius:6px;padding:7px 12px">',
+    '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9BA09E" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>',
+    '<input id="col-search-input" placeholder="Buscar colaboradores..." oninput="renderColaboradores(this.value)" style="border:none;background:transparent;outline:none;flex:1;font-size:13px;color:#1A1F1D" value="'+search+'">',
+    '</div>',
+    '<div style="display:flex;align-items:center;justify-content:space-between">',
+    '<div style="display:flex;gap:4px">',
+      '<button onclick="window._colTab=\'ativos\';render(\'colaboradores\')" style="padding:6px 14px;border:none;cursor:pointer;border-radius:5px;font-family:\'Inter\',sans-serif;transition:all .12s;background:'+((window._colTab||'ativos')==='ativos'?'#E6EFEB':'transparent')+';color:'+((window._colTab||'ativos')==='ativos'?'#084231':'#6B7370')+';font-weight:'+((window._colTab||'ativos')==='ativos'?600:400)+'">'+' Ativos <span style="background:'+((window._colTab||'ativos')==='ativos'?'#0F6E56':'#E0E2E0')+';color:'+((window._colTab||'ativos')==='ativos'?'#fff':'#6B7370')+';border-radius:10px;padding:1px 7px;font-size:11px;font-weight:600">'+totalAtivos+'</span></button>',
+      
+      '<button onclick="window._colTab=\'desligados\';render(\'colaboradores\')" style="padding:6px 14px;border:none;cursor:pointer;border-radius:5px;font-family:\'Inter\',sans-serif;transition:all .12s;background:'+(window._colTab==='desligados'?'#E6EFEB':'transparent')+';color:'+(window._colTab==='desligados'?'#084231':'#6B7370')+';font-weight:'+(window._colTab==='desligados'?600:400)+'">'+' Desligados <span style="background:'+(window._colTab==='desligados'?'#0F6E56':'#E0E2E0')+';color:'+(window._colTab==='desligados'?'#fff':'#6B7370')+';border-radius:10px;padding:1px 7px;font-size:11px;font-weight:600">'+totalDesligados+'</span></button>',
     '</div>',
     '<button onclick="openColForm()" style="background:#0F6E56;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;display:flex;align-items:center;gap:6px"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"><line x1=\"12\" y1=\"5\" x2=\"12\" y2=\"19\"/><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/></svg> Novo Colaborador</button>',
-    '</div>',
+    '</div>','</div>',
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">',
       '<button class="btn btn-danger btn-sm" id="btn-excluir-cols" onclick="excluirColsSelecionados()" style="display:none">🗑 Excluir selecionados</button>',
     '</div>',
@@ -6441,11 +6446,12 @@ function renderPerfilAba(id, aba){
 
   const tabsHtml=abas.map(a=>
     '<button onclick="renderPerfilAba(\''+id+'\',\''+a.id+'\')" '
-    +'style="padding:8px 14px;border:none;background:'+(aba===a.id?'var(--bg)':'transparent')+';'
-    +'border-bottom:2px solid '+(aba===a.id?'var(--green)':'transparent')+';'
-    +'color:'+(aba===a.id?'var(--green)':'var(--txt2)')+';font-weight:'+(aba===a.id?'700':'400')+';'
-    +'font-size:12.5px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;white-space:nowrap">'
-    +a.icon+' '+a.label+'</button>'
+    +'style="padding:7px 14px;border:none;background:'+(aba===a.id?'#E6EFEB':'transparent')+';'
+    +'color:'+(aba===a.id?'#084231':'#6B7370')+';font-weight:'+(aba===a.id?'600':'400')+';'
+    +'border-radius:5px;font-size:12.5px;cursor:pointer;font-family:\'Inter\',sans-serif;'
+    +'white-space:nowrap;transition:all .12s">'
+    +a.label
+    +'</button>'
   ).join('');
 
   let conteudo='';
@@ -9118,6 +9124,9 @@ function gerarRelatorioCapacidade(){
 /* Carregando... item */
 #sb-carregando, .sb-loading{color:#6B7370!important;font-size:12px!important}
 
+
+#topbar-btn { display: none !important; }
+.search-box { display: none; }
 </style></head><body>'
 
     // Botão de impressão fixo
