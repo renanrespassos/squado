@@ -61,8 +61,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .sidebar-logo{padding:13px 15px;border-bottom:1px solid rgba(255,255,255,.12);flex-shrink:0}
 .logo-mark{display:flex;align-items:center;gap:10px}
 .logo-icon{width:28px;height:28px;background:#fff;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:800;color:#0F6E56}
-.logo-text{font-size:13px;font-weight:700;color:#fff;line-height:1.3}
-.logo-sub{font-size:9px;color:#9FE1CB}
+.logo-text{color:#1A1F1D!important;font-size:13px;font-weight:700;color:#fff;line-height:1.3}
+.logo-sub{color:#6B7370!important;font-size:9px;color:#9FE1CB}
 .nav{padding:6px 0;flex:1}
 .nav-section{padding:5px 13px 2px;font-size:9px;font-weight:700;color:#9FE1CB;letter-spacing:.09em;text-transform:uppercase;margin-top:6px}
 .nav-item{display:flex;align-items:center;gap:8px;padding:7px 11px;margin:1px 7px;border-radius:7px;cursor:pointer;font-size:12.5px;color:rgba(255,255,255,.75);transition:all .15s;white-space:nowrap;user-select:none}
@@ -644,9 +644,9 @@ select:focus{border-bottom-color:#0F6E56;outline:none}
 /* Sidebar mais escura */
 .sidebar{background:#0A3D2B!important}
 .sidebar .nav-section{color:rgba(255,255,255,.3)!important}
-.sidebar .nav-item{color:rgba(255,255,255,.55)!important}
+.sidebar .nav-item{color:#3A4240!important}
 .sidebar .nav-item.active,.sidebar .nav-item:hover{background:rgba(255,255,255,.1)!important;color:#fff!important}
-.nav-svg{stroke:currentColor!important}
+.nav-svg{stroke:currentColor!important;opacity:0.75}
 
 /* Avatar tamanho consistente */
 .avatar{font-family:'Archivo',sans-serif!important;font-weight:800!important}
@@ -715,7 +715,7 @@ input[type=number]{
 }
 
 /* Sidebar mais escura e profissional */
-.sidebar{background:#0B3D2B!important}
+.sidebar{background:#FFFFFF!important;border-right:1px solid #E0E2E0!important}
 
 /* Nav section labels mais escuros */
 .nav-section{
@@ -726,7 +726,7 @@ input[type=number]{
 }
 
 /* Topbar sub-text */
-.topbar-sub{display:block!important;font-size:10px!important;color:rgba(255,255,255,.45)!important}
+.topbar-sub{display:none}
 
 /* Botão hamburguer */
 .mob-menu-btn{font-size:18px!important}
