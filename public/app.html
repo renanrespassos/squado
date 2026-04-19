@@ -740,6 +740,1863 @@ input[type=number]{
 }
 
 
+/* Modal inputs */
+.modal-content input,.modal-content textarea{border:1px solid #E0E2E0!important;border-radius:6px!important;padding:8px 10px!important;font-family:'Inter',sans-serif!important;font-size:13px!important;color:#1A1F1D!important;background:#FAFAFA!important;transition:border-color .15s!important;box-sizing:border-box!important}
+.modal-content input:focus,.modal-content textarea:focus{border-color:#0F6E56!important;outline:none!important;background:#fff!important}
+.field-label{font-size:12px!important;font-weight:600!important;color:#3A4240!important;margin-bottom:5px!important}
+</style>
+</head>
+<body>
+<div id="squado-loading-overlay" style="display:none;position:fixed;inset:0;background:#FFFFFF;z-index:99999;flex-direction:column;align-items:center;justify-content:center;gap:16px">
+  <div style="width:36px;height:36px;background:#0F6E56;border-radius:6px;display:flex;align-items:center;justify-content:center">
+    <svg aria-hidden="true" width="20" height="20" style="color:#fff"><use href="#squado-block"/></svg>
+  </div>
+  <div style="font-family:'Inter',sans-serif;font-size:14px;color:#6B7370">Carregando dados...</div>
+  <div style="width:120px;height:3px;background:#E0E2E0;border-radius:2px;overflow:hidden">
+    <div style="height:100%;background:#0F6E56;border-radius:2px;animation:sq-load 1.5s ease-in-out infinite" id="sq-load-bar"></div>
+  </div>
+</div>
+<style>@keyframes sq-load{0%{width:0;margin-left:0}50%{width:60%;margin-left:20%}100%{width:0;margin-left:100%}}</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="squado-block" viewBox="0 0 40 40">
+      <rect x="6" y="6" width="28" height="6" fill="currentColor"/>
+      <rect x="6" y="6" width="6" height="14" fill="currentColor"/>
+      <rect x="6" y="17" width="28" height="6" fill="currentColor"/>
+      <rect x="28" y="20" width="6" height="14" fill="currentColor"/>
+      <rect x="6" y="28" width="28" height="6" fill="currentColor"/>
+    </symbol>
+  </defs>
+</svg>
+<div class="shell">
+<aside class="sidebar">
+  <!-- Alça visual mobile — só aparece no mobile -->
+  <div id="mob-sidebar-handle" style="display:none;justify-content:center;padding:10px 0 4px;flex-shrink:0">
+    <div style="width:36px;height:4px;background:rgba(255,255,255,.25);border-radius:4px"></div>
+  </div>
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon" style="width:28px;height:28px;background:#0F6E56;color:#fff;display:flex;align-items:center;justify-content:center;border-radius:4px;flex-shrink:0"><svg aria-hidden="true" width="18" height="18"><use href="#squado-block"/></svg></div>
+      <div><div class="logo-text">Squado</div><div class="logo-sub">Do líder para a equipe.</div></div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Visão Geral</div>
+    <div class="nav-item active" onclick="go('dashboard')"><svg class="nav-svg" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Dashboard</div>
+    <div class="nav-section">Pessoas</div>
+    <div class="nav-item" onclick="go('colaboradores')"><svg class="nav-svg" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Colaboradores</div>
+    <div class="nav-item" onclick="go('organograma')"><svg class="nav-svg" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="2" y="18" width="6" height="4" rx="1"/><rect x="16" y="18" width="6" height="4" rx="1"/><path d="M12 6v4M12 10H5v4M12 10h7v4"/></svg>Organograma</div>
+    <div class="nav-item" onclick="go('capacidade')"><svg class="nav-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg>Capacidade</div>
+    <div class="nav-section">Avaliação</div>
+    <div class="nav-item" onclick="go('avaliacao_hub')"><svg class="nav-svg" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Avaliação</div>
+    <div class="nav-section">Desenvolvimento</div>
+    <div class="nav-item" onclick="go('metas')"><svg class="nav-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>Metas</div>
+    <div class="nav-item" onclick="go('pdi')"><svg class="nav-svg" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>PDI</div>
+    <div class="nav-item" onclick="go('valores')"><svg class="nav-svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Valores</div>
+    <div class="nav-item" onclick="go('ninebox')"><svg class="nav-svg" viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="5"/><rect x="9.5" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/><rect x="3" y="9.5" width="5" height="5"/><rect x="9.5" y="9.5" width="5" height="5"/><rect x="16" y="9.5" width="5" height="5"/><rect x="3" y="16" width="5" height="5"/><rect x="9.5" y="16" width="5" height="5"/><rect x="16" y="16" width="5" height="5"/></svg>Nine-Box</div>
+    <div class="nav-item" onclick="go('competencias')"><svg class="nav-svg" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Competências</div>
+    <div class="nav-item" onclick="go('niveis')"><span class="nav-icon">📈</span>Níveis e Áreas</div>
+    <div class="nav-section">IA &amp; Anotações</div>
+    <div class="nav-item" onclick="go('agente')"><svg class="nav-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>Agente IA</div>
+    <div class="nav-item" onclick="go('notas')"><svg class="nav-svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Bloco de Notas</div>
+    <div class="nav-item" onclick="abrirNotasParticulares()"><svg class="nav-svg" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Notas Particulares</div>
+  </nav>
+  <div class="sidebar-footer" id="sq-sidebar-footer" style="display:flex;flex-direction:column;gap:6px;border-top:1px solid #E0E2E0;padding:12px 16px;margin-top:auto">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <div id="sq-sb-avatar" style="width:28px;height:28px;border-radius:5px;background:#0F6E56;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0">?</div>
+      <div style="flex:1;overflow:hidden">
+        <div id="sq-sb-nome" style="font-size:12px;font-weight:600;color:#1A1F1D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Carregando...</div>
+        <div id="sq-sb-trial" style="font-size:9px;color:#9FE1CB"></div>
+      </div>
+    </div>
+    <button id="btn-migrar" onclick="squadoMigrarDados()" style="display:none;width:100%;font-size:10px;padding:5px 8px;background:#EF9F27;border:none;border-radius:6px;color:#412402;font-weight:700;cursor:pointer">☁️ Migrar dados para nuvem</button>
+    <button class="btn btn-sm" onclick="showApiKeyModal()" style="font-size:11px;padding:5px 10px;background:#F5F6F4;border:1px solid #E0E2E0;color:#3A4240;border-radius:5px;cursor:pointer;width:100%;text-align:left;font-family:'Inter',sans-serif">⚙️ Configurar IA</button>
+    <div id="sq-sync-ind" style="font-size:9px;color:#9BA09E;text-align:center;min-height:12px;transition:color .3s"></div>
+    <button class="btn btn-sm" onclick="squadoLogout()" id="btn-sair-sidebar" style="font-size:11px;padding:5px 10px;background:transparent;border:1px solid #E0E2E0;color:#6B7370;border-radius:5px;cursor:pointer;width:100%;text-align:left;font-family:'Inter',sans-serif">🚪 Sair</button>
+  </div>
+</aside>
+
+<div class="main">
+  <header class="topbar">
+    
+    <div class="topbar-info">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-sub" id="topbar-sub">Visão geral</div>
+    </div>
+    <div id="squado-user-badge" style="display:none;align-items:center;gap:8px;padding:0 16px;border-left:1px solid #E0E2E0;cursor:pointer;height:100%;flex-shrink:0;position:relative" onclick="toggleUserMenu()">
+      <div style="width:28px;height:28px;background:#0F6E56;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff" id="squado-user-avatar-initials">?</div>
+      <div style="line-height:1.25">
+        <div style="font-size:13px;font-weight:500;color:#1A1F1D;white-space:nowrap" id="squado-user-nome">...</div>
+        <div style="font-size:11px;color:#6B7370" id="squado-menu-email"></div>
+      </div>
+    </div>
+    <!-- Dropdown menu usuário -->
+    <div id="squado-user-menu" style="display:none;position:fixed;top:56px;right:0;background:#fff;border:1px solid #E0E2E0;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.08);min-width:220px;z-index:9000;margin-right:8px;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid #F0F1EF">
+        <div style="font-size:13px;font-weight:600;color:#1A1F1D" id="squado-menu-nome-full">Renan</div>
+        <div style="font-size:11px;color:#6B7370" id="squado-menu-plano">Pro</div>
+      </div>
+      <div style="padding:6px">
+        <button onclick="toggleUserMenu();go('configuracoes')" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:none;background:transparent;cursor:pointer;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;color:#3A4240;text-align:left" onmouseover="this.style.background='#F5F6F4'" onmouseout="this.style.background='transparent'">
+          ⚙️ Configurações
+        </button>
+        <button onclick="showApiKeyModal();toggleUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:none;background:transparent;cursor:pointer;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;color:#3A4240;text-align:left" onmouseover="this.style.background='#F5F6F4'" onmouseout="this.style.background='transparent'">
+          🔑 Configurar IA
+        </button>
+        <div style="height:1px;background:#F0F1EF;margin:4px 0"></div>
+        <button onclick="squadoLogout()" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:none;background:transparent;cursor:pointer;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;color:#A6311F;text-align:left" onmouseover="this.style.background='#FEF2F0'" onmouseout="this.style.background='transparent'">
+          🚪 Sair
+        </button>
+      </div>
+    </div>
+    <button class="btn" id="topbar-btn" style="background:#0F6E56;border-color:#0F6E56;color:#fff;font-weight:600;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;padding:6px 14px" onclick="handleTopAction()" style="display:none">+<span id="topbar-btn-label">Novo</span></button>
+  </header>
+  <div class="content" id="page-content-wrap">
+    <div class="content-inner" id="page-content"></div>
+  </div>
+</div>
+</div>
+
+<div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-box">
+    <div class="modal-header"><div class="modal-title" id="modal-title"></div><button class="modal-close" onclick="closeModal()">×</button></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+<div class="toast" id="toast">✓ <span id="toast-msg">Salvo!</span></div>
+
+<script>
+
+// ═══════════════════════════════════════════════════════════════
+// UTILITÁRIOS
+// ═══════════════════════════════════════════════════════════════
+function uid(){ return Math.random().toString(36).slice(2,9)+Date.now().toString(36); }
+function ls(key,def){ try{ const v=localStorage.getItem(key); return v?JSON.parse(v):def; }catch{ return def; } }
+function lss(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch{} }
+function toast(msg,dur=2400){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1D9E75;color:#fff;padding:10px 22px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.18);pointer-events:none;opacity:1;transition:opacity .4s';
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),400);},dur);
+}
+function initials(n){ return (n||'').split(' ').slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'?'; }
+function avColor(n){
+  const colors=['#1D9E75','#185FA5','#854F0B','#534AB7','#993C1D','#3B6D11','#085041','#993556'];
+  let h=0; for(let c of (n||'')) h=(h<<5)-h+c.charCodeAt(0);
+  return colors[Math.abs(h)%colors.length];
+}
+function av(nome, large=false, small=false){
+  const sz=large?48:small?24:32;
+  const fs=large?18:small?10:13;
+  return '<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+avColor(nome)+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:'+fs+'px;font-weight:700;flex-shrink:0">'+initials(nome)+'</div>';
+}
+
+// buildDefaultFuncoes — constrói funções padrão a partir do seed de colaboradores
+function buildDefaultFuncoes(cols){
+  // Retorna array vazio — as funções reais vêm de funcoes_v5 (seed de capacidade)
+  return [];
+}
+
+// nivelBadge e areaBadge — badges visuais
+function nivelBadge(nivel){
+  const s=NIVEL_STYLE[nivel]||{cor:'#5F5E5A',bg:'#D3D1C7'};
+  return '<span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px;background:'+s.bg+';color:'+s.cor+'">'+nivel+'</span>';
+}
+function areaBadge(area){
+  const s=AREA_COLORS[area]||{cor:'#5F5E5A',bg:'#D3D1C7'};
+  return '<span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px;background:'+s.bg+';color:'+s.cor+'">'+area+'</span>';
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// DADOS
+// ═══════════════════════════════════════════════════════════════
+// Áreas padrão — substituídas pelas áreas salvas no localStorage
+const AREA_COLORS_DEFAULT={
+  'Gestao':             {cor:'#3B6D11',bg:'#EAF3DE'},
+  'EMC':                {cor:'#185FA5',bg:'#dbeafe'},
+  'Configuracao EMC':   {cor:'#1e40af',bg:'#bfdbfe'},
+  'RF':                 {cor:'#854F0B',bg:'#fef3c7'},
+  'Configuracao RF':    {cor:'#993C1D',bg:'#F5C4B3'},
+  'Baterias e Acustica':{cor:'#7C3D8F',bg:'#F3E8FF'},
+  'Redes Moveis':       {cor:'#085041',bg:'#9FE1CB'},
+  'Outros Ensaios':     {cor:'#0F766E',bg:'#CCFBF1'},
+  'Entrada e Devolucao':{cor:'#5F5E5A',bg:'#D3D1C7'},
+};
+
+// Paleta de cores para novas áreas
+const AREA_PALETTE=[
+  {cor:'#185FA5',bg:'#dbeafe'},{cor:'#0F6E56',bg:'#E1F5EE'},
+  {cor:'#854F0B',bg:'#fef3c7'},{cor:'#7C3D8F',bg:'#F3E8FF'},
+  {cor:'#085041',bg:'#9FE1CB'},{cor:'#A32D2D',bg:'#FCEBEB'},
+  {cor:'#0F766E',bg:'#CCFBF1'},{cor:'#3B6D11',bg:'#C0DD97'},
+  {cor:'#534AB7',bg:'#EEEDFE'},{cor:'#993C1D',bg:'#F5C4B3'},
+  {cor:'#5F5E5A',bg:'#D3D1C7'},{cor:'#1e40af',bg:'#bfdbfe'},
+];
+
+// Carregar áreas salvas ou usar padrão
+function carregarAreas() {
+  const saved = ls('areas_config', null);
+  if (saved && typeof saved === 'object' && Object.keys(saved).length > 0) return saved;
+  return AREA_COLORS_DEFAULT;
+}
+let AREA_COLORS = carregarAreas();
+
+// Salvar áreas no localStorage e sincronizar
+function salvarAreas(areas) {
+  AREA_COLORS = areas;
+  lss('areas_config', areas);
+  saveAll();
+}
+
+const NIVEL_STYLE={
+  'Coordenador':{cor:'#3B6D11',bg:'#C0DD97'},
+  'Gerente':{cor:'#3B6D11',bg:'#C0DD97'},
+  'Especialista':{cor:'#993C1D',bg:'#F5C4B3'},
+  'Analista III':{cor:'#064E3B',bg:'#A7F3D0'},
+  'Analista II':{cor:'#085041',bg:'#9FE1CB'},
+  'Analista I':{cor:'#0F6E56',bg:'#E1F5EE'},
+  'Assistente III':{cor:'#1e3a8a',bg:'#BFDBFE'},
+  'Assistente II':{cor:'#185FA5',bg:'#E6F1FB'},
+  'Assistente I':{cor:'#534AB7',bg:'#EEEDFE'},
+  'Assistente':{cor:'#6D28D9',bg:'#EDE9FE'},
+  'Estagiário':{cor:'#854F0B',bg:'#FAEEDA'},
+};
+
+const DEFAULT_NIVEIS=[
+  {id:'n1',nome:'Estagiário',cor:'#854F0B',bg:'#FAEEDA',ordem:1},
+  {id:'n2',nome:'Assistente',cor:'#6D28D9',bg:'#EDE9FE',ordem:2},
+  {id:'n3',nome:'Assistente I',cor:'#534AB7',bg:'#EEEDFE',ordem:3},
+  {id:'n4',nome:'Assistente II',cor:'#185FA5',bg:'#E6F1FB',ordem:4},
+  {id:'n5',nome:'Assistente III',cor:'#1e3a8a',bg:'#BFDBFE',ordem:5},
+  {id:'n6',nome:'Analista I',cor:'#0F6E56',bg:'#E1F5EE',ordem:6},
+  {id:'n7',nome:'Analista II',cor:'#085041',bg:'#9FE1CB',ordem:7},
+  {id:'n8',nome:'Analista III',cor:'#064E3B',bg:'#A7F3D0',ordem:8},
+  {id:'n9',nome:'Especialista',cor:'#993C1D',bg:'#F5C4B3',ordem:9},
+  {id:'n10',nome:'Coordenador',cor:'#3B6D11',bg:'#C0DD97',ordem:10},
+  {id:'n11',nome:'Gerente',cor:'#A32D2D',bg:'#F7C1C1',ordem:11},
+];
+
+const DEFAULT_PERGUNTAS={
+
+  // ════════════════════════════════════════
+  // ESTAGIÁRIO — 8 seções, foco em execução e aprendizado
+  // ════════════════════════════════════════
+  'Estagiário':{
+    'Versatilidade':[
+      'Ajuda os colegas nas realizações das tarefas, visando alcançar os objetivos da equipe?',
+      'Tem boa aceitação para atividades novas, desempenhando todas as tarefas com disposição?',
+      'Adapta-se facilmente a mudanças de rotina ou prioridade sem perder a qualidade?'
+    ],
+    'Relacionamento':[
+      'Sabe trabalhar em equipe e colaborar com os colegas?',
+      'Apresenta um bom relacionamento com os colegas de trabalho?',
+      'Apresenta autocontole de suas emoções e comportamentos no ambiente de trabalho?'
+    ],
+    'Olhar Sistêmico':[
+      'Considera as necessidades dos clientes como fundamentais para o resultado do laboratório?',
+      'Percebe a importância do seu trabalho e o impacto do mesmo em relação à sociedade e aos clientes?'
+    ],
+    'Trabalho em Equipe':[
+      'Busca o diálogo e a troca de opiniões para encontrar junto ao grupo a melhor solução?',
+      'Consegue trabalhar em grupo sem causar conflitos, estimulando a participação coletiva?',
+      'Pede ajuda aos colegas próximos antes de solicitar apoio do gestor quando necessário?'
+    ],
+    'Responsabilidade':[
+      'Cumpre seus prazos e busca atingir seus objetivos ao desempenhar seu trabalho?',
+      'Procura alcançar altos níveis de qualidade conforme o padrão estabelecido pelo laboratório?',
+      'Avisa antecipadamente quando não conseguirá entregar uma atividade no prazo combinado?'
+    ],
+    'Foco em Resultados':[
+      'Consegue realizar todas as atividades solicitadas e auxilia com a organização e gestão do Kanban?',
+      'Direciona seus esforços para atingir os objetivos da equipe?',
+      'Demonstra atenção aos detalhes e capricho nas atividades que executa?'
+    ],
+    'Organização':[
+      'Sabe definir prioridades para alocar seu tempo e desempenhar várias tarefas ao mesmo tempo?',
+      'É pontual nos horários de trabalho e mantém os intervalos conforme o combinado?',
+      'Sabe usar seu tempo de forma adequada? Evita a utilização do celular no horário de trabalho?'
+    ],
+    'Norma 17025 e Técnica':[
+      'Realiza as atividades da qualidade para a manutenção do laboratório sem necessidade de cobranças?',
+      'Demonstra interesse em conhecer a norma ISO/IEC 17025:2017 e os procedimentos do laboratório?',
+      'Quando possui tempo disponível, procura aprender e aperfeiçoar suas técnicas e conhecimentos?'
+    ]
+  },
+
+  // ════════════════════════════════════════
+  // ASSISTENTE — 8 seções, mesmas da imagem + Norma
+  // ════════════════════════════════════════
+  'Assistente':{
+    'Versatilidade':[
+      'Ajuda os colegas nas realizações das tarefas, visando alcançar os objetivos da equipe?',
+      'Tem grande aceitação para inovações e atividades novas, desempenhando sempre com ânimo todas as tarefas?',
+      'Propõe alternativas e soluções quando encontra obstáculos nas suas atividades?'
+    ],
+    'Relacionamento':[
+      'Sabe trabalhar em equipe e colaborar com os colegas de trabalho?',
+      'Apresenta um bom relacionamento com os colegas e com os clientes?',
+      'Apresenta autocontrole de suas emoções e comportamentos no local de trabalho?'
+    ],
+    'Olhar Sistêmico':[
+      'Considera as necessidades dos clientes como fundamentais para o resultado do laboratório?',
+      'Percebe a importância do seu trabalho e o impacto do mesmo em relação à sociedade e imagem do laboratório?'
+    ],
+    'Trabalho em Equipe':[
+      'Busca o diálogo e a troca de opiniões no grupo para que todos encontrem juntos a melhor solução?',
+      'Consegue trabalhar em grupo sem causar conflitos, estimulando a participação coletiva?',
+      'Compartilha informações e conhecimento com os colegas de forma proativa?'
+    ],
+    'Responsabilidade':[
+      'Cumpre seus prazos e busca atingir seus objetivos ao desempenhar seu trabalho?',
+      'Procura alcançar altos níveis de qualidade conforme o padrão estabelecido pelo laboratório?',
+      'Assume a responsabilidade pelos próprios erros e busca corrigir sem que precise ser cobrado?'
+    ],
+    'Foco em Resultados':[
+      'Consegue realizar todas as atividades solicitadas e auxilia com a organização e gestão do Kanban?',
+      'Direciona seus esforços para atingir os objetivos da equipe?',
+      'Propõe melhorias nos processos e rotinas de trabalho da sua área?'
+    ],
+    'Organização':[
+      'Sabe definir prioridades para alocar seu tempo e desempenhar várias tarefas ao mesmo tempo?',
+      'É pontual nos horários de trabalho e mantém os intervalos conforme o combinado?',
+      'Sabe usar seu tempo de forma adequada? Evita a utilização do celular no horário de trabalho?'
+    ],
+    'Norma 17025 e Técnica':[
+      'Realiza as atividades da qualidade para a manutenção do laboratório sem necessidade de cobranças? (Condições Ambientais / Manutenção Preventiva / Checagens)',
+      'Apresenta conhecimento da norma ISO/IEC 17025:2017 e do manual da qualidade?',
+      'Apresenta conhecimento pleno nos procedimentos e métodos de ensaio da sua área?',
+      'Quando possui tempo disponível, procura aprender e aperfeiçoar técnicas e conhecimentos?'
+    ]
+  },
+
+  // ════════════════════════════════════════
+  // ASSISTENTE I — mesmo foco + autonomia
+  // ════════════════════════════════════════
+  'Assistente I':{
+    'Versatilidade':[
+      'Ajuda os colegas nas realizações das tarefas, visando alcançar os objetivos da equipe?',
+      'Tem grande aceitação para inovações e atividades novas, desempenhando com ânimo todas as tarefas?',
+      'Propõe alternativas e soluções quando encontra obstáculos nas suas atividades?'
+    ],
+    'Relacionamento':[
+      'Apresenta um bom relacionamento com colegas, clientes e fornecedores?',
+      'Apresenta autocontrole de suas emoções e comportamentos no ambiente de trabalho?',
+      'Comunica dificuldades e riscos ao gestor com antecedência e clareza?'
+    ],
+    'Trabalho em Equipe':[
+      'Busca o diálogo e a troca de opiniões para encontrar junto ao grupo a melhor solução?',
+      'Consegue trabalhar em grupo sem causar conflitos, estimulando a participação coletiva?',
+      'Compartilha informações e conhecimento com os colegas de forma proativa?'
+    ],
+    'Responsabilidade':[
+      'Cumpre seus prazos e busca atingir seus objetivos ao desempenhar seu trabalho?',
+      'Procura alcançar altos níveis de qualidade conforme o padrão estabelecido pelo laboratório?',
+      'Assume a responsabilidade pelos próprios erros e busca corrigir sem que precise ser cobrado?'
+    ],
+    'Foco em Resultados':[
+      'Consegue realizar todas as atividades solicitadas e auxilia com a organização e gestão do Kanban?',
+      'Direciona seus esforços para atingir os objetivos da equipe?',
+      'Propõe melhorias nos processos e rotinas de trabalho da sua área?'
+    ],
+    'Organização':[
+      'Sabe definir prioridades para alocar seu tempo e desempenhar várias tarefas ao mesmo tempo?',
+      'É pontual nos horários de trabalho? Usa o tempo de forma produtiva e evita distrações?',
+      'Mantém organização no seu posto de trabalho e nos itens sob sua responsabilidade?'
+    ],
+    'Norma 17025 e Técnica':[
+      'Realiza as atividades da qualidade para a manutenção do laboratório sem necessidade de cobranças?',
+      'Apresenta conhecimento da norma ISO/IEC 17025:2017 e do manual da qualidade?',
+      'Apresenta conhecimento pleno nos procedimentos e métodos de ensaio da sua área?',
+      'Quando possui tempo disponível, procura aprender e aperfeiçoar técnicas e conhecimentos?'
+    ]
+  },
+
+  // ════════════════════════════════════════
+  // ASSISTENTE II — foco em orientação de colegas
+  // ════════════════════════════════════════
+  'Assistente II':{
+    'Versatilidade':[
+      'Atua em múltiplas atividades da área com autonomia e qualidade?',
+      'Apoia e orienta colegas menos experientes em suas atividades do dia a dia?',
+      'Adapta-se com facilidade a novas demandas, equipamentos e procedimentos?'
+    ],
+    'Relacionamento e Trabalho em Equipe':[
+      'Promove um ambiente colaborativo e positivo na equipe?',
+      'Consegue mediar conflitos de forma construtiva, buscando soluções para todos?',
+      'Compartilha proativamente informações e conhecimento técnico com os colegas?'
+    ],
+    'Responsabilidade':[
+      'Gerencia suas atividades com autonomia e organização, sem necessidade de cobranças?',
+      'Antecipa problemas e propõe soluções preventivas antes que impactem os resultados?',
+      'Cumpre os prazos acordados com clientes internos e externos?'
+    ],
+    'Foco em Resultados':[
+      'Busca consistentemente resultados superiores ao esperado para a sua função?',
+      'Contribui ativamente para o atingimento das metas e indicadores da área?',
+      'Implementa melhorias que geram ganho real de produtividade e qualidade?'
+    ],
+    'Organização e Gestão do Tempo':[
+      'Sabe definir prioridades e gerenciar múltiplas demandas ao mesmo tempo?',
+      'É pontual e disciplinado com os horários de trabalho e intervalos?',
+      'Mantém organização no seu posto, nas bancadas e nos itens sob sua responsabilidade?'
+    ],
+    'Norma 17025 e Qualidade':[
+      'Realiza as atividades da qualidade sem necessidade de cobranças? (Condições Ambientais / Manutenção / Checagens)',
+      'Garante a conformidade das atividades sob sua responsabilidade com a norma ISO/IEC 17025:2017?',
+      'Orienta os colegas sobre os requisitos normativos e boas práticas do laboratório?'
+    ],
+    'Técnica':[
+      'Apresenta conhecimento pleno nos procedimentos, métodos e equipamentos da sua área?',
+      'Apresenta conhecimento sobre incerteza de medição e rastreabilidade aplicável à sua função?',
+      'Quando possui tempo disponível, procura aprender e aperfeiçoar técnicas e conhecimentos?'
+    ]
+  },
+
+  // ════════════════════════════════════════
+  // ASSISTENTE III — foco em referência técnica
+  // ════════════════════════════════════════
+  'Assistente III':{
+    'Versatilidade e Iniciativa':[
+      'Atua com autonomia em diversas atividades e é referência técnica para os colegas?',
+      'Lidera pequenas frentes de trabalho e projetos internos quando necessário?',
+      'Propõe e implementa melhorias de processo com impacto real na qualidade e produtividade?'
+    ],
+    'Relacionamento e Influência':[
+      'É referência positiva de comportamento e postura para os colegas da equipe?',
+      'Apoia o desenvolvimento de colegas menos experientes de forma espontânea?',
+      'Colabora ativamente com outras áreas do laboratório para atingir objetivos comuns?'
+    ],
+    'Responsabilidade':[
+      'Assume responsabilidade integral pelas atividades sob sua gestão sem necessidade de cobranças?',
+      'Reporta riscos e desvios com antecedência e já acompanha com proposta de solução?',
+      'Demonstra maturidade profissional em situações de pressão e prazo?'
+    ],
+    'Foco em Resultados':[
+      'Supera consistentemente as metas estabelecidas para a sua função?',
+      'Monitora os indicadores da área e propõe ações corretivas quando necessário?',
+      'Implementa melhorias que geram impacto mensurável nos processos?'
+    ],
+    'Organização e Gestão do Tempo':[
+      'Gerencia bem o próprio tempo e o de atividades sob sua supervisão?',
+      'É pontual e disciplinado, servindo de exemplo para os colegas?',
+      'Mantém organização exemplar no posto de trabalho, bancadas e itens do laboratório?'
+    ],
+    'Norma 17025 e Qualidade':[
+      'Domina a norma ISO/IEC 17025:2017 e garante conformidade plena em suas atividades?',
+      'Orienta a equipe sobre boas práticas e requisitos normativos de forma proativa?',
+      'Participa ativamente de auditorias internas e revisões de sistema?'
+    ],
+    'Técnica':[
+      'É referência técnica da equipe na sua especialidade e área de atuação?',
+      'Executa ensaios complexos com precisão e autonomia total?',
+      'Apresenta conhecimento avançado sobre incerteza de medição e rastreabilidade?'
+    ]
+  },
+
+  // ════════════════════════════════════════
+  // ANALISTA I — + Liderança e Gestão
+  // ════════════════════════════════════════
+  'Analista I':{
+    'Versatilidade e Análise':[
+      'Transita entre diferentes projetos e demandas com facilidade e qualidade?',
+      'Adapta a abordagem técnica conforme a complexidade e especificidade de cada ensaio?',
+      'Desenvolve análises técnicas e gera recomendações embasadas para a equipe?'
+    ],
+    'Relacionamento e Trabalho em Equipe':[
+      'Lida com conflitos com maturidade e busca construção coletiva de soluções?',
+      'Contribui com ideias e perspectivas técnicas relevantes nas discussões da equipe?',
+      'Mantém boa comunicação com clientes, fornecedores e parceiros internos?'
+    ],
+    'Responsabilidade':[
+      'Gerencia demandas complexas com autonomia, organização e sem necessidade de cobranças?',
+      'Reporta riscos ao gestor com antecedência e acompanha com alternativas de solução?',
+      'Mantém padrão de entrega mesmo em situações adversas e de maior pressão?'
+    ],
+    'Foco em Resultados':[
+      'Entrega alta qualidade técnica de forma consistente, dentro dos prazos acordados?',
+      'Monitora indicadores e toma ações corretivas proativamente para garantir os resultados?',
+      'Contribui com melhorias nos processos e rotinas de trabalho da área?'
+    ],
+    'Organização e Gestão do Tempo':[
+      'Sabe definir prioridades e gerenciar múltiplas demandas de forma eficiente?',
+      'É pontual e disciplinado com os horários, servindo de referência para a equipe?',
+      'Auxilia o gestor no controle de prazos e organização das demandas da equipe?'
+    ],
+    'Norma 17025 e Qualidade':[
+      'Domina os requisitos da norma ISO/IEC 17025:2017 e os aplica no cotidiano?',
+      'Participa de auditorias internas e revisões do sistema de qualidade?',
+      'Realiza as atividades da qualidade sem necessidade de cobranças e orienta os colegas?'
+    ],
+    'Técnica':[
+      'Executa ensaios complexos com autonomia e precisão, sendo referência na sua área?',
+      'Apresenta conhecimento pleno sobre incerteza de medição aplicável aos ensaios?',
+      'Poderia representar o laboratório em uma auditoria ou frente a um cliente?'
+    ],
+    'Liderança e Desenvolvimento de Pessoas':[
+      'Orienta e apoia tecnicamente os Assistentes e Estagiários da equipe?',
+      'Identifica oportunidades de desenvolvimento nos colegas e repassa ao gestor?',
+      'É reconhecido como referência técnica e de postura pelos colegas da equipe?'
+    ]
+  },
+
+  // ════════════════════════════════════════
+  // ANALISTA II — + Gestão de Pessoas e Equipe
+  // ════════════════════════════════════════
+  'Analista II':{
+    'Versatilidade e Análise':[
+      'Lidera iniciativas de melhoria e projetos técnicos em múltiplas frentes?',
+      'Transita entre áreas técnicas com facilidade, agregando valor em cada contexto?',
+      'Desenvolve análises técnicas aprofundadas e gera recomendações estratégicas?'
+    ],
+    'Relacionamento e Influência':[
+      'Influencia positivamente o comportamento, engajamento e postura do time?',
+      'Mentora ativamente colegas juniores, promovendo seu crescimento técnico e profissional?',
+      'Promove integração e colaboração entre diferentes equipes e áreas do laboratório?'
+    ],
+    'Responsabilidade':[
+      'Assume responsabilidade integral pelos resultados da área sob sua supervisão?',
+      'Toma decisões técnicas críticas com embasamento sólido e comunica com clareza?',
+      'Representa a equipe em interações com clientes, auditores e parceiros externos?'
+    ],
+    'Foco em Resultados':[
+      'Supera consistentemente as metas estabelecidas para a área?',
+      'Implementa melhorias com impacto mensurável nos processos e resultados?',
+      'Define e acompanha KPIs e indicadores relevantes para a área?'
+    ],
+    'Gestão do Tempo e Prioridades':[
+      'Gerencia com eficiência o próprio tempo e o fluxo de trabalho da equipe?',
+      'Sabe distribuir e priorizar demandas entre os membros da equipe conforme capacidade e urgência?',
+      'Auxilia o gestor no controle de prazos e na gestão da agenda de ensaios?'
+    ],
+    'Norma 17025 e Qualidade':[
+      'Lidera a implementação e manutenção dos requisitos normativos da ISO/IEC 17025:2017?',
+      'Elabora e revisa documentação técnica, procedimentos e instruções de trabalho?',
+      'Conduz treinamentos internos sobre a norma e boas práticas do laboratório?'
+    ],
+    'Técnica':[
+      'É referência técnica consolidada no laboratório na sua especialidade?',
+      'Resolve problemas técnicos complexos com eficácia e autonomia total?',
+      'Apresenta conhecimento avançado sobre incerteza de medição e validação de métodos?'
+    ],
+    'Gestão de Pessoas e Equipe':[
+      'Cobre e cobra a equipe de forma construtiva quando necessário?',
+      'Identifica e desenvolve os talentos da equipe, propondo ações de crescimento?',
+      'Consegue delegar atividades com clareza, acompanhar a execução e dar feedback?'
+    ]
+  },
+
+  // ════════════════════════════════════════
+  // ANALISTA III — referência máxima técnica
+  // ════════════════════════════════════════
+  'Analista III':{
+    'Versatilidade e Visão Técnica':[
+      'É referência técnica em múltiplas áreas e processos do laboratório?',
+      'Lidera frentes estratégicas de inovação, desenvolvimento de métodos e extensão de escopo?',
+      'Apoia a definição de diretrizes técnicas para o laboratório junto à coordenação?'
+    ],
+    'Relacionamento e Liderança Técnica':[
+      'Desenvolve e mentora líderes técnicos emergentes na equipe?',
+      'Promove cultura de excelência técnica e colaboração entre equipes?',
+      'Representa o laboratório em interações externas com autoridade e segurança?'
+    ],
+    'Responsabilidade e Decisão':[
+      'Responde por projetos e iniciativas de alto impacto com total autonomia?',
+      'Toma decisões técnicas de alto nível com visão sistêmica e embasamento sólido?',
+      'Antecipa riscos estratégicos e propõe planos de contingência?'
+    ],
+    'Foco em Resultados':[
+      'Entrega resultados de alto impacto e sustentabilidade para o laboratório?',
+      'Estabelece metas desafiadoras e mobiliza a equipe para atingi-las?',
+      'Demonstra visão de longo prazo nas iniciativas técnicas que lidera?'
+    ],
+    'Gestão do Tempo e Prioridades':[
+      'Gerencia com excelência o próprio tempo e o fluxo estratégico de trabalho?',
+      'Distribui e prioriza demandas na equipe de forma eficiente e estratégica?',
+      'Garante que os prazos críticos do laboratório sejam cumpridos sistematicamente?'
+    ],
+    'Norma 17025 e Qualidade':[
+      'É especialista de referência na norma ISO/IEC 17025:2017 no laboratório?',
+      'Conduz auditorias e processos de acreditação com protagonismo?',
+      'Propõe e implementa melhorias sistêmicas no sistema de qualidade?'
+    ],
+    'Técnica':[
+      'É a maior autoridade técnica na sua especialidade dentro do laboratório?',
+      'Desenvolve e valida novos métodos de ensaio com rigor científico?',
+      'Apresenta conhecimento avançado e capacidade de transmitir sobre incerteza de medição e metrologia?'
+    ],
+    'Gestão de Pessoas e Desenvolvimento':[
+      'Desenvolve ativamente os membros da equipe e promove sucessão?',
+      'Consegue cobrar e orientar a equipe de forma construtiva e eficaz?',
+      'É reconhecido como mentor e referência de postura e excelência por todos?'
+    ]
+  },
+
+  // ════════════════════════════════════════
+  // ESPECIALISTA
+  // ════════════════════════════════════════
+  'Especialista':{
+    'Versatilidade e Inovação':[
+      'É referência em múltiplas áreas técnicas do laboratório?',
+      'Contribui para inovação, desenvolvimento de novos serviços e capacidades?',
+      'Desenvolve análises e estudos técnicos gerando recomendações estratégicas?'
+    ],
+    'Liderança e Influência':[
+      'Facilita colaboração e integração entre equipes e áreas do laboratório?',
+      'Desenvolve colaboradores com foco em crescimento técnico e profissional sustentável?',
+      'É reconhecido como referência de postura, ética e excelência por toda a equipe?'
+    ],
+    'Responsabilidade':[
+      'Responde por projetos estratégicos do laboratório com total autonomia?',
+      'Toma decisões de alto impacto com embasamento técnico e visão de consequências?',
+      'Representa o laboratório com segurança em auditorias, clientes e órgãos regulatórios?'
+    ],
+    'Foco em Resultados':[
+      'Entrega resultados de alto impacto de forma consistente?',
+      'Estabelece KPIs e métricas relevantes para o laboratório e monitora com rigor?',
+      'Orienta estratégias para superação de metas e melhoria contínua?'
+    ],
+    'Gestão do Tempo e Prioridades':[
+      'Gerencia o próprio tempo e as demandas estratégicas do laboratório com eficiência?',
+      'Define e comunica prioridades com clareza, garantindo foco no que mais impacta?',
+      'Garante cumprimento dos prazos críticos e compromissos com clientes e reguladores?'
+    ],
+    'Norma 17025 e Qualidade':[
+      'É especialista na norma ISO/IEC 17025:2017 e em processos de acreditação?',
+      'Conduz auditorias internas e externas com excelência e representa o laboratório?',
+      'Garante manutenção e evolução contínua do sistema de qualidade?'
+    ],
+    'Técnica':[
+      'É a maior autoridade técnica do laboratório na sua especialidade?',
+      'Desenvolve, valida e aprova novos métodos de ensaio?',
+      'É referência técnica para clientes, órgãos regulatórios e toda a equipe?'
+    ],
+    'Gestão de Pessoas':[
+      'Desenvolve e retém talentos, promovendo um plano de sucessão efetivo?',
+      'Cobre e cobra a equipe de forma construtiva, gerando aprendizado?',
+      'Consegue delegar com clareza, acompanhar a execução e dar feedbacks de qualidade?'
+    ]
+  },
+
+  // ════════════════════════════════════════
+  // COORDENADOR
+  // ════════════════════════════════════════
+  'Coordenador':{
+    'Versatilidade e Visão Estratégica':[
+      'Coordena múltiplas equipes e frentes com visão integrada e estratégica?',
+      'Equilibra com eficiência as demandas técnicas, operacionais e de pessoas?',
+      'Adapta a estratégia conforme demandas internas, externas e do mercado?'
+    ],
+    'Liderança e Desenvolvimento de Equipe':[
+      'Constrói times de alta performance com complementaridade e diversidade?',
+      'Gerencia conflitos com imparcialidade e foco em soluções duradouras?',
+      'Promove cultura de colaboração, aprendizado contínuo e reconhecimento?'
+    ],
+    'Responsabilidade':[
+      'É responsável pelo resultado global da área sob gestão e responde com transparência?',
+      'Define prioridades com clareza e comunica ao time de forma objetiva?',
+      'Presta contas à direção com dados, indicadores e análise crítica?'
+    ],
+    'Foco em Resultados':[
+      'Entrega resultados estratégicos alinhados aos objetivos do laboratório?',
+      'Define e acompanha metas com rigor, regularidade e visão de longo prazo?',
+      'Garante eficiência operacional sem comprometer a qualidade e a conformidade?'
+    ],
+    'Gestão do Tempo e Prioridades':[
+      'Gerencia com excelência o próprio tempo e a agenda estratégica do laboratório?',
+      'Define e comunica prioridades à equipe de forma clara e consistente?',
+      'Garante que os prazos críticos e compromissos institucionais sejam cumpridos?'
+    ],
+    'Norma 17025 e Qualidade':[
+      'Garante conformidade sistêmica com a norma ISO/IEC 17025:2017 em todas as áreas?',
+      'Representa o laboratório em auditorias de acreditação com autoridade e preparo?',
+      'Lidera revisões de sistema e processos de melhoria contínua com protagonismo?'
+    ],
+    'Técnica':[
+      'Mantém visão técnica estratégica e atualizada sobre todas as áreas do laboratório?',
+      'Aprova decisões técnicas críticas e garante a evolução das capacidades do laboratório?',
+      'É reconhecido como referência técnica e de gestão por toda a equipe?'
+    ],
+    'Gestão de Pessoas':[
+      'Identifica e desenvolve talentos, garantindo um plano de sucessão efetivo?',
+      'Cobre e cobra a equipe de forma estratégica, gerando crescimento e responsabilização?',
+      'Reconhece os resultados da equipe e promove cultura de alta performance?'
+    ]
+  },
+
+  // ════════════════════════════════════════
+  // GERENTE
+  // ════════════════════════════════════════
+  'Gerente':{
+    'Versatilidade e Visão Sistêmica':[
+      'Gerencia múltiplas áreas com visão sistêmica, estratégica e de longo prazo?',
+      'Adapta a organização às mudanças de mercado, tecnológicas e regulatórias?',
+      'Transita com desenvoltura entre contextos técnicos, de negócio e institucionais?'
+    ],
+    'Liderança e Cultura Organizacional':[
+      'Desenvolve liderança em todos os níveis da organização?',
+      'Cria e sustenta cultura de excelência, inovação e colaboração?',
+      'Resolve conflitos estratégicos com equilíbrio e visão de longo prazo?'
+    ],
+    'Responsabilidade':[
+      'Responde pelo desempenho global do laboratório com transparência e integridade?',
+      'Presta contas aos acionistas e reguladores com dados e visão estratégica?',
+      'Define a estratégia de crescimento e garante sua execução com consistência?'
+    ],
+    'Foco em Resultados':[
+      'Define e executa estratégia com foco em sustentabilidade e crescimento?',
+      'Garante saúde financeira, operacional e de reputação do laboratório?',
+      'Monitora indicadores estratégicos e toma decisões embasadas com agilidade?'
+    ],
+    'Gestão do Tempo e Prioridades':[
+      'Gerencia com excelência o tempo e as prioridades estratégicas da organização?',
+      'Define e comunica prioridades institucionais com clareza e consistência?',
+      'Garante que os compromissos estratégicos e regulatórios sejam cumpridos?'
+    ],
+    'Norma 17025 e Qualidade':[
+      'Patrocina o sistema de qualidade no mais alto nível da organização?',
+      'Garante acreditação contínua e conformidade regulatória em todas as áreas?',
+      'Representa o laboratório perante órgãos de acreditação e clientes estratégicos?'
+    ],
+    'Técnica':[
+      'Mantém visão técnica e científica atualizada e estratégica?',
+      'Representa o laboratório em fóruns técnicos e regulatórios externos?',
+      'Garante investimento e evolução contínua das capacidades técnicas do laboratório?'
+    ],
+    'Gestão de Pessoas':[
+      'Desenvolve liderança em todos os níveis e garante um pipeline de sucessão?',
+      'Cobre e cobra resultados de forma estratégica, promovendo responsabilização?',
+      'Cria ambiente de reconhecimento, crescimento e alta performance?'
+    ]
+  }
+
+};
+
+const SEED=[
+  {id:'c01',nome:'Renan E S Passos',nivel:'Coordenador',area:'Gestao',status:'Ativo',gestor:'',historico:[{"data": "2023-01-10", "tipo": "Promoção", "descricao": "Assumiu coordenação do laboratório"}],funcoes:[],perfil:{}},
+  {id:'c02',nome:'Elinaldo dos Reis',nivel:'Especialista',area:'EMC',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2023-06-01", "tipo": "Promoção", "descricao": "Promovido a Especialista EMC"}],funcoes:[],perfil:{}},
+  {id:'c03',nome:'Bernardo Nogueira',nivel:'Assistente III',area:'RF',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2023-03-15", "tipo": "Promoção", "descricao": "Promovido a Assistente III em RF"}],funcoes:[],perfil:{}},
+  {id:'c04',nome:'Joao Daneres',nivel:'Assistente II',area:'RF',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2023-08-01", "tipo": "Promoção", "descricao": "Promovido a Assistente II em RF"}],funcoes:[],perfil:{}},
+  {id:'c05',nome:'Rafael Ledur',nivel:'Assistente I',area:'RF',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2023-05-01", "tipo": "Promoção", "descricao": "Promovido a Assistente I em RF"}],funcoes:[],perfil:{}},
+  {id:'c06',nome:'Joao Vitor Torres',nivel:'Assistente I',area:'RF',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2023-07-01", "tipo": "Promoção", "descricao": "Promovido a Assistente I em RF"}],funcoes:[],perfil:{}},
+  {id:'c07',nome:'Israel de Azevedo',nivel:'Assistente I',area:'RF',status:'Ativo',gestor:'Renan E S Passos',historico:[],funcoes:[],perfil:{}},
+  {id:'c08',nome:'Georgia dos Reis',nivel:'Assistente',area:'RF',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2023-09-01", "tipo": "Promoção", "descricao": "Promoção de nível — RF"}],funcoes:[],perfil:{}},
+  {id:'c09',nome:'Marcelo Benfato',nivel:'Assistente',area:'RF',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2023-09-01", "tipo": "Promoção", "descricao": "Promoção de nível — RF"}],funcoes:[],perfil:{}},
+  {id:'c10',nome:'Francis Yasmin',nivel:'Assistente',area:'RF',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2023-11-01", "tipo": "Promoção", "descricao": "Promoção de nível — RF"}],funcoes:[],perfil:{}},
+  {id:'c11',nome:'Fabricio Nobre',nivel:'Assistente',area:'Baterias e Acustica',status:'Ativo',gestor:'Renan E S Passos',historico:[],funcoes:[],perfil:{}},
+  {id:'c12',nome:'Eduardo de Oliveira',nivel:'Analista I',area:'Redes Moveis',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2022-11-01", "tipo": "Promoção", "descricao": "Promovido a Analista I"}, {"data": "2023-06-01", "tipo": "Treinamento", "descricao": "Capacitação em redes 4G/5G"}],funcoes:[],perfil:{}},
+  {id:'c13',nome:'Lauren Stefani',nivel:'Assistente I',area:'Redes Moveis',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2023-04-01", "tipo": "Promoção", "descricao": "Promovida a Assistente I — Redes Móveis"}],funcoes:[],perfil:{}},
+  {id:'c14',nome:'Joao Pinheiro',nivel:'Analista III',area:'Outros Ensaios',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2022-05-01", "tipo": "Promoção", "descricao": "Promovido a Analista III"}, {"data": "2023-01-01", "tipo": "Treinamento", "descricao": "Treinamento em TV e segurança elétrica"}],funcoes:[],perfil:{}},
+  {id:'c15',nome:'Fabricio Cardona',nivel:'Estagiário',area:'Outros Ensaios',status:'Ativo',gestor:'Renan E S Passos',historico:[],funcoes:[],perfil:{}},
+  {id:'c16',nome:'Philipe Vasques',nivel:'Analista II',area:'EMC',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2022-08-01", "tipo": "Promoção", "descricao": "Promovido a Analista II EMC"}, {"data": "2023-03-01", "tipo": "Elogio", "descricao": "Reconhecimento por excelência em EMC"}],funcoes:[],perfil:{}},
+  {id:'c17',nome:'Cristian Giovani',nivel:'Assistente II',area:'EMC',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2022-10-01", "tipo": "Promoção", "descricao": "Promovido a Assistente II EMC"}, {"data": "2023-07-01", "tipo": "Treinamento", "descricao": "Treinamento avançado EMC"}],funcoes:[],perfil:{}},
+  {id:'c18',nome:'Eduardo Altnetter',nivel:'Assistente I',area:'EMC',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2023-02-01", "tipo": "Promoção", "descricao": "Promovido a Assistente I EMC"}],funcoes:[],perfil:{}},
+  {id:'c19',nome:'Julia Marchant',nivel:'Assistente I',area:'EMC',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2023-01-15", "tipo": "Promoção", "descricao": "Promovida a Assistente I EMC"}],funcoes:[],perfil:{}},
+  {id:'c20',nome:'Lucas Menegoto',nivel:'Estagiário',area:'EMC',status:'Ativo',gestor:'Renan E S Passos',historico:[],funcoes:[],perfil:{}},
+  {id:'c21',nome:'Fernando Barbosa',nivel:'Assistente I',area:'EMC',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2023-05-01", "tipo": "Promoção", "descricao": "Promovido a Assistente I EMC"}],funcoes:[],perfil:{}},
+  {id:'c22',nome:'Joao de Paula',nivel:'Assistente I',area:'EMC',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2023-05-01", "tipo": "Promoção", "descricao": "Promovido a Assistente I EMC"}],funcoes:[],perfil:{}},
+  {id:'c23',nome:'Arthur Lima',nivel:'Assistente II',area:'Entrada e Devolucao',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2022-06-01", "tipo": "Promoção", "descricao": "Promovido a Assistente II — Entrada e Devolução"}, {"data": "2023-04-01", "tipo": "Treinamento", "descricao": "Treinamento norma 17087"}],funcoes:[],perfil:{}},
+  {id:'c24',nome:'Isadora Maria',nivel:'Assistente I',area:'Entrada e Devolucao',status:'Ativo',gestor:'Renan E S Passos',historico:[{"data": "2023-03-01", "tipo": "Promoção", "descricao": "Promovida a Assistente I — Entrada e Devolução"}],funcoes:[],perfil:{}},
+  {id:'c25',nome:'Kaua Lima',nivel:'Estagiário',area:'Entrada e Devolucao',status:'Ativo',gestor:'Renan E S Passos',historico:[],funcoes:[],perfil:{}},
+  {id:'c26',nome:'Claudio Henrique',nivel:'Estagiário',area:'Entrada e Devolucao',status:'Ativo',gestor:'Renan E S Passos',historico:[],funcoes:[],perfil:{}},
+  {id:'c27',nome:'Antoni Cruz',nivel:'Estagiário',area:'Entrada e Devolucao',status:'Ativo',gestor:'Renan E S Passos',historico:[],funcoes:[],perfil:{}},
+  {id:'c28',nome:'Guilherme',nivel:'Estagiário',area:'Entrada e Devolucao',status:'Ativo',gestor:'Renan E S Passos',historico:[],funcoes:[],perfil:{}}
+];
+let niveis=DEFAULT_NIVEIS;
+let perguntas=DEFAULT_PERGUNTAS;
+// Se tem token salvo, começa com localStorage (pode estar vazio — nuvem preenche)
+// Se não tem token, usa SEED como demo local
+const _temToken = !!localStorage.getItem('squado_jwt_token');
+let _squadoSessionToken = 0; // incrementado a cada login/logout para cancelar fetches antigos
+let colaboradores=ls('cols_v3', _temToken ? [] : SEED);
+let funcoes=ls('funcoes',buildDefaultFuncoes(SEED));
+// Auto-migrar funções legadas (por_amostra → por_servico)
+(function migrarFuncoesLegadas(){
+  let fv8 = ls('funcoes_v8', null);
+  if (!fv8) return;
+  let precisaMigrar = fv8.some(f => f.tipoTempo === 'por_amostra' || f.pctServicos === undefined);
+  if (!precisaMigrar) return;
+  const migradas = fv8.map(f => ({
+    ...f,
+    tipoTempo: f.tipoTempo === 'por_amostra' ? 'por_servico' : (f.tipoTempo || 'por_servico'),
+    pctServicos: f.pctServicos !== undefined ? f.pctServicos : (f.pctAmostras !== undefined ? f.pctAmostras : 100),
+  }));
+  lss('funcoes_v8', migradas);
+  console.log('[Squado] Migradas', migradas.filter((f,i)=>fv8[i].tipoTempo==='por_amostra'||fv8[i].pctServicos===undefined).length, 'funções legadas');
+})();
+let avaliacoes=ls('avaliacoes',[]);
+let metas=ls('metas_v2',[]);
+let feedbacks=ls('feedbacks',[]);
+// Posições salvas no organograma
+let orgPositions=ls('orgPos_v2',{});
+let orgConnections=ls('orgConns',[]); // [{id,from,to,label}]
+let qtdServicos=ls('qtdServicos',50);
+let _capTab='pessoas'; // aba ativa em Capacidade // serviços por mês (editável globalmente)
+let notas=ls('notas',[]); // anotações organizadas pela IA
+let aiHistory=ls('aiHistory',[]);
+
+function squadoGetToken() { return localStorage.getItem('squado_jwt_token'); }
+function squadoGetUser()  { try { return JSON.parse(localStorage.getItem('squado_user_data')||'null'); } catch{ return null; } }
+
+function saveAll(){
+  lss('avaliacoes',avaliacoes);
+  lss('metas_v2',metas);lss('feedbacks',feedbacks);lss('cols_v3',colaboradores);lss('funcoes',funcoes);lss('orgPos_v2',orgPositions);lss('orgConns',orgConnections);lss('notas',notas);lss('aiHistory',aiHistory);lss('qtdServicos',qtdServicos);
+  // Timestamp da última modificação local
+  lss('_lastSave', Date.now());
+  // Marcar dados como sujos e agendar sync para a nuvem
+  if(squadoGetToken()) agendarSync();
+}
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
+function toast(msg='Salvo!'){const t=document.getElementById('toast');document.getElementById('toast-msg').textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2300)}
+
+const AVC=['#1D9E75','#185FA5','#854F0B','#993556','#534AB7','#993C1D','#0F6E56','#3B6D11'];
+function avColor(n){return AVC[(n||'?').charCodeAt(0)%AVC.length]}
+function initials(n){return(n||'?').split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase()}
+function av(n,lg=false,sm=false){const cls=lg?' avatar-lg':sm?' avatar-sm':'';return`<div class="avatar${cls}" style="background:${avColor(n)};color:#fff">${initials(n)}</div>`}
+function nivelBadge(nivel){const n=niveis.find(x=>x.nome===nivel)||{cor:'#888',bg:'#eee'};return`<span class="nivel-pill" style="color:${n.cor};background:${n.bg};border-color:${n.cor}40">${nivel||'—'}</span>`}
+function areaBadge(area){const c=AREA_COLORS[area]||{cor:'#888',bg:'#eee'};return`<span class="area-pill" style="color:${c.cor};background:${c.bg};border-color:${c.cor}40">${area}</span>`}
+
+// ── NAV ──────────────────────────────────────────────────────
+let currentPage='dashboard';
+function go(page){
+  currentPage=page;
+  // Mostrar search box apenas em colaboradores
+  // Topbar-btn sempre escondido — botão de ação fica dentro da página
+  const _tbBtn = document.getElementById('topbar-btn');
+  if(_tbBtn) _tbBtn.style.display = 'none';
+  document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
+  // Para sub-páginas de avaliação, marcar o item "avaliacao_hub"
+  const pageForNav = ['avaliacao','historico_aval','perguntas'].includes(page) ? 'avaliacao_hub' : page;
+  // Para sub-páginas de níveis/áreas, marcar "niveis"
+  const pageForNav2 = pageForNav === 'areas' ? 'niveis' : pageForNav;
+  const el=document.querySelector(`.nav-item[onclick="go('${pageForNav2}')"]`);
+  if(el)el.classList.add('active');
+  document.getElementById('page-content-wrap').scrollTop=0;
+  render(page);
+  // Atualizar nav mobile se existir
+  if(typeof updateMobNav==='function') updateMobNav(page);
+}
+function handleSearch(v){render(currentPage,v)}
+function handleTopAction(){
+  if(currentPage==='metas')openMetaForm();
+  else if(currentPage==='colaboradores')openColForm();
+  else if(currentPage==='funcoes')openFuncaoForm();
+  else if(currentPage==='niveis')openNivelForm();
+}
+function render(page,search=''){
+  const cfg={
+    dashboard:{title:'Dashboard',sub:'Visão geral da equipe',btn:null},
+    colaboradores:{title:'Colaboradores',sub:'Equipe completa',btn:null},
+    organograma:{title:'Organograma',sub:'Equipe organizada por área',btn:null},
+    capacidade:{title:'Gestão de Capacidade',sub:'Carga por função · Análise de sobrecarga · Justificativa de contratação',btn:null},
+    agente:{title:'Agente IA',sub:'Assistente inteligente de gestão de pessoas',btn:null},
+    notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
+        avaliacao:{title:'Nova Avaliação',sub:'Formulário 1-10',btn:null},
+    historico_aval:{title:'Histórico de Avaliações',sub:'Resultados e evolução',btn:null},
+    perguntas:{title:'Configurar Perguntas',sub:'Edite por nível de cargo',btn:null},
+    metas:{title:'Metas e Objetivos',sub:'Acompanhamento',btn:'Nova Meta'},
+    pdi:{title:'PDI — Plano de Desenvolvimento Individual',sub:'Acompanhamento de crescimento e desenvolvimento',btn:null},
+    valores:{title:'Valores e Cultura',sub:'Valores PUCRS · Valores LABELO · Pilares · Não Negociamos',btn:null},
+    ninebox:{title:'Nine-Box · Matriz de Talentos',sub:'Potencial × Desempenho',btn:null},
+    competencias:{title:'Matriz de Competências',sub:'Perfis de cargo · Entregas · Competências por nível',btn:null},
+    niveis:{title:'Níveis de Cargo e Áreas',sub:'Hierarquia de cargos e áreas da equipe',btn:null},
+    avaliacao_hub:{title:'Avaliação',sub:'Avaliações de desempenho',btn:null},
+    avaliacao:{title:'Avaliação',sub:'Nova avaliação de desempenho',btn:null},
+    historico_aval:{title:'Avaliação',sub:'Histórico de avaliações',btn:null},
+    perguntas:{title:'Avaliação',sub:'Configurar perguntas por nível',btn:null},
+    areas:{title:'Níveis de Cargo e Áreas',sub:'Hierarquia de cargos e áreas da equipe',btn:null},
+  }[page]||{title:page,sub:'',btn:null};
+  document.getElementById('topbar-title').textContent=cfg.title;
+  document.getElementById('topbar-sub').textContent=cfg.sub;
+  const btn=document.getElementById('topbar-btn');
+  if(cfg.btn){btn.style.display='';document.getElementById('topbar-btn-label').textContent=cfg.btn}
+  else btn.style.display='none';
+  const c=document.getElementById('page-content');
+  if(page==='dashboard')c.innerHTML=renderDashboard();
+  else if(page==='colaboradores')c.innerHTML=renderColaboradores(search);
+  else if(page==='organograma'){c.innerHTML=renderOrganograma();}
+  // avaliacao/historico_aval/perguntas → tratados pelo hub abaixo
+  else if(page==='metas')c.innerHTML=renderMetas(search);
+  else if(page==='pdi')c.innerHTML=renderPDI(search);
+  else if(page==='valores')c.innerHTML=renderValores();
+  else if(page==='ninebox')c.innerHTML=renderNineBox();
+  else if(page==='competencias')c.innerHTML=renderCompetencias();
+  else if(page==='niveis'||page==='areas')c.innerHTML=renderNiveisAreas();
+  else if(page==='avaliacao_hub'||page==='avaliacao'||page==='historico_aval'||page==='perguntas')c.innerHTML=renderAvaliacaoHub();
+  else if(page==='capacidade'){c.innerHTML=renderCapacidade();if(_capTab&&_capTab!=='pessoas')setTimeout(()=>switchCapTab(_capTab),10);}
+  else if(page==='agente'){c.innerHTML=renderAgente();setTimeout(function(){scrollAiToBottom();_bindAiEnter();},80);}
+  else if(page==='notas')c.innerHTML=renderNotas(search);
+}
+
+// ══════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════
+function renderDashboard(){
+  const totalMov=colaboradores.reduce((a,c)=>a+(c.historico||[]).length,0);
+  const mediaGeral=avaliacoes.length?Math.round(avaliacoes.reduce((a,av)=>a+av.mediaGeral,0)/avaliacoes.length*10)/10:0;
+  const nivCount={};colaboradores.forEach(c=>{nivCount[c.nivel]=(nivCount[c.nivel]||0)+1});
+  const recentAval=avaliacoes.slice(-4).reverse();
+  // Card de trial
+  const user = squadoGetUser();
+  const diasTrial = user && user.trialExpira ? Math.max(0, Math.ceil((new Date(user.trialExpira) - new Date()) / 86400000)) : null;
+  const trialCard = diasTrial !== null
+    ? `<div class="stat-card" style="background:#E1F5EE;border-color:#9FE1CB"><div class="stat-label" style="color:#085041">Trial Squado</div><div class="stat-val" style="color:#0F6E56">${diasTrial}d</div><div class="stat-sub" style="color:#1D9E75">${diasTrial > 0 ? 'restantes' : 'expirado'}</div></div>`
+    : `<div class="stat-card"><div class="stat-label">Plano</div><div class="stat-val" style="color:var(--green2)">Pro</div><div class="stat-sub">Ativo</div></div>`;
+  return`<div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">Colaboradores</div><div class="stat-val">${colaboradores.length}</div><div class="stat-sub">Equipe ativa</div></div>
+    <div class="stat-card"><div class="stat-label">Avaliações</div><div class="stat-val">${avaliacoes.length}</div><div class="stat-sub">Realizadas</div></div>
+    <div class="stat-card"><div class="stat-label">Notas IA</div><div class="stat-val">${notas.length}</div><div class="stat-sub">Anotações</div></div>
+    ${trialCard}
+  </div>
+  <div class="flex gap-12 mb-12" style="align-items:flex-start">
+    <div class="card" style="flex:1;min-width:0">
+      <div class="section-title mb-12">Distribuição por Nível</div>
+      ${niveis.sort((a,b)=>a.ordem-b.ordem).map(n=>{const v=nivCount[n.nome]||0;return v>0?`
+        <div class="flex items-center gap-8 mb-8">
+          <div style="width:92px;flex-shrink:0">${nivelBadge(n.nome)}</div>
+          <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:${Math.round(v/colaboradores.length*100)}%;background:${n.cor}"></div></div>
+          <div style="font-size:11px;font-weight:600;width:16px;text-align:right">${v}</div>
+        </div>`:''}).join('')}
+    </div>
+    <div class="card" style="flex:1;min-width:0">
+      <div class="section-title mb-12">Avaliações Recentes</div>
+      ${recentAval.length===0?`<div class="empty-state" style="padding:16px">Nenhuma avaliação.<br><button class="btn btn-primary btn-sm mt-8" onclick="go('avaliacao')">Iniciar</button></div>`:
+      recentAval.map(a=>`<div class="flex items-center gap-10 mb-8 pb-8" style="border-bottom:0.5px solid var(--border)">
+        ${av(a.colaborador)}<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.colaborador}</div>
+        <div style="font-size:10px;color:var(--txt3)">${a.data}</div></div>
+        <span class="badge badge-green" style="font-size:12px">${a.mediaGeral}</span>
+      </div>`).join('')}
+    </div>
+  </div>
+  <div class="card"><div class="section-title mb-10">Acesso rápido</div>
+    <div class="flex gap-8 flex-wrap">
+      <button class="btn btn-primary btn-sm" onclick="go('avaliacao')">Nova Avaliação</button>
+      <button class="btn btn-sm" onclick="go('organograma')">Organograma</button>
+      
+      <button class="btn btn-sm" onclick="go('colaboradores')">Colaboradores</button>
+      <button class="btn btn-sm" onclick="go('historico_aval')">Histórico</button>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════
+// COLABORADORES — BUG CORRIGIDO
+// ══════════════════════════════════════════
+function renderColaboradores(search=''){
+  const abaAtiva = window._colTab || 'ativos';
+  let list = abaAtiva === 'desligados'
+    ? colaboradores.filter(c => c.status === 'Desligado')
+    : colaboradores.filter(c => c.status !== 'Desligado');
+
+  if(search) list = list.filter(c =>
+    c.nome.toLowerCase().includes(search.toLowerCase()) ||
+    (c.area||'').toLowerCase().includes(search.toLowerCase()) ||
+    (c.nivel||'').toLowerCase().includes(search.toLowerCase())
+  );
+
+  const totalAtivos = colaboradores.filter(c => c.status !== 'Desligado').length;
+  const totalDesligados = colaboradores.filter(c => c.status === 'Desligado').length;
+
+  const rows = list.map(c => {
+    const avsC = avaliacoes.filter(a => a.colaboradorId === c.id);
+    const lastAv = avsC.length ? avsC[avsC.length-1] : null;
+    return [
+      '<tr>',
+      '<td style="width:32px;text-align:center">',
+        '<input type="checkbox" class="col-sel" data-id="'+c.id+'" ',
+        'onchange="atualizarBtnExcluirCols()" style="cursor:pointer;width:15px;height:15px"/>',
+      '</td>',
+      '<td>',
+        '<span onclick="verCol(\''+c.id+'\')" ',
+        'style="cursor:pointer;font-weight:600;color:var(--blue);text-decoration:underline;text-underline-offset:2px">',
+        c.nome,
+        '</span>',
+      '</td>',
+      '<td>'+nivelBadge(c.nivel)+'</td>',
+      '<td>'+areaBadge(c.area)+'</td>',
+      '<td style="color:var(--txt2);font-size:12px">'+(c.gestor||'—')+'</td>',
+      '<td>'+(lastAv ? '<span class="badge badge-green">'+lastAv.mediaGeral+'</span>' : '<span style="font-size:10px;color:var(--txt3)">—</span>')+'</td>',
+      '<td><span class="badge badge-blue">'+(c.historico||[]).length+'</span></td>',
+      '<td>',
+        '<span style="font-size:11px;padding:2px 8px;border-radius:20px;',
+        'background:'+(c.status==='Ativo'?'var(--green-bg)':'var(--bg2)')+';',
+        'color:'+(c.status==='Ativo'?'var(--green2)':'var(--txt2)')+'">',
+        c.status,
+        '</span>',
+      '</td>',
+      '</tr>'
+    ].join('');
+  }).join('');
+
+  const tabBtn = (id, icon, label, count) =>
+    '<button onclick="window._colTab=\''+id+'\';render(\'colaboradores\')" style="padding:7px 18px;border:none;'+(abaAtiva===id?'background:var(--green);color:#fff':'background:var(--bg2);color:var(--txt2)')+';font-size:13px;font-weight:600;cursor:pointer;transition:all .15s">'
+    +icon+' '+label+' ('+count+')</button>';
+
+  return [
+    '<div>',
+    '<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">',
+    '<div style="display:flex;align-items:center;gap:8px;background:#F5F6F4;border:1px solid #E0E2E0;border-radius:6px;padding:7px 12px">',
+    '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9BA09E" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>',
+    '<input id="col-search-input" placeholder="Buscar colaboradores..." oninput="renderColaboradores(this.value)" style="border:none;background:transparent;outline:none;flex:1;font-size:13px;color:#1A1F1D" value="'+search+'">',
+    '</div>',
+    '<div style="display:flex;align-items:center;justify-content:space-between">',
+    '<div style="display:flex;gap:4px">',
+      '<button onclick="window._colTab=\'ativos\';render(\'colaboradores\')" style="padding:6px 14px;border:none;cursor:pointer;border-radius:5px;font-family:\'Inter\',sans-serif;transition:all .12s;background:'+((window._colTab||'ativos')==='ativos'?'#E6EFEB':'transparent')+';color:'+((window._colTab||'ativos')==='ativos'?'#084231':'#6B7370')+';font-weight:'+((window._colTab||'ativos')==='ativos'?600:400)+'">'+' Ativos <span style="background:'+((window._colTab||'ativos')==='ativos'?'#0F6E56':'#E0E2E0')+';color:'+((window._colTab||'ativos')==='ativos'?'#fff':'#6B7370')+';border-radius:10px;padding:1px 7px;font-size:11px;font-weight:600">'+totalAtivos+'</span></button>',
+      
+      '<button onclick="window._colTab=\'desligados\';render(\'colaboradores\')" style="padding:6px 14px;border:none;cursor:pointer;border-radius:5px;font-family:\'Inter\',sans-serif;transition:all .12s;background:'+(window._colTab==='desligados'?'#E6EFEB':'transparent')+';color:'+(window._colTab==='desligados'?'#084231':'#6B7370')+';font-weight:'+(window._colTab==='desligados'?600:400)+'">'+' Desligados <span style="background:'+(window._colTab==='desligados'?'#0F6E56':'#E0E2E0')+';color:'+(window._colTab==='desligados'?'#fff':'#6B7370')+';border-radius:10px;padding:1px 7px;font-size:11px;font-weight:600">'+totalDesligados+'</span></button>',
+    '</div>',
+    '<button onclick="openColForm()" style="background:#0F6E56;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;display:flex;align-items:center;gap:6px"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"><line x1=\"12\" y1=\"5\" x2=\"12\" y2=\"19\"/><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/></svg> Novo Colaborador</button>',
+    '</div>','</div>',
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">',
+      '<button class="btn btn-danger btn-sm" id="btn-excluir-cols" onclick="excluirColsSelecionados()" style="display:none">🗑 Excluir selecionados</button>',
+    '</div>',
+    '<div class="card" style="padding:0;overflow:hidden"><div class="table-wrap"><table class="tbl">',
+    '<thead><tr>',
+      '<th style="width:32px"><input type="checkbox" onchange="document.querySelectorAll(\'.col-sel\').forEach(cb=>cb.checked=this.checked);atualizarBtnExcluirCols()" style="cursor:pointer"/></th>',
+      '<th>Colaborador</th>',
+      '<th>Nível</th>',
+      '<th>Área</th>',
+      '<th>Gestor</th>',
+      '<th>Últ. Aval.</th>',
+      '<th>Movim.</th>',
+      '<th>Status</th>',
+    '</tr></thead>',
+    '<tbody>'+rows+'</tbody>',
+    '</table></div></div>',
+    '</div>'
+  ].join('');
+}
+
+function atualizarBtnExcluirCols(){
+  const sel = document.querySelectorAll('.col-sel:checked').length;
+  const btn = document.getElementById('btn-excluir-cols');
+  if(btn){
+    btn.style.display = sel > 0 ? '' : 'none';
+    btn.textContent = '🗑 Excluir '+sel+' selecionado'+(sel!==1?'s':'');
+  }
+}
+
+function excluirColsSelecionados(){
+  const ids = [...document.querySelectorAll('.col-sel:checked')].map(cb => cb.dataset.id);
+  if(!ids.length){ toast('Selecione ao menos um'); return; }
+  if(!confirm('Excluir permanentemente '+ids.length+' colaborador(es)?')) return;
+  colaboradores = colaboradores.filter(c => !ids.includes(c.id));
+  saveAll();
+  toast('✅ '+ids.length+' colaborador(es) excluído(s)!');
+  render('colaboradores');
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// ORGANOGRAMA COM DRAG-AND-DROP
+// ═══════════════════════════════════════════════════════════════
+// Estrutura: nós virtuais para divisões + colaboradores
+// orgPositions: { nodeId: {x,y} }
+
+const NODE_W=170, NODE_H_BASE=100;
+const CANVAS_W=3000, CANVAS_H=2000;
+
+// Gera posições padrão se não existirem
+function defaultPositions(){
+  const pos={};
+  const CW=190;   // largura célula colaborador
+  const RH=130;   // altura por linha de nível
+  const GW=60;    // gap horizontal entre grupos
+  const DIV_Y=220;
+  const COL_Y_START=390;
+
+  const ordemNivel=[
+    'Coordenador','Gerente','Especialista',
+    'Analista III','Analista II','Analista I',
+    'Assistente III','Assistente II','Assistente I','Assistente',
+    'Estagiário'
+  ];
+
+  const grupos={
+    'div_emc':     ['EMC','Configuracao EMC'],
+    'div_rf':      ['RF','Configuracao RF'],
+    'div_redes':   ['Redes Moveis'],
+    'div_bat':     ['Baterias e Acustica','Ensaios Acusticos','Baterias'],
+    'div_outros':  ['Outros Ensaios','TV'],
+    'div_entrada': ['Entrada e Devolucao'],
+  };
+
+  // Separar Gestao (Coordenador vai para div_coord separado)
+  const gestaoCol=colaboradores.filter(c=>c.area==='Gestao');
+
+  // Montar membros por grupo
+  const membros={};
+  Object.keys(grupos).forEach(gid=>{ membros[gid]=[]; });
+  colaboradores.forEach(c=>{
+    if(c.area==='Gestao') return; // coordenação no topo
+    for(const [gid,areas] of Object.entries(grupos)){
+      if(areas.includes(c.area)){ membros[gid].push(c); break; }
+    }
+  });
+
+  // Para cada grupo: agrupar colaboradores POR NÍVEL,
+  // cada nível em uma linha — lado a lado apenas mesmo nível.
+  // A largura do grupo = máx colaboradores num mesmo nível × CW
+  function calcGroupLayout(colList){
+    // Ordenar por nível
+    const sorted=colList.slice().sort((a,b)=>{
+      const ia=ordemNivel.indexOf(a.nivel); const ib=ordemNivel.indexOf(b.nivel);
+      return (ia<0?99:ia)-(ib<0?99:ib);
+    });
+    // Agrupar por nível
+    const byNivel={};
+    sorted.forEach(c=>{
+      if(!byNivel[c.nivel]) byNivel[c.nivel]=[];
+      byNivel[c.nivel].push(c);
+    });
+    // Níveis em ordem
+    const niveisPresentes=ordemNivel.filter(n=>byNivel[n]);
+    // Largura máxima = maior linha
+    const maxCols=Math.max(1,...niveisPresentes.map(n=>byNivel[n].length));
+    return {sorted,byNivel,niveisPresentes,maxCols};
+  }
+
+  // Calcular larguras e posições X de cada grupo
+  const groupLayouts={};
+  let curX=60;
+  const groupX={};
+
+  Object.keys(grupos).forEach(gid=>{
+    const layout=calcGroupLayout(membros[gid]);
+    groupLayouts[gid]=layout;
+    const groupW=Math.max(layout.maxCols*CW, 180);
+    groupX[gid]=curX;
+    curX+=groupW+GW;
+  });
+
+  const totalW=curX;
+  const coordX=Math.round(totalW/2)-90;
+
+  // Coordenação no topo centro
+  pos['div_coord']={x:coordX, y:40};
+
+  // Colaboradores de Gestão junto ao div_coord
+  gestaoCol.forEach((c,i)=>{
+    pos['c_'+c.id]={x:coordX-30+i*CW, y:180};
+  });
+
+  // Posicionar cada divisão e seus colaboradores
+  Object.keys(grupos).forEach(gid=>{
+    pos[gid]={x:groupX[gid], y:DIV_Y};
+
+    const {byNivel,niveisPresentes}=groupLayouts[gid];
+    const startX=groupX[gid];
+    let rowY=COL_Y_START;
+
+    niveisPresentes.forEach(nivel=>{
+      const colsNesteNivel=byNivel[nivel];
+      // Centralizar o grupo de mesmo nível dentro da coluna da divisão
+      const totalW=colsNesteNivel.length*CW;
+      const layoutMaxW=groupLayouts[gid].maxCols*CW;
+      const offsetX=Math.round((layoutMaxW-totalW)/2);
+
+      colsNesteNivel.forEach((c,i)=>{
+        pos['c_'+c.id]={x:startX+offsetX+i*CW, y:rowY};
+      });
+      rowY+=RH; // próxima linha = próximo nível
+    });
+  });
+
+  return pos;
+}
+
+function getPos(id){
+  if(!orgPositions[id]){
+    const def=defaultPositions();
+    if(def[id])orgPositions[id]=def[id];
+    else orgPositions[id]={x:100,y:100};
+  }
+  return orgPositions[id];
+}
+
+function renderOrganograma(){
+  const ativos = colaboradores.filter(c => c.status === 'Ativo');
+  if (!ativos.length) return '<div class="empty-state">Nenhum colaborador ativo.</div>';
+
+  // Mapa nível → ordem (maior ordem = cargo mais alto)
+  const ordemNivel = {};
+  niveis.slice().sort((a,b)=>a.ordem-b.ordem).forEach((n,i)=>{ ordemNivel[n.nome] = i; });
+
+  // Agrupar por área
+  const areasOrdem = Object.keys(AREA_COLORS);
+  const byArea = {};
+  ativos.forEach(col => {
+    if (!byArea[col.area]) byArea[col.area] = [];
+    byArea[col.area].push(col);
+  });
+
+  // Ordenar áreas: primeiro as do AREA_COLORS, depois as demais
+  const areasPresentes = [
+    ...areasOrdem.filter(a => byArea[a]),
+    ...Object.keys(byArea).filter(a => !areasOrdem.includes(a))
+  ];
+
+  const blocos = areasPresentes.map(area => {
+    const ac = AREA_COLORS[area] || {cor:'#5F5E5A', bg:'#D3D1C7'};
+    // Pessoas da área ordenadas por nível (maior primeiro)
+    const pessoas = byArea[area].slice().sort((a,b) => {
+      const oa = ordemNivel[a.nivel] ?? 0;
+      const ob = ordemNivel[b.nivel] ?? 0;
+      return ob - oa; // decrescente — cargo mais alto primeiro
+    });
+
+    // Agrupar por nível dentro da área
+    const byNivel = {};
+    pessoas.forEach(col => {
+      if (!byNivel[col.nivel]) byNivel[col.nivel] = [];
+      byNivel[col.nivel].push(col);
+    });
+
+    const linhas = Object.entries(byNivel).map(([nivel, membros]) => {
+      const ns = NIVEL_STYLE[nivel] || {cor:'#888', bg:'#eee'};
+      const cards = membros.map(col => {
+        const avsC = avaliacoes.filter(a => a.colaboradorId === col.id);
+        const lastAv = avsC.length ? avsC[avsC.length-1] : null;
+        return `<div onclick="verCol('${col.id}')"
+          style="background:var(--bg);border:0.5px solid var(--border);border-radius:10px;
+                 padding:10px 12px;cursor:pointer;transition:box-shadow .15s;
+                 width:160px;flex-shrink:0;border-top:3px solid ${ns.cor}"
+          onmouseover="this.style.boxShadow='0 4px 14px rgba(0,0,0,.1)'"
+          onmouseout="this.style.boxShadow='none'">
+          <div style="display:flex;align-items:center;gap:7px">
+            ${av(col.nome, false, false)}
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12px;font-weight:700;color:var(--txt);
+                          overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                ${col.nome.split(' ').slice(0,2).join(' ')}
+              </div>
+              ${col.gestor ? `<div style="font-size:9px;color:var(--txt3)">↑ ${col.gestor.split(' ')[0]}</div>` : ''}
+            </div>
+            ${lastAv ? `<span style="font-size:10px;font-weight:800;color:var(--green)">${lastAv.mediaGeral}</span>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+
+      return `<div style="margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+          <span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;
+                       background:${ns.bg};color:${ns.cor};border:0.5px solid ${ns.cor}40;white-space:nowrap">
+            ${nivel}
+          </span>
+          <div style="flex:1;height:1px;background:${ns.cor}20"></div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">${cards}</div>
+      </div>`;
+    }).join('');
+
+    return `<div style="background:var(--bg);border:0.5px solid var(--border);
+                border-radius:14px;overflow:hidden;flex-shrink:0;min-width:200px">
+      <div style="background:${ac.bg};border-bottom:2px solid ${ac.cor};
+                  padding:10px 16px;display:flex;align-items:center;gap:10px">
+        <div style="font-size:13px;font-weight:700;color:${ac.cor}">${area}</div>
+        <div style="font-size:11px;color:${ac.cor};opacity:.7">
+          ${pessoas.length} pessoa${pessoas.length!==1?'s':''}
+        </div>
+      </div>
+      <div style="padding:14px 16px">${linhas}</div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div style="display:flex;align-items:center;justify-content:space-between;
+              margin-bottom:16px;flex-wrap:wrap;gap:8px">
+    <div style="font-size:12px;color:var(--txt2)">
+      ${ativos.length} colaboradores · ${areasPresentes.length} áreas
+    </div>
+    <div style="font-size:11px;color:var(--txt3)">
+      Por área · níveis do maior para o menor
+    </div>
+  </div>
+  <div style="display:flex;gap:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+              padding-bottom:16px;align-items:flex-start">
+    ${blocos}
+  </div>`;
+}
+
+// Nós especiais (divisões)
+const DIVISION_NODES=[
+  {id:'div_coord',   label:'🏢 Coordenação',         sublabel:'Gestão Geral',              cor:'#3B6D11',bg:'#C0DD97',isDivisao:true,isCoord:true},
+  {id:'div_emc',     label:'⚡ EMC',                  sublabel:'Ensaios Eletromagnéticos',   cor:'#185FA5',bg:'#dbeafe',isDivisao:true},
+  {id:'div_rf',      label:'📡 RF',                   sublabel:'Radiofrequência 14448',      cor:'#854F0B',bg:'#fef3c7',isDivisao:true},
+  {id:'div_redes',   label:'📶 Redes Móveis',         sublabel:'IPv6 · 2G/3G/4G',           cor:'#085041',bg:'#9FE1CB',isDivisao:true},
+  {id:'div_bat',     label:'🔋 Baterias e Acústica',  sublabel:'Baterias · Powerbanks',     cor:'#7C3D8F',bg:'#F3E8FF',isDivisao:true},
+  {id:'div_outros',  label:'📺 Outros Ensaios',       sublabel:'TV · Melhorias',             cor:'#0F766E',bg:'#CCFBF1',isDivisao:true},
+  {id:'div_entrada', label:'📦 Entrada e Devolução',  sublabel:'Logística · Atlas · LABTRACK',cor:'#5F5E5A',bg:'#D3D1C7',isDivisao:true},
+];
+
+// Conexões pai→filho
+function buildConnections(){
+  const conns=[];
+  // Coord → todas as divisões
+  ['div_emc','div_rf','div_redes','div_bat','div_outros','div_entrada'].forEach(d=>{
+    conns.push({from:'div_coord',to:d});
+  });
+  // Mapeamento área → divisão
+  const areaDivisao={
+    'EMC':'div_emc','Configuracao EMC':'div_emc',
+    'RF':'div_rf','Configuracao RF':'div_rf',
+    'Redes Moveis':'div_redes',
+    'Baterias e Acustica':'div_bat','Ensaios Acusticos':'div_bat','Baterias':'div_bat',
+    'Outros Ensaios':'div_outros','TV':'div_outros',
+    'Entrada e Devolucao':'div_entrada',
+  };
+  colaboradores.forEach(c=>{
+    const divId=areaDivisao[c.area]||'div_coord';
+    conns.push({from:divId,to:'c_'+c.id});
+  });
+  return conns;
+}
+
+function nodeHeight(node){
+  if(node.isDivisao)return 62;
+  const c=colaboradores.find(x=>'c_'+x.id===node.id);
+  if(!c)return 80;
+  const funcs=c.funcoes||[];
+  return 88+(Math.ceil(funcs.length/2)*18);
+}
+
+let connectMode=false,connectFrom=null;
+let orgScale=1,orgOffX=0,orgOffY=0;
+let orgIsPanning=false,orgPanStart={x:0,y:0},orgPanOrigin={x:0,y:0};
+let orgDragNode=null,orgDragStart={x:0,y:0},orgDragNodeOrigin={x:0,y:0};
+let orgDidDrag=false;
+
+
+function toggleConnectMode(){
+  connectMode=!connectMode;connectFrom=null;
+  const btn=document.getElementById('btn-connect');
+  const hint=document.getElementById('org-hint');
+  const svg=document.getElementById('orgSvg');
+  if(connectMode){
+    if(btn){btn.style.background='#FAEEDA';btn.textContent='✕ Sair do modo conexão';}
+    if(hint)hint.textContent='Clique no 1º nó (origem) → clique no 2º nó (destino). Clique numa linha para excluí-la.';
+    if(svg)svg.classList.add('connect-mode');
+  } else {
+    if(btn){btn.style.background='';btn.textContent='🔗 Conectar nós';}
+    if(hint)hint.textContent='Arraste · Scroll zoom · Clique para perfil';
+    if(svg)svg.classList.remove('connect-mode');
+    connectFrom=null;
+    document.querySelectorAll('.org-node-drag.selected-from').forEach(n=>n.classList.remove('selected-from'));
+    document.querySelectorAll('.org-node-drag.connect-hover').forEach(n=>n.classList.remove('connect-hover'));
+  }
+}
+
+function clearOrgConnections(){
+  if(!confirm('Remover todas as linhas manuais?'))return;
+  orgConnections=[];lss('orgConns',orgConnections);drawOrgConnections();toast('Linhas removidas!');
+}
+
+function handleConnectClick(nodeId,el){
+  if(!connectFrom){
+    connectFrom=nodeId;
+    document.querySelectorAll('.org-node-drag.selected-from').forEach(n=>n.classList.remove('selected-from'));
+    el.classList.add('selected-from');
+    const hint=document.getElementById('org-hint');
+    if(hint)hint.textContent='✓ Origem selecionada! Agora clique no nó destino para criar a linha.';
+  } else {
+    if(connectFrom===nodeId){
+      connectFrom=null;el.classList.remove('selected-from');return;
+    }
+    // Verificar se já existe
+    const exists=orgConnections.find(c=>(c.from===connectFrom&&c.to===nodeId)||(c.from===nodeId&&c.to===connectFrom));
+    if(exists){
+      if(confirm('Esta conexão já existe. Deseja excluí-la?')){
+        orgConnections=orgConnections.filter(c=>c!==exists);lss('orgConns',orgConnections);drawOrgConnections();
+      }
+    } else {
+      const label=prompt('Rótulo da linha (ex: mentoria, colega, par técnico) — pode deixar vazio:','');
+      orgConnections.push({id:uid(),from:connectFrom,to:nodeId,label:label?label:''});
+      lss('orgConns',orgConnections);drawOrgConnections();toast('Linha criada! 🔗');
+    }
+    connectFrom=null;
+    document.querySelectorAll('.org-node-drag.selected-from').forEach(n=>n.classList.remove('selected-from'));
+    document.querySelectorAll('.org-node-drag.connect-hover').forEach(n=>n.classList.remove('connect-hover'));
+    const hint=document.getElementById('org-hint');
+    if(hint)hint.textContent='Clique no 1º nó (origem) → clique no 2º nó (destino).';
+  }
+}
+
+function initOrgDrag(){
+  const wrap=document.getElementById('orgWrap');
+  const canvas=document.getElementById('orgCanvas');
+  if(!wrap||!canvas)return;
+
+  // Inicializar posições
+  // Versão do layout — se mudar, força reset automático
+  const LAYOUT_VER='v3-hier';
+  const layoutVer=localStorage.getItem('orgLayoutVer');
+  if(!Object.keys(orgPositions).length||layoutVer!==LAYOUT_VER){
+    orgPositions=defaultPositions();
+    lss('orgPos_v2',orgPositions);
+    localStorage.setItem('orgLayoutVer',LAYOUT_VER);
+  }
+
+  // Renderizar nós
+  renderOrgNodes();
+  drawOrgConnections();
+
+  // ── CANVAS PANNING ──
+  wrap.addEventListener('mousedown',e=>{
+    if(connectMode)return; // em modo conexão, não fazer pan
+    if(e.target===wrap||e.target===canvas||e.target.tagName==='svg'||e.target.tagName==='SVG'){
+      orgIsPanning=true;
+      orgPanStart={x:e.clientX,y:e.clientY};
+      orgPanOrigin={x:orgOffX,y:orgOffY};
+      canvas.classList.add('panning');
+      e.preventDefault();
+    }
+  });
+  window.addEventListener('mousemove',onOrgMouseMove);
+  window.addEventListener('mouseup',onOrgMouseUp);
+
+  // ── ZOOM ──
+  wrap.addEventListener('wheel',e=>{
+    e.preventDefault();
+    const rect=wrap.getBoundingClientRect();
+    const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+    const delta=e.deltaY>0?0.9:1.1;
+    const newScale=Math.min(Math.max(orgScale*delta,0.25),2.5);
+    // Zoom centrado no cursor
+    orgOffX=mx-(mx-orgOffX)*newScale/orgScale;
+    orgOffY=my-(my-orgOffY)*newScale/orgScale;
+    orgScale=newScale;
+    applyOrgTransform();
+    drawOrgConnections();
+  },{passive:false});
+}
+
+function onOrgMouseMove(e){
+  if(orgIsPanning&&!orgDragNode){
+    orgOffX=orgPanOrigin.x+(e.clientX-orgPanStart.x);
+    orgOffY=orgPanOrigin.y+(e.clientY-orgPanStart.y);
+    applyOrgTransform();
+    drawOrgConnections();
+  }
+  if(orgDragNode){
+    orgDidDrag=true;
+    const dx=(e.clientX-orgDragStart.x)/orgScale;
+    const dy=(e.clientY-orgDragStart.y)/orgScale;
+    const newX=orgDragNodeOrigin.x+dx;
+    const newY=orgDragNodeOrigin.y+dy;
+    orgPositions[orgDragNode]=({x:Math.max(0,Math.min(newX,CANVAS_W-NODE_W)),y:Math.max(0,Math.min(newY,CANVAS_H-200))});
+    const el=document.getElementById('orgn_'+orgDragNode);
+    if(el){el.style.left=orgPositions[orgDragNode].x+'px';el.style.top=orgPositions[orgDragNode].y+'px';}
+    drawOrgConnections();
+  }
+}
+
+function onOrgMouseUp(e){
+  if(orgIsPanning){orgIsPanning=false;const canvas=document.getElementById('orgCanvas');if(canvas)canvas.classList.remove('panning');}
+  if(orgDragNode){
+    const el=document.getElementById('orgn_'+orgDragNode);
+    if(el)el.classList.remove('dragging');
+    lss('orgPos_v2',orgPositions);lss('orgConns',orgConnections);lss('notas',notas);lss('aiHistory',aiHistory);
+    orgDragNode=null;
+  }
+}
+
+function applyOrgTransform(){
+  const canvas=document.getElementById('orgCanvas');
+  if(canvas)canvas.style.transform=`translate(${orgOffX}px,${orgOffY}px) scale(${orgScale})`;
+  const svg=document.getElementById('orgSvg');
+  if(svg)svg.style.transform=`translate(${orgOffX}px,${orgOffY}px) scale(${orgScale})`;
+}
+
+function renderOrgNodes(){
+  const canvas=document.getElementById('orgCanvas');
+  if(!canvas)return;
+  canvas.innerHTML='';
+  canvas.style.transformOrigin='0 0';
+  canvas.style.width=CANVAS_W+'px';
+  canvas.style.height=CANVAS_H+'px';
+
+  const allNodes=[
+    ...DIVISION_NODES,
+    ...colaboradores.map(c=>({id:'c_'+c.id,col:c})),
+  ];
+
+  allNodes.forEach(node=>{
+    const pos=getPos(node.id);
+    const el=document.createElement('div');
+    el.id='orgn_'+node.id;
+    el.className='org-node-drag'+(node.isCoord?' coord':node.isDivisao?' divisao':'');
+    el.style.left=pos.x+'px';
+    el.style.top=pos.y+'px';
+
+    if(node.isDivisao){
+      el.style.borderColor=node.cor;
+      el.style.background=node.bg;
+      el.innerHTML=`<div style="font-size:13px;font-weight:700;color:${node.cor};text-align:center">${node.label}</div>
+        <div style="font-size:9.5px;color:${node.cor};opacity:.75;text-align:center;margin-top:3px">${node.sublabel}</div>`;
+    } else {
+      const c=node.col;
+      const ns=NIVEL_STYLE[c.nivel]||{cor:'#888',bg:'#eee'};
+      const ac=AREA_COLORS[c.area]||{cor:'#888',bg:'#eee'};
+      // Calcular carga do colaborador
+      const funcoesV8=ls('funcoes_v8',[]);
+      const cargaMin=funcoesV8.reduce((acc,f)=>{
+        const resp=(f.responsaveis||[]).find(r=>r.nome===c.nome);
+        return acc+(resp?calcCargaFuncao(f,qtdServicos)*(resp.pct/100):0);
+      },0);
+      const pctCarga=Math.round(cargaMin/(8*60*22)*100);
+      const corCarga=pctCarga>=100?'#A32D2D':pctCarga>=80?'#854F0B':pctCarga>=60?'#185FA5':'#1D9E75';
+      el.innerHTML=
+        '<div class="nd-nivel" style="color:'+ns.cor+';background:'+ns.bg+';border-color:'+ns.cor+'60">'+c.nivel+'</div>'+
+        '<div class="nd-nome">'+c.nome.split(' ').slice(0,2).join(' ')+'</div>'+
+        '<div class="nd-area" style="background:'+ac.bg+';color:'+ac.cor+'">'+c.area+'</div>'+
+        (pctCarga>0?'<div style="font-size:9px;font-weight:700;color:'+corCarga+';margin-top:2px">'+pctCarga+'% ocupação</div>':'');
+    }
+
+    // Drag eventos no nó
+    el.addEventListener('mousedown',e=>{
+      if(connectMode){e.stopPropagation();return;}
+      e.stopPropagation();
+      orgDidDrag=false;
+      orgDragNode=node.id;
+      orgDragStart={x:e.clientX,y:e.clientY};
+      orgDragNodeOrigin={...getPos(node.id)};
+      el.classList.add('dragging');
+    });
+
+    // Click para abrir perfil (só se não arrastou)
+    el.addEventListener('click',e=>{
+      e.stopPropagation();
+      if(connectMode){
+        handleConnectClick(node.id,el);
+        return;
+      }
+      if(orgDidDrag)return;
+      if(!node.isDivisao&&node.col)verCol(node.col.id);
+    });
+    el.addEventListener('mouseenter',()=>{
+      if(connectMode&&connectFrom&&connectFrom!==node.id)
+        el.classList.add('connect-hover');
+    });
+    el.addEventListener('mouseleave',()=>{
+      el.classList.remove('connect-hover');
+    });
+
+    canvas.appendChild(el);
+  });
+}
+
+function drawOrgConnections(){
+  const svg=document.getElementById('orgSvg');if(!svg)return;
+  svg.style.transformOrigin='0 0';svg.style.width=CANVAS_W+'px';svg.style.height=CANVAS_H+'px';
+  svg.innerHTML='';
+
+  // Defs: seta roxa para linhas manuais
+  const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+  const marker=document.createElementNS('http://www.w3.org/2000/svg','marker');
+  marker.setAttribute('id','arr');marker.setAttribute('viewBox','0 0 10 10');
+  marker.setAttribute('refX','9');marker.setAttribute('refY','5');
+  marker.setAttribute('markerWidth','6');marker.setAttribute('markerHeight','6');
+  marker.setAttribute('orient','auto-start-reverse');
+  const mp=document.createElementNS('http://www.w3.org/2000/svg','path');
+  mp.setAttribute('d','M1 1L9 5L1 9');mp.setAttribute('fill','none');
+  mp.setAttribute('stroke','#534AB7');mp.setAttribute('stroke-width','1.5');mp.setAttribute('stroke-linejoin','round');
+  marker.appendChild(mp);defs.appendChild(marker);svg.appendChild(defs);
+
+  // Linhas hierárquicas automáticas (cinza pontilhado, de baixo do pai ao topo do filho)
+  buildConnections().forEach(conn=>{
+    const fp=getPos(conn.from),tp=getPos(conn.to);if(!fp||!tp)return;
+    const fromEl=document.getElementById('orgn_'+conn.from);
+    const toEl=document.getElementById('orgn_'+conn.to);
+    const fw=fromEl?fromEl.offsetWidth:NODE_W,fh=fromEl?fromEl.offsetHeight:80;
+    const tw=toEl?toEl.offsetWidth:NODE_W;
+    const x1=fp.x+fw/2,y1=fp.y+fh,x2=tp.x+tw/2,y2=tp.y,mid=(y1+y2)/2;
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',`M${x1},${y1} C${x1},${mid} ${x2},${mid} ${x2},${y2}`);
+    // Cor da linha baseada na divisão de origem
+    const divColors={'div_coord':'#3B6D11','div_emc':'#185FA5','div_rf':'#854F0B','div_redes':'#085041','div_bat':'#7C3D8F','div_outros':'#0F766E','div_entrada':'#5F5E5A'};
+    const lineColor=divColors[conn.from]||'#aaa';
+    const isToDiv=conn.to.startsWith('div_');
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke',isToDiv?lineColor:'rgba(0,0,0,0.12)');
+    path.setAttribute('stroke-width',isToDiv?'2.5':'1.5');
+    path.setAttribute('stroke-dasharray',isToDiv?'none':'4 4');
+    if(isToDiv){path.setAttribute('opacity','0.7');}
+    svg.appendChild(path);
+  });
+
+  // Linhas manuais (roxo, com seta, clicáveis para excluir, de centro a centro)
+  orgConnections.forEach(conn=>{
+    const fp=getPos(conn.from),tp=getPos(conn.to);if(!fp||!tp)return;
+    const fromEl=document.getElementById('orgn_'+conn.from);
+    const toEl=document.getElementById('orgn_'+conn.to);
+    const fw=fromEl?fromEl.offsetWidth:NODE_W,fh=fromEl?fromEl.offsetHeight:80;
+    const tw=toEl?toEl.offsetWidth:NODE_W,th=toEl?toEl.offsetHeight:80;
+    // Conectar do centro do nó de origem ao centro do nó de destino
+    const x1=fp.x+fw/2,y1=fp.y+fh/2,x2=tp.x+tw/2,y2=tp.y+th/2;
+
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.style.cursor='pointer';
+    g.setAttribute('title','Clique para excluir esta conexão');
+    g.addEventListener('click',()=>{
+      if(confirm('Excluir esta conexão?')){
+        orgConnections=orgConnections.filter(c=>c.id!==conn.id);
+        lss('orgConns',orgConnections);drawOrgConnections();
+      }
+    });
+
+    // Área de clique invisível mais larga
+    const hit=document.createElementNS('http://www.w3.org/2000/svg','line');
+    hit.setAttribute('x1',x1);hit.setAttribute('y1',y1);hit.setAttribute('x2',x2);hit.setAttribute('y2',y2);
+    hit.setAttribute('stroke','transparent');hit.setAttribute('stroke-width','14');
+    g.appendChild(hit);
+
+    // Linha visível roxa
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',x1);line.setAttribute('y1',y1);line.setAttribute('x2',x2);line.setAttribute('y2',y2);
+    line.setAttribute('stroke','rgba(83,74,183,0.8)');line.setAttribute('stroke-width','2.5');
+    line.setAttribute('marker-end','url(#arr)');
+    g.appendChild(line);
+
+    // Rótulo opcional sobre a linha
+    if(conn.label&&conn.label){
+      const mx=(x1+x2)/2,my=(y1+y2)/2;
+      const txt=conn.label;
+      const bw=txt.length*7+16,bh=18;
+      const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      rect.setAttribute('x',mx-bw/2);rect.setAttribute('y',my-bh/2);
+      rect.setAttribute('width',bw);rect.setAttribute('height',bh);
+      rect.setAttribute('rx','9');rect.setAttribute('fill','#EEEDFE');
+      rect.setAttribute('stroke','rgba(83,74,183,0.35)');rect.setAttribute('stroke-width','0.5');
+      const lbl=document.createElementNS('http://www.w3.org/2000/svg','text');
+      lbl.setAttribute('x',mx);lbl.setAttribute('y',my);
+      lbl.setAttribute('text-anchor','middle');lbl.setAttribute('dominant-baseline','central');
+      lbl.setAttribute('font-size','10');lbl.setAttribute('fill','#534AB7');lbl.setAttribute('font-weight','700');
+      lbl.textContent=txt;
+      g.appendChild(rect);g.appendChild(lbl);
+    }
+    svg.appendChild(g);
+  });
+}
+
+function centerOrg(){
+  orgOffX=0;orgOffY=0;orgScale=0.55;
+  applyOrgTransform();drawOrgConnections();
+}
+
+function resetOrgLayout(){
+  if(!confirm('Resetar todas as posições do organograma?'))return;
+  orgPositions=defaultPositions();
+  lss('orgPos_v2',orgPositions);lss('orgConns',orgConnections);lss('notas',notas);lss('aiHistory',aiHistory);
+  localStorage.setItem('orgLayoutVer','v3-hier');
+  renderOrgNodes();
+  drawOrgConnections();
+  centerOrg();
+  toast('Layout resetado!');
+}
+
+// Inicializar com zoom reduzido para caber tudo
+setTimeout(()=>{if(currentPage==='organograma'){centerOrg();}},100);
+
+// ══════════════════════════════════════════
+// FUNÇÕES
+// ══════════════════════════════════════════
+
+
+// Drag-to-scroll para a área de funções
+
+function openFuncaoForm(id=null){
+  const f=id?funcoes.find(x=>x.id===id):{colaboradores:[]};
+  const isEdit=!!id;
+  document.getElementById('modal-title').textContent=isEdit?'Editar Função':'Nova Função';
+  document.getElementById('modal-box').classList.add('modal-lg');
+  const areas=Object.keys(AREA_COLORS);
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-grid mb-16">
+      <div class="field-group form-full"><div class="field-label">Nome da Função *</div><input id="ff-nome" value="${f.nome||''}" placeholder="Ex: Ensaios de RF"/></div>
+      <div class="field-group"><div class="field-label">Área principal</div><select id="ff-area">${areas.map(a=>`<option value="${a}"${f.area===a?' selected':''}>${a}</option>`).join('')}</select></div>
+      <div class="field-group"><div class="field-label">Tempo estimado (h/semana)</div><input id="ff-tempo" type="number" min="1" max="40" value="${f.tempoSemana||8}"/></div>
+    </div>
+    <div class="divider"></div>
+    <div class="section-title mb-12">Colaboradores vinculados e % de tempo</div>
+    <div id="ff-cols-list">${renderFuncaoColList(f.colaboradores||[])}</div>
+    <div class="mt-8">
+      <select id="ff-add-col" style="width:auto;margin-right:8px">
+        <option value="">Adicionar colaborador...</option>
+        ${colaboradores.filter(c=>!(f.colaboradores||[]).find(x=>x.colId===c.id)).map(c=>`<option value="${c.id}">${c.nome} (${c.nivel})</option>`).join('')}
+      </select>
+      <button class="btn btn-sm" onclick="addColToFunc()">+ Adicionar</button>
+    </div>
+    <div class="flex gap-8 mt-16 justify-between">
+      ${isEdit?`<button class="btn btn-danger btn-sm" onclick="delFuncao('${id}')">Excluir</button>`:'<div></div>'}
+      <div class="flex gap-8"><button class="btn" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveFuncao('${id||''}')">💾 Salvar</button></div>
+    </div>`;
+  document.getElementById('modal').style.display='flex';
+}
+function renderFuncaoColList(cols){
+  tempFuncCols=cols.map(x=>({...x}));
+  if(!cols.length)return'<div style="font-size:12px;color:var(--txt3);padding:8px 0">Nenhum colaborador vinculado ainda.</div>';
+  return cols.map(fc=>{const col=colaboradores.find(x=>x.id===fc.colId);if(!col)return'';
+    return`<div class="flex items-center gap-10 mb-8 pb-8" style="border-bottom:0.5px solid var(--border)" id="ffc_${fc.colId}">
+      ${av(col.nome,false,true)}<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600">${col.nome}</div><div style="font-size:10px;color:var(--txt3)">${col.nivel} · ${col.area}</div></div>
+      <div class="flex items-center gap-8"><span style="font-size:11px;color:var(--txt2)">%:</span>
+      <input type="number" min="0" max="100" value="${fc.pct||0}" style="width:60px;padding:3px 6px;font-size:11px" onchange="updateTempColPct('${fc.colId}',this.value)"/>
+      <button class="btn btn-xs btn-danger" onclick="removeTempCol('${fc.colId}')">×</button></div>
+    </div>`;}).join('');
+}
+function updateTempColPct(colId,val){const fc=tempFuncCols.find(x=>x.colId===colId);if(fc)fc.pct=parseInt(val)||0}
+function removeTempCol(colId){
+  tempFuncCols=tempFuncCols.filter(x=>x.colId!==colId);
+  (() => { const _e=document.getElementById('ffc_'+colId); if(_e)_e.remove(); })();
+  const col=colaboradores.find(x=>x.id===colId);
+  if(col){const sel=document.getElementById('ff-add-col');const opt=document.createElement('option');opt.value=col.id;opt.textContent=col.nome+' ('+col.nivel+')';sel.appendChild(opt);}
+}
+function addColToFunc(){
+  const sel=document.getElementById('ff-add-col');const colId=sel.value;if(!colId)return;
+  const col=colaboradores.find(x=>x.id===colId);if(!col)return;
+  tempFuncCols.push({colId,pct:50});
+  (() => { const _qr2=sel.querySelector(`option[value="${colId}"]`); if(_qr2)_qr2.remove(); })();sel.value='';
+  const container=document.getElementById('ff-cols-list');
+  const div=document.createElement('div');div.id='ffc_'+colId;div.className='flex items-center gap-10 mb-8 pb-8';div.style.borderBottom='0.5px solid var(--border)';
+  div.innerHTML=`${av(col.nome,false,true)}<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600">${col.nome}</div><div style="font-size:10px;color:var(--txt3)">${col.nivel} · ${col.area}</div></div>
+    <div class="flex items-center gap-8"><span style="font-size:11px;color:var(--txt2)">%:</span>
+    <input type="number" min="0" max="100" value="50" style="width:60px;padding:3px 6px;font-size:11px" onchange="updateTempColPct('${colId}',this.value)"/>
+    <button class="btn btn-xs btn-danger" onclick="removeTempCol('${colId}')">×</button></div>`;
+  container.appendChild(div);
+}
+function saveFuncao(id){
+  const nome=((document.getElementById('ff-nome')||{}).value||'').trim();if(!nome)return;
+  const obj={id:id||uid(),nome,area:document.getElementById('ff-area').value,tempoSemana:parseInt(document.getElementById('ff-tempo').value)||8,colaboradores:[...tempFuncCols]};
+  if(id){const i=funcoes.findIndex(x=>x.id===id);funcoes[i]=obj}else funcoes.push(obj);
+  colaboradores.forEach(c=>{c.funcoes=funcoes.filter(f=>f.colaboradores.find(fc=>fc.colId===c.id)).map(f=>f.nome)});
+  saveAll();closeModal();toast('Função salva!');render(currentPage);
+}
+function delFuncao(id){if(!confirm('Excluir?'))return;funcoes=funcoes.filter(x=>x.id!==id);saveAll();closeModal();render(currentPage)}
+
+// ══════════════════════════════════════════
+// AVALIAÇÃO
+// ══════════════════════════════════════════
+let avalState={colId:'',nivel:'',respostas:{},obs:{},pontosPos:'',oportunidades:''};
+
+// Salvar rascunho automaticamente
+function salvarRascunhoAval(){
+  if(avalState.colId) lss('aval_rascunho', avalState);
+}
+function carregarRascunhoAval(){
+  const r = ls('aval_rascunho', null);
+  if(r && r.colId) {
+    avalState = r;
+    return true;
+  }
+  return false;
+}
+function limparRascunhoAval(){
+  localStorage.removeItem('aval_rascunho');
+}
+function renderAvaliacao(){
+  const temRascunho = avalState.colId && avalState.colId !== '';
+  const rascunhoMsg = temRascunho ? `
+    <div style="background:#E1F5EE;border:1px solid #9FE1CB;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
+      <span style="font-size:20px">📝</span>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;color:#0F6E56">Rascunho em andamento</div>
+        <div style="font-size:11px;color:#1D9E75">Avaliação de <strong>${(colaboradores.find(x=>x.id===avalState.colId)||{}).nome||'colaborador'}</strong> — continue de onde parou</div>
+      </div>
+      <button class="btn btn-sm" onclick="limparRascunhoAval();avalState={colId:'',nivel:'',respostas:{},obs:{},pontosPos:'',oportunidades:''};render('avaliacao')" style="border-color:#A32D2D;color:#A32D2D">✕ Descartar</button>
+    </div>` : '';
+  return rascunhoMsg + `<div class="card mb-12"><div class="form-grid mb-12">
+    <div class="field-group"><div class="field-label">Colaborador *</div><select id="av-col" onchange="onColChange(this.value)"><option value="">Selecione...</option>${colaboradores.map(c=>`<option value="${c.id}"${avalState.colId===c.id?' selected':''}>${c.nome}</option>`).join('')}</select></div>
+    <div class="field-group"><div class="field-label">Data</div><input type="date" id="av-data" value="${new Date().toISOString().slice(0,10)}"/></div>
+    <div class="field-group"><div class="field-label">Avaliador</div><input id="av-avaliador" placeholder="Nome do avaliador..."/></div>
+    <div class="field-group"><div class="field-label">Nível detectado</div><div style="padding:7px 10px;border:0.5px solid var(--border);border-radius:7px;font-size:12px;min-height:35px;display:flex;align-items:center" id="av-nivel-show">${avalState.nivel?nivelBadge(avalState.nivel):'<span style="color:var(--txt3)">Selecione o colaborador</span>'}</div></div>
+  </div>
+  <div class="flex gap-6 flex-wrap mb-4">
+    ${[['1-2','Nunca','#FCEBEB','#A32D2D'],['3-4','Raramente','#FAEEDA','#854F0B'],['5-6','Às vezes','#E6F1FB','#185FA5'],['7-8','Frequentemente','#E1F5EE','#0F6E56'],['9-10','Sempre','#C0DD97','#27500A']].map(([n,l,bg,c])=>`<div class="score-pill" style="background:${bg};color:${c};border-color:${c}30"><strong>${n}</strong> ${l}</div>`).join('')}
+  </div></div>
+  <div id="av-perguntas-wrap">${avalState.nivel?renderPerguntasForm():'<div class="card"><div class="empty-state">Selecione um colaborador para carregar as perguntas.</div></div>'}</div>
+  ${avalState.nivel?`<div class="card mt-12"><div class="form-grid">
+    <div class="field-group form-full"><div class="field-label">✅ Pontos positivos</div><textarea id="av-pontos" placeholder="O que o colaborador faz muito bem..."></textarea></div>
+    <div class="field-group form-full"><div class="field-label">🔧 Oportunidades de melhoria</div><textarea id="av-opor" placeholder="Áreas a desenvolver..."></textarea></div>
+  </div><div class="flex gap-8 mt-12 justify-end">
+    <button class="btn btn-purple btn-sm" onclick="gerarSugestoesIA()" id="btn-ia-aval">🤖 Sugestões da IA</button>
+    <button class="btn" onclick="avalState={colId:'',nivel:'',respostas:{},obs:{},pontosPos:'',oportunidades:''};aiSugestoes='';render('avaliacao')">Limpar</button>
+    <button class="btn btn-primary" onclick="salvarAvaliacao()">💾 Salvar Avaliação</button>
+  </div>
+  <div id="ai-sug-aval-wrap"></div>
+  </div>`:''}`;
+}
+function onColChange(colId){
+  const c=colaboradores.find(x=>x.id===colId);if(!c)return;
+  avalState.colId=colId;avalState.nivel=c.nivel;avalState.respostas={};avalState.obs={};
+  document.getElementById('av-nivel-show').innerHTML=nivelBadge(c.nivel);
+  document.getElementById('av-perguntas-wrap').innerHTML=renderPerguntasForm();
+  render('avaliacao');setTimeout(()=>{const sel=document.getElementById('av-col');if(sel)sel.value=colId;},10);
+}
+function renderPerguntasForm(){
+  const p=(()=>{
+    const niv=avalState.nivel;
+    return perguntas[niv]
+      ||(niv==='Assistente'?perguntas['Assistente I']:null)
+      ||(niv==='Assistente III'?perguntas['Analista I']:null)
+      ||(niv==='Analista III'?perguntas['Especialista']:null)
+      ||perguntas['Estagiário']||{};
+  })();
+  return Object.entries(p).map(([secao,qs])=>`<div class="eval-section"><div class="eval-section-title"><span>${secao}</span></div>
+    ${qs.map((q,qi)=>{const key=`${secao}__${qi}`;const val=avalState.respostas[key]||5;const sid='sv_'+key.replace(/[^a-z0-9]/gi,'_');
+      return`<div style="margin-bottom:11px"><div class="eval-q-text">${q}</div><div class="slider-wrap"><span style="font-size:10px;color:var(--txt3)">1</span><input type="range" min="1" max="10" value="${val}" oninput="setResp('${key}',this.value);document.getElementById('${sid}').textContent=this.value"/><span style="font-size:10px;color:var(--txt3)">10</span><span class="slider-val" id="${sid}">${val}</span></div></div>`;}).join('')}
+    <div class="field-group"><div class="field-label">Obs. sobre ${secao} (opcional)</div><textarea style="min-height:44px" oninput="avalState.obs['${secao}']=this.value">${avalState.obs[secao]||''}</textarea></div>
+  </div>`).join('');
+}
+function setResp(k,v){avalState.respostas[k]=parseInt(v);salvarRascunhoAval();}
+function iniciarAvaliacaoPara(colId){avalState={colId:'',nivel:'',respostas:{},obs:{},pontosPos:'',oportunidades:''};go('avaliacao');setTimeout(()=>{const sel=document.getElementById('av-col');if(sel){sel.value=colId;onColChange(colId);}},60)}
+function salvarAvaliacao(){
+  if(!avalState.colId){alert('Selecione um colaborador');return}
+  const c=colaboradores.find(x=>x.id===avalState.colId);
+  // Fallback: usar nível mais próximo se o nível exato não existir
+  const _niv=avalState.nivel;
+  const p=perguntas[_niv]||perguntas['Assistente I']||{};
+  const secaoMedias={};let total=0,count=0;
+  Object.entries(p).forEach(([secao,qs])=>{let sm=0;qs.forEach((_,qi)=>{const k=`${secao}__${qi}`;const v=avalState.respostas[k]||5;sm+=v;total+=v;count++;});secaoMedias[secao]=Math.round(sm/qs.length*10)/10;});
+  const mediaGeral=count?Math.round(total/count*10)/10:5;
+  const obj={id:uid(),colaboradorId:c.id,colaborador:c.nome,nivel:avalState.nivel,data:(document.getElementById('av-data')||{}).value||new Date().toISOString().slice(0,10),avaliador:(document.getElementById('av-avaliador')||{}).value||'',mediaGeral,secaoMedias,respostas:{...avalState.respostas},obs:{...avalState.obs},pontosPos:(document.getElementById('av-pontos')||{}).value||'',oportunidades:(document.getElementById('av-opor')||{}).value||''};
+  avaliacoes.push(obj);saveAll();limparRascunhoAval();avalState={colId:'',nivel:'',respostas:{},obs:{},pontosPos:'',oportunidades:''};toast('Avaliação salva! 🎉');go('historico_aval');
+}
+
+// ══════════════════════════════════════════
+// HISTÓRICO
+// ══════════════════════════════════════════
+function renderHistoricoAval(search=''){
+  let list=[...avaliacoes].reverse();if(search)list=list.filter(a=>a.colaborador.toLowerCase().includes(search.toLowerCase()));
+  function sc(v){return v>=8?'score-hi':v>=5?'score-mid':'score-lo'}
+  return `<div class="card" style="padding:0;overflow:hidden">
+    ${list.length===0?`<div class="empty-state">Nenhuma avaliação.<br><button class="btn btn-primary btn-sm mt-8" onclick="go('avaliacao')">Fazer primeira</button></div>`:`
+    <div class="table-wrap"><table class="tbl">
+      <thead><tr><th>Colaborador</th><th>Nível</th><th>Data</th><th>Versatil.</th><th>Equipe</th><th>Resp.</th><th>Result.</th><th>17025</th><th>Técnica</th><th>Média</th><th></th></tr></thead>
+      <tbody>${list.map(a=>`<tr>
+        <td><div class="flex items-center gap-8" style="white-space:nowrap">${av(a.colaborador)}<span style="font-weight:600">${a.colaborador}</span></div></td>
+        <td>${nivelBadge(a.nivel)}</td><td style="color:var(--txt2);white-space:nowrap">${a.data}</td>
+        ${['Versatilidade','Trabalho em Equipe','Responsabilidade','Foco em Resultados','Norma 17025','Técnica'].map(s=>`<td class="${sc((a.secaoMedias&&a.secaoMedias[s])||5)}">${(a.secaoMedias&&a.secaoMedias[s])||'—'}</td>`).join('')}
+        <td><span class="badge badge-green" style="font-size:12px">${a.mediaGeral}</span></td>
+        <td><div style="display:flex;gap:4px">
+          <button class="btn btn-sm" onclick="verAvaliacao('${a.id}')">Ver</button>
+          <button class="btn btn-sm btn-danger" onclick="if(confirm('Excluir esta avaliação?')){avaliacoes=avaliacoes.filter(x=>x.id!=='${a.id}');saveAll();render('historico_aval');toast('Avaliação excluída!')}" title="Excluir">🗑</button>
+        </div></td>
+      </tr>`).join('')}</tbody>
+    </table></div>`}
+  </div>`;
+}
+function verAvaliacao(id){
+  var a=avaliacoes.find(function(x){return x.id===id;});if(!a)return;
+  var secoes=Object.entries(a.secaoMedias||{});
+  function sc(v){return v>=8?'score-hi':v>=5?'score-mid':'score-lo';}
+  var secoesGrid=secoes.map(function(sv){
+    var s=sv[0],v=sv[1];
+    return '<div style="background:var(--bg2);border-radius:8px;padding:10px 13px">'
+      +'<div style="font-size:10px;color:var(--txt2);margin-bottom:3px">'+s+'</div>'
+      +'<div class="flex items-center gap-8"><div class="progress-bar" style="flex:1">'
+        +'<div class="progress-fill" style="width:'+(v*10)+'%;background:var(--green)"></div>'
+      +'</div><span class="'+sc(v)+'" style="font-size:14px">'+v+'</span></div>'
+      +((a.obs&&a.obs[s])?'<div style="font-size:10px;color:var(--txt3);margin-top:3px">'+a.obs[s]+'</div>':'')
     +'</div>';
   }).join('');
   var extras='';
@@ -2580,7 +4437,7 @@ function renderCompetencias(){
 
   // Escolaridade
   const escHtml='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">'
-    +'<div style="background:#F5F6F4;border-radius:8px;padding:12px;border:1px solid #F0F1EF">'
+    +'<div style="background:var(--bg2);border-radius:8px;padding:12px">'
       +'<div style="font-size:9px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">📚 Escolaridade Básica</div>'
       +'<div style="font-size:12px;color:var(--txt)">'+perfil.escolaridade.basica+'</div>'
     +'</div>'
@@ -4401,7 +6258,7 @@ function renderPerfilAba(id, aba){
         +'</div>'
         +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">'
           +'<button onclick="closeModal();setTimeout(()=>openColFormDirect(\''+id+'\'),100)" style="background:#0F6E56;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer">✏️ Editar</button>'
-          +'<div style="font-size:10px;color:#9BA09E;text-transform:uppercase;letter-spacing:.05em;font-weight:500;margin-bottom:3px">Status</div>'
+          +'<div style="font-size:10px;color:var(--txt3)">Status</div>'
           +'</div>'
         +'</div>'
       +'</div>'
