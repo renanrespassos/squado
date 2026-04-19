@@ -1553,6 +1553,7 @@ function saveAll(){
   lss('avaliacoes',avaliacoes);
   lss('metas_v2',metas);lss('feedbacks',feedbacks);lss('cols_v3',colaboradores);lss('funcoes',funcoes);lss('orgPos_v2',orgPositions);lss('orgConns',orgConnections);lss('notas',notas);lss('aiHistory',aiHistory);lss('qtdServicos',qtdServicos);
   // Timestamp da última modificação local
+  if(ls('valores_v1'))lss('valores_v1',ls('valores_v1'));
   lss('_lastSave', Date.now());
   // Marcar dados como sujos e agendar sync para a nuvem
   if(squadoGetToken()) agendarSync();
