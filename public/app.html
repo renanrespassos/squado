@@ -7490,7 +7490,7 @@ function renderCapacidade() {
       + '<span style="font-size:11px;color:'+c2.cor+';opacity:.8">'+horas(totalArea)+'/mês</span>'
       + '<span style="width:0.5px;height:14px;background:'+c2.cor+';opacity:.3"></span>'
       + '<span style="font-size:11px;font-weight:700;color:'+(deficit_area?'#A32D2D':c2.cor)+'">'
-        + pessoasIdeaisInt+' pessoa'+(pessoasIdeaisInt!==1?'s':'')+' ideal'+(pessoasIdeaisInt!==1?'is':'')
+        + pessoasIdeaisInt+(pessoasIdeaisInt===1?' pessoa ideal':' pessoas ideais')
       + '</span>'
       + '<span style="font-size:10px;padding:1px 7px;border-radius:20px;font-weight:700;'
         + 'background:'+(deficit_area?'#FCEBEB':'var(--green-bg)')+';'
