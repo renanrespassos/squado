@@ -3655,10 +3655,10 @@ function renderValores(){
       const cor=corMap[p.nome]||'#888';
       return '<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid '+cor+'">'
         +'<div style="font-size:22px;margin-bottom:8px">'+p.icon+'</div>'
-        +'<div style="font-size:13px;font-weight:800;color:'+cor+';margin-bottom:'+(p.itens.length?'10px':'0')+'">'
+        +'<div style="font-size:13px;font-weight:800;color:'+cor+';margin-bottom:'+((p.itens||[]).length?'10px':'0')+'">'
           +p.nome
         +'</div>'
-        +(p.itens.length
+        +((p.itens||[]).length
           ?'<ul style="margin:0;padding-left:16px;display:flex;flex-direction:column;gap:4px">'
             +p.itens.map(i=>'<li style="font-size:11.5px;color:var(--txt2)">'+i+'</li>').join('')
           +'</ul>':'')
@@ -3998,7 +3998,7 @@ function imprimirValores(){
       +pilares.map(p=>'<div style="border:1px solid '+p.cor+'33;border-radius:10px;padding:12px;border-top:3px solid '+p.cor+'">'
         +'<div style="font-size:20px;margin-bottom:6px">'+p.icon+'</div>'
         +'<div style="font-size:12px;font-weight:800;color:'+p.cor+';margin-bottom:6px">'+p.nome+'</div>'
-        +(p.itens.length?'<ul style="padding-left:14px;margin:0">'
+        +((p.itens||[]).length?'<ul style="padding-left:14px;margin:0">'
           +p.itens.map(i=>'<li style="font-size:10px;color:#6b7280;margin-bottom:3px">'+i+'</li>').join('')
         +'</ul>':'')
       +'</div>').join('')
