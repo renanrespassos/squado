@@ -2794,14 +2794,25 @@ function delAvaliacao(id){if(!confirm('Excluir?'))return;avaliacoes=avaliacoes.f
 function renderPerguntas(){
   const niveisDisp=Object.keys(perguntas);
   return`<div class="card"><div style="font-size:12px;color:var(--txt2);margin-bottom:14px">Edite as perguntas por nível.</div>
-    <div class="tabs" id="perg-tabs">${niveisDisp.map((n,i)=>`<div class="tab${i===0?' active':''}" onclick="switchPergTab('${n}',this)">${n}</div>`).join('')}<div class="tab" onclick="addNivelPerguntas()" style="color:var(--green)">+ Nível</div></div>
+    <div class="tabs" id="perg-tabs">${niveisDisp.map((n,i)=>`<div class="tab${i===0?' active':''}" style="display:inline-flex;align-items:center;gap:4px">
+        <span onclick="switchPergTab('${n}',this.parentElement)">${n}</span>
+        <span onclick="renomearNivel('${n}')" title="Renomear" style="cursor:pointer;opacity:.5;font-size:10px" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.5">✏️</span>
+        <span onclick="excluirNivel('${n}')" title="Excluir" style="cursor:pointer;opacity:.5;font-size:10px;color:#A32D2D" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.5">✕</span>
+      </div>`).join('')}<div class="tab" onclick="addNivelPerguntas()" style="color:var(--green)">+ Nível</div></div>
     <div id="perg-content">${renderPergTabContent(niveisDisp[0])}</div></div>`;
 }
 function switchPergTab(nivel,el){document.querySelectorAll('#perg-tabs .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById('perg-content').innerHTML=renderPergTabContent(nivel)}
 function renderPergTabContent(nivel){
   const secs=perguntas[nivel]||{};
   return`<div>${Object.entries(secs).map(([sec,qs])=>`<div class="eval-section">
-    <div class="eval-section-title"><span>${sec}</span><button class="btn btn-sm" onclick="addPergunta('${nivel}','${sec}')">+ Pergunta</button></div>
+    <div class="eval-section-title">
+      <span>${sec}</span>
+      <div style="display:flex;gap:4px">
+        <button class="btn btn-sm" onclick="addPergunta('${nivel}','${sec}')">+ Pergunta</button>
+        <button class="btn btn-sm" onclick="renomearSecao('${nivel}','${sec}')" title="Renomear seção">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="excluirSecao('${nivel}','${sec}')" title="Excluir seção">✕</button>
+      </div>
+    </div>
     ${qs.map((q,qi)=>`<div class="edit-q-row"><input value="${q.replace(/"/g,'&quot;')}" onchange="updatePergunta('${nivel}','${sec}',${qi},this.value)"/><button class="btn btn-xs btn-danger" onclick="delPergunta('${nivel}','${sec}',${qi})">×</button></div>`).join('')}
   </div>`).join('')}<div class="flex gap-8 mt-12"><button class="btn btn-sm" onclick="addSecao('${nivel}')">+ Nova Seção</button><button class="btn btn-primary btn-sm" onclick="salvarPerguntas()">💾 Salvar</button></div></div>`;
 }
@@ -3376,9 +3387,10 @@ function renderAvaliacaoHub(){
     </button>`).join('');
 
   return `
-    <div style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;
-                overflow:hidden;width:fit-content;margin-bottom:18px">
-      ${tabButtons}
+    <div style="display:flex;gap:4px;margin-bottom:18px">
+      <button id="tab-aval-nova" class="btn btn-primary btn-sm" onclick="go('avaliacao')">📋 Nova Avaliação</button>
+      <button id="tab-aval-hist" class="btn btn-sm" onclick="go('historico_aval')">🕐 Histórico</button>
+      <button id="tab-aval-conf" class="btn btn-sm" onclick="go('perguntas')">⚙️ Configurar Perguntas</button>
     </div>
     ${conteudo}`;
 }
@@ -9067,5 +9079,33 @@ function sortAreaFuncs(col){
     const isActive=th.getAttribute('onclick')?.includes(window._sortAreaCol);
     th.innerHTML=txt+' '+(isActive?(window._sortAreaDir===-1?'↓':'↑'):'⇅');
   });
+}
+
+function excluirSecao(nivel,sec){
+  if(!confirm('Excluir a seção "'+sec+'" e todas as perguntas?'))return;
+  if(perguntas[nivel])delete perguntas[nivel][sec];
+  saveAll();render('perguntas');toast('Seção excluída!');
+}
+function renomearSecao(nivel,sec){
+  const novo=prompt('Novo nome da seção:',sec);
+  if(!novo||novo===sec)return;
+  if(perguntas[nivel]){
+    const qs=perguntas[nivel][sec];
+    delete perguntas[nivel][sec];
+    perguntas[nivel][novo]=qs;
+  }
+  saveAll();render('perguntas');toast('Seção renomeada!');
+}
+function excluirNivel(nivel){
+  if(!confirm('Excluir o nível "'+nivel+'" e todas as suas perguntas?'))return;
+  delete perguntas[nivel];
+  saveAll();render('perguntas');toast('Nível excluído!');
+}
+function renomearNivel(nivel){
+  const novo=prompt('Novo nome do nível:',nivel);
+  if(!novo||novo===nivel)return;
+  perguntas[novo]=perguntas[nivel];
+  delete perguntas[nivel];
+  saveAll();render('perguntas');toast('Nível renomeado!');
 }
 </script>
