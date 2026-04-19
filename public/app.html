@@ -3823,30 +3823,62 @@ function lerListaValores(id,campo,iconPadrao){
 }
 
 function salvarEdicaoValores(){
-  function coletarLista(id,campo){
-    const rows=document.getElementById('ve-'+id)?.querySelectorAll('input[data-idx]')||[];
-    const descs=document.getElementById('ve-'+id)?.querySelectorAll('input[data-desc]')||[];
+  const vOrig=getValores()||{};
+  // Defaults para preservar ícones e itens originais
+  const defaultPucrs=[
+    {icon:'❤️',nome:'Amor ao Trabalho',desc:'Dedicação, paixão e entrega em tudo que fazemos.'},
+    {icon:'🔥',nome:'Audácia',desc:'Coragem para inovar, ousar e buscar novos caminhos.'},
+    {icon:'👨\u200d👩\u200d👧\u200d👦',nome:'Espírito de Família',desc:'União, confiança mútua e cuidado genuíno com o próximo.'},
+    {icon:'🙏',nome:'Espiritualidade',desc:'Abertura ao transcendente e ao sentido mais profundo da vida.'},
+    {icon:'🌟',nome:'Presença',desc:'Estar inteiramente disponível — de corpo, mente e coração.'},
+    {icon:'🌿',nome:'Simplicidade',desc:'Clareza, objetividade e ausência de pretensão no agir.'},
+    {icon:'🤝',nome:'Solidariedade',desc:'Compromisso com o bem comum e com quem mais precisa.'},
+  ];
+  const defaultLabelo=[
+    {icon:'💚',nome:'Vida',desc:'Cuidado com a saúde, segurança e bem-estar de todos.'},
+    {icon:'👥',nome:'Pessoas',desc:'Desenvolvimento humano como centro da nossa missão.'},
+    {icon:'⭐',nome:'Cliente',desc:'Excelência na entrega e satisfação de quem nos escolhe.'},
+    {icon:'📈',nome:'Resultado',desc:'Comprometimento com metas, qualidade e impacto real.'},
+  ];
+  const origPucrs  = vOrig.pucrs  || defaultPucrs;
+  const origLabelo = vOrig.labelo || defaultLabelo;
+  const origNaoNeg = vOrig.naoNegociamos || [];
+  const origResps  = vOrig.responsabilidades || [];
+  const origPilares= vOrig.pilares || [];
+
+  function coletarLista(id,campo,origArr){
+    const container=document.getElementById('ve-'+id);
+    if(!container) return origArr;
+    const rows=[...container.querySelectorAll('input[data-idx]')];
+    const descs=[...container.querySelectorAll('input[data-desc]')];
     const descMap={};
     descs.forEach(d=>{ descMap[d.getAttribute('data-desc')]=d.value; });
-    return [...rows].map((inp,i)=>{
-      const it={icon:''};
+    return rows.map((inp,i)=>{
+      const origIt = origArr[parseInt(inp.getAttribute('data-idx'))||i] || {};
+      const it = {...origIt}; // preserva icon, itens, etc.
       if(campo==='text') it.text=inp.value;
-      else { it.nome=inp.value; if(descMap[inp.getAttribute('data-idx')]!==undefined) it.desc=descMap[inp.getAttribute('data-idx')]; }
+      else {
+        it.nome=inp.value;
+        const di=inp.getAttribute('data-idx');
+        if(descMap[di]!==undefined) it.desc=descMap[di];
+      }
       return it;
     });
   }
+
   function getTitulo(id){ return document.getElementById('ve-title-'+id)?.value||''; }
+
   const v={
-    pucrs:coletarLista('pucrs','nome'),
-    labelo:coletarLista('labelo','nome'),
-    naoNegociamos:coletarLista('naoNeg','text'),
-    responsabilidades:coletarLista('resps','nome'),
-    pilares:coletarLista('pilares','nome'),
+    pucrs:        coletarLista('pucrs','nome',origPucrs),
+    labelo:       coletarLista('labelo','nome',origLabelo),
+    naoNegociamos:coletarLista('naoNeg','text',origNaoNeg),
+    responsabilidades:coletarLista('resps','nome',origResps),
+    pilares:      coletarLista('pilares','nome',origPilares),
     titulos:{
-      pucrs:getTitulo('pucrs'),
-      labelo:getTitulo('labelo'),
-      naoNeg:getTitulo('naoNeg'),
-      resps:getTitulo('resps'),
+      pucrs:  getTitulo('pucrs'),
+      labelo: getTitulo('labelo'),
+      naoNeg: getTitulo('naoNeg'),
+      resps:  getTitulo('resps'),
       pilares:getTitulo('pilares'),
     }
   };
