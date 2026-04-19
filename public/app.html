@@ -7620,8 +7620,8 @@ function renderCapacidade() {
   // TABS: Pessoas | Por Área
   + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">'
     + '<div style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;overflow:hidden;width:fit-content">'
-      + '<button id="tab-cap-pessoas" onclick="switchCapTab(\'pessoas\')" style="padding:7px 18px;border:none;font-size:12.5px;font-weight:600;cursor:pointer;background:var(--green);color:#fff;transition:all .15s">👥 Por Pessoa</button>'
-      + '<button id="tab-cap-areas" onclick="switchCapTab(\'areas\')" style="padding:7px 18px;border:none;border-left:0.5px solid var(--border2);font-size:12.5px;font-weight:600;cursor:pointer;background:var(--bg2);color:var(--txt2);transition:all .15s">📋 Por Área / Função</button>'
+      + '<button id="tab-cap-pessoas" class="btn btn-primary btn-sm" onclick="switchCapTab(\'pessoas\')">👥 Por Pessoa</button>'
+      + '<button id="tab-cap-areas" class="btn btn-sm" onclick="switchCapTab(\'areas\')">📋 Por Área / Função</button>'
     + '</div>'
     + '<button class="btn btn-sm btn-danger" id="btn-excluir-selecionadas" onclick="excluirFuncoesSelecionadas()" style="display:none">🗑 Excluir selecionadas</button>'
     + '<button class="btn btn-sm" onclick="render(\'capacidade\')" style="display:flex;align-items:center;gap:5px;border-color:var(--green);color:var(--green)">🔄 Atualizar</button>'
@@ -8948,7 +8948,13 @@ function gerarRelatorioCapacidade(){
     +'<div style="font-size:14px;font-weight:800;color:#111827;margin-bottom:4px;padding-top:8px">Detalhamento de Funções por Área</div>'
     +'<div style="font-size:11px;color:#6b7280;margin-bottom:14px">Base de cálculo: '+qtdServicos+' amostras/mês · '+DIAS_UTEIS+' dias úteis</div>'
     +'<table style="margin-bottom:28px">'
-      +'<thead><tr><th>Função</th><th style="text-align:center">Cobertura</th><th style="text-align:center">Tempo Unitário</th><th style="text-align:center">Total/mês</th><th>Responsáveis</th></tr></thead>'
+      +'<thead><tr>'
+        +'<th onclick="sortAreaFuncs(\'nome\')" style="cursor:pointer;user-select:none">Função <span id=\"sa-nome\">⇅</span></th>'
+        +'<th style="text-align:center">Cobertura</th>'
+        +'<th onclick="sortAreaFuncs(\'tempo\')" style="text-align:center;cursor:pointer;user-select:none">Tempo Unit. <span id=\"sa-tempo\">⇅</span></th>'
+        +'<th onclick="sortAreaFuncs(\'total\')" style="text-align:center;cursor:pointer;user-select:none">Total/mês <span id=\"sa-total\">⇅</span></th>'
+        +'<th>Responsáveis</th>'
+      +'</tr></thead>'
       +'<tbody>'+funcRows+'</tbody>'
     +'</table>'
 
@@ -8986,4 +8992,37 @@ function gerarRelatorioCapacidade(){
   w.document.close();
 }
 
+
+// Sort tabela de áreas
+window._sortAreaCol = 'total'; window._sortAreaDir = -1;
+function sortAreaFuncs(col){
+  if(window._sortAreaCol===col) window._sortAreaDir *= -1;
+  else { window._sortAreaCol=col; window._sortAreaDir=-1; }
+  ['nome','tempo','total'].forEach(c=>{
+    const el=document.getElementById('sa-'+c);
+    if(el) el.textContent=c===window._sortAreaCol?(window._sortAreaDir===-1?'↓':'↑'):'⇅';
+  });
+  // Re-ordernar as linhas de cada tabela de área
+  document.querySelectorAll('table[data-area]').forEach(table=>{
+    const tbody=table.querySelector('tbody');
+    if(!tbody) return;
+    const rows=[...tbody.querySelectorAll('tr')];
+    rows.sort((a,b)=>{
+      let va=0,vb=0;
+      if(window._sortAreaCol==='nome'){
+        va=a.cells[1]?.textContent||'';
+        vb=b.cells[1]?.textContent||'';
+        return window._sortAreaDir*(va<vb?-1:va>vb?1:0);
+      } else if(window._sortAreaCol==='tempo'){
+        va=parseFloat(a.cells[3]?.textContent)||0;
+        vb=parseFloat(b.cells[3]?.textContent)||0;
+      } else {
+        va=parseFloat(a.cells[4]?.querySelector('div')?.textContent)||0;
+        vb=parseFloat(b.cells[4]?.querySelector('div')?.textContent)||0;
+      }
+      return window._sortAreaDir*(vb-va);
+    });
+    rows.forEach(r=>tbody.appendChild(r));
+  });
+}
 </script>
