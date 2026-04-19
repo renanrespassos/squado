@@ -6060,10 +6060,11 @@ function verLineaTempo(colNome){
     +'</div>'
     +'<div style="max-height:60vh;overflow-y:auto;padding-right:4px" class="timeline-scroll">'+timelineHtml+'</div>'
     +'<div class="flex gap-8 mt-14">'
-      +'<button class="btn btn-primary btn-sm" onclick="iniciarAvaliacaoPara(\''+col.id+'\');closeModal()">📋 Avaliar</button>'
-      +'<button class="btn btn-purple btn-sm" onclick="go(\'notas\');closeModal()">📝 Adicionar nota</button>'
-      +'<button class="btn btn-sm" onclick="verCol(\''+col.id+'\')">Ver perfil</button>'
-    +'</div>';
+      +'<div style="display:flex;gap:8px;margin-top:16px">'
+      +'<button onclick="iniciarAvaliacaoPara(\''+id+'\');closeModal()" style="background:#0F6E56;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer">📋 Avaliar</button>'
+      +'<button onclick="verLineaTempo(\''+c.nome+'\')" style="background:transparent;color:#3A4240;border:1px solid #E0E2E0;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer">⏰ Linha do Tempo</button>'
+      +'<button onclick="quickAsk(\'Analise o perfil de '+c.nome.split(' ')[0]+' e sugira ações\');closeModal();go(\'agente\')" style="background:#F0EDF8;color:#534AB7;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer">🤖 Analisar com IA</button>'
+      +'</div>';
   document.getElementById('modal').style.display='flex';
 }
 
@@ -8862,59 +8863,7 @@ function gerarRelatorioCapacidade(){
     +'table{border-collapse:collapse;width:100%}'
     +'th{background:#f9fafb;text-align:left;padding:8px 12px;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;font-weight:700;border-bottom:2px solid #e5e7eb}'
     +'td{border-bottom:1px solid #f3f4f6}'
-    +'
-.sidebar-foot-btn,.sidebar-config-btn{
-  display:flex;align-items:center;gap:8px;padding:8px 15px;margin:0 8px;
-  border-radius:5px;font-size:12.5px;color:#6B7370;cursor:pointer;
-  font-family:'Inter',sans-serif;transition:all .12s;
-}
-.sidebar-foot-btn:hover,.sidebar-config-btn:hover{background:#F5F6F4;color:#1A1F1D}
-
-
-/* Sidebar footer items */
-.sidebar > div:last-child, #squado-user-badge, .sidebar-foot{
-  border-top:1px solid #E0E2E0!important;
-  background:#fff!important;
-}
-#squado-user-badge span, #squado-user-nome, #squado-menu-email{color:#3A4240!important}
-.btn-sidebar-sair{color:#6B7370!important;font-family:'Inter',sans-serif!important}
-
-
-/* ── Sidebar footer ── */
-#sq-sidebar-footer{
-  border-top:1px solid #E0E2E0!important;
-  background:#fff!important;
-  padding:12px 16px!important;
-  margin-top:auto!important;
-}
-#sq-sb-avatar{
-  background:#0F6E56!important;
-  border-radius:6px!important;
-  color:#fff!important;
-}
-#squado-user-badge, #squado-user-nome, #squado-menu-email{
-  color:#1A1F1D!important;
-  font-family:'Inter',sans-serif!important;
-}
-#squado-menu-email{color:#6B7370!important;font-size:11px!important}
-/* Botões de Configurar IA e Sair */
-#sq-sidebar-footer button, #sq-sidebar-footer .btn-sair, #sq-sidebar-footer a{
-  color:#6B7370!important;
-  background:transparent!important;
-  border:none!important;
-  font-family:'Inter',sans-serif!important;
-  font-size:13px!important;
-}
-#sq-sidebar-footer button:hover{background:#F5F6F4!important;color:#1A1F1D!important}
-/* Carregando... item */
-#sb-carregando, .sb-loading{color:#6B7370!important;font-size:12px!important}
-
-
-#topbar-btn { display: none !important; }
-.search-box { display: none; }
-</style></head><body>'
-
-    // Botão de impressão fixo
+    +'</style>'
     +'<div class="no-print" style="position:fixed;top:0;left:0;right:0;background:#1D9E75;padding:10px 24px;display:flex;align-items:center;gap:12px;z-index:999">'
       +'<span style="color:#fff;font-weight:700;font-size:14px;flex:1">Relatório de Capacidade · Laboratório Industrial de Qualidade</span>'
       +'<button onclick="window.print()" style="background:#fff;color:#1D9E75;border:none;padding:7px 20px;border-radius:7px;font-weight:700;cursor:pointer;font-size:13px">🖨 Imprimir / Salvar PDF</button>'
