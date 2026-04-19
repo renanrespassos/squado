@@ -122,7 +122,7 @@ input[type=range]:focus{box-shadow:none}
 .badge-gray{background:var(--bg2);color:var(--txt2)}.badge-red{background:#FCEBEB;color:#A32D2D}
 .chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10.5px;background:var(--bg2);color:var(--txt2);border:0.5px solid var(--border);white-space:nowrap}
 .nivel-pill{display:inline-flex;align-items:center;padding:3px 9px;border-radius:4px;font-size:12px;font-weight:500;border:1px solid #E0E2E0;background:#F5F6F4;color:#3A4240;white-space:nowrap}
-[class*="nivel-pill"]{background:#F5F6F4!important;color:#3A4240!important;border-color:#E0E2E0!important}
+
 
 .func-tag{display:inline-flex;align-items:center;padding:3px 9px;border-radius:4px;font-size:12px;font-weight:500;background:#F5F6F4;color:#3A4240;border:1px solid #E0E2E0;white-space:nowrap}
 .area-pill{display:inline-flex;align-items:center;padding:3px 9px;border-radius:4px;font-size:12px;font-weight:500;background:#F5F6F4;color:#3A4240;border:1px solid #E0E2E0;white-space:nowrap}
@@ -657,8 +657,8 @@ select:focus{border-bottom-color:#0F6E56;outline:none}
 
 
 
-.nivel-pill[style*="background"]{background:#F5F6F4!important;color:#3A4240!important;border-color:#E0E2E0!important}
-[class*="nivel-pill"]{background:#F5F6F4!important;color:#3A4240!important;border-color:#E0E2E0!important;border-radius:4px!important}
+
+
 
 /* ── Ajustes finais organograma e avaliação ── */
 
@@ -744,6 +744,8 @@ input[type=number]{
 .modal-content input,.modal-content textarea{border:1px solid #E0E2E0!important;border-radius:6px!important;padding:8px 10px!important;font-family:'Inter',sans-serif!important;font-size:13px!important;color:#1A1F1D!important;background:#FAFAFA!important;transition:border-color .15s!important;box-sizing:border-box!important}
 .modal-content input:focus,.modal-content textarea:focus{border-color:#0F6E56!important;outline:none!important;background:#fff!important}
 .field-label{font-size:12px!important;font-weight:600!important;color:#3A4240!important;margin-bottom:5px!important}
+
+.modal-content button{font-family:'Inter',sans-serif!important}
 </style>
 </head>
 <body>
@@ -795,7 +797,7 @@ input[type=number]{
     <div class="nav-item" onclick="go('valores')"><svg class="nav-svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Valores</div>
     <div class="nav-item" onclick="go('ninebox')"><svg class="nav-svg" viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="5"/><rect x="9.5" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/><rect x="3" y="9.5" width="5" height="5"/><rect x="9.5" y="9.5" width="5" height="5"/><rect x="16" y="9.5" width="5" height="5"/><rect x="3" y="16" width="5" height="5"/><rect x="9.5" y="16" width="5" height="5"/><rect x="16" y="16" width="5" height="5"/></svg>Nine-Box</div>
     <div class="nav-item" onclick="go('competencias')"><svg class="nav-svg" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Competências</div>
-    <div class="nav-item" onclick="go('niveis')"><span class="nav-icon">📈</span>Níveis e Áreas</div>
+    <div class="nav-item" onclick="go('niveis')"><svg class="nav-svg" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line><line x1="2" y1="20" x2="22" y2="20"></line></svg>Níveis e Áreas</div>
     <div class="nav-section">IA &amp; Anotações</div>
     <div class="nav-item" onclick="go('agente')"><svg class="nav-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>Agente IA</div>
     <div class="nav-item" onclick="go('notas')"><svg class="nav-svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Bloco de Notas</div>
