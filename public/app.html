@@ -4432,7 +4432,7 @@ function renderCompetencias(){
 
   // Escolaridade
   const escHtml='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">'
-    +'<div style="background:var(--bg2);border-radius:8px;padding:12px">'
+    +'<div style="background:#F5F6F4;border-radius:8px;padding:12px;border:1px solid #F0F1EF">'
       +'<div style="font-size:9px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">📚 Escolaridade Básica</div>'
       +'<div style="font-size:12px;color:var(--txt)">'+perfil.escolaridade.basica+'</div>'
     +'</div>'
@@ -6253,7 +6253,7 @@ function renderPerfilAba(id, aba){
         +'</div>'
         +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">'
           +'<button onclick="closeModal();setTimeout(()=>openColFormDirect(\''+id+'\'),100)" style="background:#0F6E56;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer">✏️ Editar</button>'
-          +'<div style="font-size:10px;color:var(--txt3)">Status</div>'
+          +'<div style="font-size:10px;color:#9BA09E;text-transform:uppercase;letter-spacing:.05em;font-weight:500;margin-bottom:3px">Status</div>'
           +'</div>'
         +'</div>'
       +'</div>'
@@ -8855,7 +8855,39 @@ function gerarRelatorioCapacidade(){
     +'table{border-collapse:collapse;width:100%}'
     +'th{background:#f9fafb;text-align:left;padding:8px 12px;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;font-weight:700;border-bottom:2px solid #e5e7eb}'
     +'td{border-bottom:1px solid #f3f4f6}'
-    +'</style>'
+    +'
+/* Modal form inputs */
+.modal-content input[type="text"],
+.modal-content input[type="email"],
+.modal-content input[type="date"],
+.modal-content input:not([type]),
+.modal-content textarea {
+  border: 1px solid #E0E2E0 !important;
+  border-radius: 6px !important;
+  padding: 8px 10px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  color: #1A1F1D !important;
+  background: #FAFAFA !important;
+  transition: border-color .15s !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+.modal-content input:focus,
+.modal-content textarea:focus {
+  border-color: #0F6E56 !important;
+  outline: none !important;
+  background: #fff !important;
+}
+.modal-content .field-label, .modal-content .form-label {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #3A4240 !important;
+  margin-bottom: 5px !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+</style>'
     +'<div class="no-print" style="position:fixed;top:0;left:0;right:0;background:#1D9E75;padding:10px 24px;display:flex;align-items:center;gap:12px;z-index:999">'
       +'<span style="color:#fff;font-weight:700;font-size:14px;flex:1">Relatório de Capacidade · Laboratório Industrial de Qualidade</span>'
       +'<button onclick="window.print()" style="background:#fff;color:#1D9E75;border:none;padding:7px 20px;border-radius:7px;font-weight:700;cursor:pointer;font-size:13px">🖨 Imprimir / Salvar PDF</button>'
