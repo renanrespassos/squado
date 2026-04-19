@@ -2586,7 +2586,7 @@ function renderHistoricoAval(search=''){
       <tbody>${list.map(a=>`<tr>
         <td><div class="flex items-center gap-8" style="white-space:nowrap">${av(a.colaborador)}<span style="font-weight:600">${a.colaborador}</span></div></td>
         <td>${nivelBadge(a.nivel)}</td><td style="color:var(--txt2);white-space:nowrap">${a.data}</td>
-        ${['Versatilidade','Trabalho em Equipe','Responsabilidade','Foco em Resultados','Norma 17025','Técnica'].map(s=>`<td class="${sc((a.secaoMedias&&a.secaoMedias[s])||5)}">${(a.secaoMedias&&a.secaoMedias[s])||'—'}</td>`).join('')}
+        ${Object.entries(a.secaoMedias||{}).slice(0,6).map(([s,v])=>`<td class="${sc(v||5)}">${v||'—'}</td>`).join('')}
         <td><span class="badge badge-green" style="font-size:12px">${a.mediaGeral}</span></td>
         <td><div style="display:flex;gap:4px">
           <button class="btn btn-sm" onclick="verAvaliacao('${a.id}')">Ver</button>
@@ -2793,15 +2793,16 @@ function delAvaliacao(id){if(!confirm('Excluir?'))return;avaliacoes=avaliacoes.f
 // ══════════════════════════════════════════
 function renderPerguntas(){
   const niveisDisp=Object.keys(perguntas);
+  const ativo=window._pergNivelAtivo&&perguntas[window._pergNivelAtivo]?window._pergNivelAtivo:niveisDisp[0];
   return`<div class="card"><div style="font-size:12px;color:var(--txt2);margin-bottom:14px">Edite as perguntas por nível.</div>
-    <div class="tabs" id="perg-tabs">${niveisDisp.map((n,i)=>`<div class="tab${i===0?' active':''}" style="display:inline-flex;align-items:center;gap:4px">
+    <div class="tabs" id="perg-tabs">${niveisDisp.map((n,i)=>`<div class="tab${n===ativo?' active':''}" style="display:inline-flex;align-items:center;gap:4px">
         <span onclick="switchPergTab('${n}',this.parentElement)">${n}</span>
         <span onclick="renomearNivel('${n}')" title="Renomear" style="cursor:pointer;opacity:.5;font-size:10px" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.5">✏️</span>
         <span onclick="excluirNivel('${n}')" title="Excluir" style="cursor:pointer;opacity:.5;font-size:10px;color:#A32D2D" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.5">✕</span>
       </div>`).join('')}<div class="tab" onclick="addNivelPerguntas()" style="color:var(--green)">+ Nível</div></div>
-    <div id="perg-content">${renderPergTabContent(niveisDisp[0])}</div></div>`;
+    <div id="perg-content">${renderPergTabContent(ativo)}</div></div>`;
 }
-function switchPergTab(nivel,el){document.querySelectorAll('#perg-tabs .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById('perg-content').innerHTML=renderPergTabContent(nivel)}
+function switchPergTab(nivel,el){window._pergNivelAtivo=nivel;document.querySelectorAll('#perg-tabs .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById('perg-content').innerHTML=renderPergTabContent(nivel)}
 function renderPergTabContent(nivel){
   const secs=perguntas[nivel]||{};
   return`<div>${Object.entries(secs).map(([sec,qs])=>`<div class="eval-section">
