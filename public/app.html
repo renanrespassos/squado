@@ -3417,16 +3417,8 @@ function renderNiveisAreas(){
 
   return `
     <div style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;overflow:hidden;width:fit-content;margin-bottom:18px">
-      <button id="tab-niveis-btn" onclick="go('niveis')"
-        style="padding:8px 20px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;
-               ${abaAtiva==='niveis'?'background:var(--green);color:#fff':'background:var(--bg2);color:var(--txt2)'}">
-        📈 Níveis de Cargo
-      </button>
-      <button id="tab-areas-btn" onclick="go('areas')"
-        style="padding:8px 20px;border:none;border-left:0.5px solid var(--border2);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;
-               ${abaAtiva==='areas'?'background:var(--green);color:#fff':'background:var(--bg2);color:var(--txt2)'}">
-        🏷️ Áreas da Equipe
-      </button>
+      <button id="tab-niveis-btn" class="btn btn-primary btn-sm" onclick="go('niveis')">📈 Níveis de Cargo</button>
+      <button id="tab-areas-btn" class="btn btn-primary btn-sm" onclick="go('areas')">🏷️ Áreas da Equipe</button>
     </div>
     ${abaAtiva === 'niveis' ? abaNiveis : abaAreas}`;
 }
