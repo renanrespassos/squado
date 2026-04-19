@@ -3883,7 +3883,7 @@ function salvarEdicaoValores(){
       pilares:getTitulo('pilares'),
     }
   };
-  lss('valores_v1',v);saveAll();closeModal();render('valores');toast('Valores salvos!');
+  lss('valores_v1',v);saveAll();if(typeof squadoSyncSnapshot==='function')squadoSyncSnapshot('valores');closeModal();render('valores');toast('Valores salvos!');
 }
 function resetarValores(){
   if(!confirm('Restaurar valores ao padrão original? As edições serão perdidas.'))return;
