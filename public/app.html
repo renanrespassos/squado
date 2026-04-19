@@ -818,11 +818,6 @@ input[type=number]{
       <div class="topbar-title" id="topbar-title">Dashboard</div>
       <div class="topbar-sub" id="topbar-sub">Visão geral</div>
     </div>
-    <div class="search-box">
-      <span style="color:#9BA09E;display:flex;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></span>
-      <input id="search-input" placeholder="Buscar colaboradores, áreas..." oninput="handleSearch(this.value)" style="background:transparent;border:none;outline:none;color:#1A1F1D;font-family:'Inter',sans-serif;font-size:13px;flex:1">
-      <kbd style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7370;background:#F5F6F4;padding:2px 6px;border-radius:3px;border:1px solid #E0E2E0;flex-shrink:0">⌘ K</kbd>
-    </div>
     <div id="squado-user-badge" style="display:none;align-items:center;gap:8px;padding:0 16px;border-left:1px solid #E0E2E0;cursor:pointer;height:100%;flex-shrink:0;position:relative" onclick="toggleUserMenu()">
       <div style="width:28px;height:28px;background:#0F6E56;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff" id="squado-user-avatar-initials">?</div>
       <div style="line-height:1.25">
@@ -1562,8 +1557,6 @@ let currentPage='dashboard';
 function go(page){
   currentPage=page;
   // Mostrar search box apenas em colaboradores
-  const _sb = document.querySelector('.search-box');
-  if(_sb) _sb.style.display = page === 'colaboradores' ? 'flex' : 'none';
   // Topbar-btn sempre escondido — botão de ação fica dentro da página
   const _tbBtn = document.getElementById('topbar-btn');
   if(_tbBtn) _tbBtn.style.display = 'none';
@@ -2870,7 +2863,7 @@ function renderPDI(search){
     return html;
   }
   return '<div>'
-    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">'
+    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">'
       +'<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:var(--blue)">'+totalPDIs+'</div><div style="font-size:10px;color:var(--txt2)">PDIs Criados</div></div>'
       +'<div style="background:var(--green-bg);border:0.5px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:var(--green)">'+emAndamento+'</div><div style="font-size:10px;color:var(--txt2)">Em Andamento</div></div>'
       +'<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:#854F0B">'+semPDI+'</div><div style="font-size:10px;color:var(--txt2)">Sem PDI</div></div>'
@@ -6310,22 +6303,22 @@ function renderPerfilAba(id, aba){
     const linkUrl = 'https://squado.com.br/formulario?col=' + linkToken;
     conteudo=
       // Alerta de link de autopreenchimento
-      '<div style="background:linear-gradient(135deg,#E6F1FB,#EEEDFE);border:0.5px solid rgba(24,95,165,.2);border-radius:10px;padding:14px;margin-bottom:16px">'
-        +'<div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:6px">🔗 Link de autopreenchimento pelo colaborador</div>'
+      '<div style="background:#F5F6F4;border:1px solid #E0E2E0;border-radius:8px;padding:14px;margin-bottom:16px">'
+        +'<div style="font-size:12px;font-weight:600;color:#1A1F1D;margin-bottom:6px;display:flex;align-items:center;gap:6px">'+'<span style="background:#0F6E56;color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700">LINK</span>'+' Autopreenchimento pelo colaborador</div>'
         +'<div style="font-size:11.5px;color:var(--txt2);margin-bottom:10px">Envie este link para o colaborador preencher os próprios dados (celular, endereço, formação, etc.)</div>'
         +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
           +(p.email?
             '<a href="mailto:'+p.email+'?subject=Atualize+seu+perfil&body='+encodeURIComponent('Olá '+c.nome.split(' ')[0]+',\n\nPor favor acesse o link abaixo para atualizar seus dados cadastrais no sistema de gestão.\n\n👉 '+linkUrl+'\n\nEste link é pessoal e já vem com seus dados pré-identificados.\n\nAtt,\nEquipe de Gestão')+'" '
-            +'style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:var(--blue);color:#fff;border-radius:7px;font-size:12px;font-weight:600;text-decoration:none">✉️ Enviar por email</a>'
+            +'style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:#185FA5;color:#fff;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;font-family:\'Inter\',sans-serif">✉️ Email</a>'
           :'<span style="font-size:11px;color:var(--txt3)">⚠️ Cadastre o email para enviar</span>')
           +(p.celular?
             '<a href="https://wa.me/55'+p.celular.replace(/\D/g,'')+'?text='+encodeURIComponent('Olá '+c.nome.split(' ')[0]+', por favor acesse o link abaixo para atualizar seu perfil no sistema de gestão:\n\n'+linkUrl)+'" target="_blank" '
-            +'style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:#25D366;color:#fff;border-radius:7px;font-size:12px;font-weight:600;text-decoration:none">📱 WhatsApp</a>'
+            +'style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:#25D366;color:#fff;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;font-family:\'Inter\',sans-serif">📱 WhatsApp</a>'
           :'<span style="font-size:11px;color:var(--txt3)">⚠️ Cadastre o celular para WhatsApp</span>')
         +'</div>'
       +'</div>'
       // Formulário de dados pessoais
-      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
         +fg('Email', '<input id="p-email" value="'+(p.email||'')+'" placeholder="email@empresa.com" type="email"/>')
         +fg('Celular / WhatsApp', '<input id="p-celular" value="'+(p.celular||'')+'" placeholder="(51) 99999-9999"/>')
         +fg('Data de Nascimento', '<input id="p-nasc" type="date" value="'+(p.nascimento||'')+'"/>')
