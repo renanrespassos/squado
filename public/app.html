@@ -7509,10 +7509,10 @@ function renderCapacidade() {
         + '<table style="width:100%;border-collapse:collapse;min-width:600px">'
           + '<thead><tr style="background:var(--bg2)">'
             + '<th style="padding:7px 4px 7px 10px;width:32px"><input type="checkbox" style="cursor:pointer" title="Selecionar todas" onchange="toggleSelectAllFuncs(this)" /></th>'
-            + '<th style="padding:7px 10px;text-align:left;font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;user-select:none" onclick="sortAreaFuncs('nome')">Função ⇅</th>'
+            + '<th style="padding:7px 10px;text-align:left;font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;user-select:none" onclick="sortAreaFuncs(\'nome\')">Função ⇅</th>'
             + '<th style="padding:7px 10px;text-align:center;font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Cobertura</th>'
-            + '<th style="padding:7px 10px;text-align:center;font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;user-select:none" onclick="sortAreaFuncs('tempo')">Tempo Unit. ⇅</th>'
-            + '<th style="padding:7px 10px;text-align:center;font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;user-select:none" onclick="sortAreaFuncs('total')">Total/mês · Pessoas ⇅</th>'
+            + '<th style="padding:7px 10px;text-align:center;font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;user-select:none" onclick="sortAreaFuncs(\'tempo\')">Tempo Unit. ⇅</th>'
+            + '<th style="padding:7px 10px;text-align:center;font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;user-select:none" onclick="sortAreaFuncs(\'total\')">Total/mês ↓</th>'
             + '<th style="padding:7px 10px;text-align:left;font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Responsáveis</th>'
             + '<th style="padding:7px 10px;text-align:center;font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Cobertura</th>'
             + '<th style="padding:7px 10px;width:60px"></th>'
@@ -8994,14 +8994,42 @@ function gerarRelatorioCapacidade(){
 
 
 // Sort tabela de áreas
+window._sortAreaCol = 'total'; window._sortAreaDir = -1;
+function sortAreaFuncs(col){
+  if(window._sortAreaCol===col) window._sortAreaDir *= -1;
+  else { window._sortAreaCol=col; window._sortAreaDir=-1; }
+  ['nome','tempo','total'].forEach(c=>{
+    const el=document.getElementById('sa-'+c);
+    if(el) el.textContent=c===window._sortAreaCol?(window._sortAreaDir===-1?'↓':'↑'):'⇅';
+  });
+  // Re-ordernar as linhas de cada tabela de área
+  document.querySelectorAll('table[data-area]').forEach(table=>{
+    const tbody=table.querySelector('tbody');
+    if(!tbody) return;
+    const rows=[...tbody.querySelectorAll('tr')];
+    rows.sort((a,b)=>{
+      let va=0,vb=0;
+      if(window._sortAreaCol==='nome'){
+        va=a.cells[1]?.textContent||'';
+        vb=b.cells[1]?.textContent||'';
+        return window._sortAreaDir*(va<vb?-1:va>vb?1:0);
+      } else if(window._sortAreaCol==='tempo'){
+        va=parseFloat(a.cells[3]?.textContent)||0;
+        vb=parseFloat(b.cells[3]?.textContent)||0;
+      } else {
+        va=parseFloat(a.cells[4]?.querySelector('div')?.textContent)||0;
+        vb=parseFloat(b.cells[4]?.querySelector('div')?.textContent)||0;
+      }
+      return window._sortAreaDir*(vb-va);
+    });
+    rows.forEach(r=>tbody.appendChild(r));
+  });
+}
+
 window._sortAreaCol='total';window._sortAreaDir=-1;
 function sortAreaFuncs(col){
   if(window._sortAreaCol===col)window._sortAreaDir*=-1;
   else{window._sortAreaCol=col;window._sortAreaDir=-1;}
-  ['nome','tempo','total'].forEach(k=>{
-    const spans=document.querySelectorAll('#cap-panel-areas th[onclick*="'+k+'"] span');
-    spans.forEach(s=>s.textContent=k===window._sortAreaCol?(window._sortAreaDir===-1?'↓':'↑'):'⇅');
-  });
   document.querySelectorAll('#cap-panel-areas tbody').forEach(tbody=>{
     const rows=[...tbody.querySelectorAll('tr')];
     rows.sort((a,b)=>{
@@ -9022,6 +9050,12 @@ function sortAreaFuncs(col){
       return window._sortAreaDir*(vb-va);
     });
     rows.forEach(r=>tbody.appendChild(r));
+  });
+  // Atualizar indicadores nos TH
+  document.querySelectorAll('#cap-panel-areas th[onclick]').forEach(th=>{
+    const txt=th.textContent.replace(/[↑↓⇅]/g,'').trim();
+    const isActive=th.getAttribute('onclick')?.includes(window._sortAreaCol);
+    th.innerHTML=txt+' '+(isActive?(window._sortAreaDir===-1?'↓':'↑'):'⇅');
   });
 }
 </script>
