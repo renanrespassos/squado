@@ -3823,9 +3823,8 @@ function lerListaValores(id,campo,iconPadrao){
   }).filter(Boolean);
 }
 
-function salvarEdicaoValores(){
+async function salvarEdicaoValores(){
   const vOrig=getValores()||{};
-  // Defaults para preservar ícones e itens originais
   const defaultPucrs=[
     {icon:'❤️',nome:'Amor ao Trabalho',desc:'Dedicação, paixão e entrega em tudo que fazemos.'},
     {icon:'🔥',nome:'Audácia',desc:'Coragem para inovar, ousar e buscar novos caminhos.'},
@@ -3856,7 +3855,7 @@ function salvarEdicaoValores(){
     descs.forEach(d=>{ descMap[d.getAttribute('data-desc')]=d.value; });
     return rows.map((inp,i)=>{
       const origIt = origArr[parseInt(inp.getAttribute('data-idx'))||i] || {};
-      const it = {...origIt}; // preserva icon, itens, etc.
+      const it = {...origIt};
       if(campo==='text') it.text=inp.value;
       else {
         it.nome=inp.value;
@@ -3866,7 +3865,6 @@ function salvarEdicaoValores(){
       return it;
     });
   }
-
   function getTitulo(id){ return document.getElementById('ve-title-'+id)?.value||''; }
 
   const v={
@@ -3883,14 +3881,23 @@ function salvarEdicaoValores(){
       pilares:getTitulo('pilares'),
     }
   };
-  lss('valores_v1',v);saveAll();
-  // Aguardar sync com a nuvem antes de fechar (evita race condition)
-  document.querySelector('#modal-body button[onclick*="salvarEdicaoValores"]') && null;
-  const _saveBtn = document.querySelector('#modal [onclick*="salvarEdicaoValores"]');
-  if(_saveBtn){ _saveBtn.disabled=true; _saveBtn.textContent='⏳ Salvando...'; }
-  (typeof squadoSyncSnapshot==='function'?squadoSyncSnapshot('valores'):Promise.resolve()).then(()=>{
-    closeModal();render('valores');toast('✅ Valores salvos!');
-  }).catch(()=>{ closeModal();render('valores');toast('Valores salvos!'); });
+
+  // Salvar localmente
+  lss('valores_v1',v);
+
+  // Feedback visual
+  const btn=document.querySelector('#modal [onclick*="salvarEdicaoValores"]');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Salvando...';}
+
+  // Enviar DIRETAMENTE para a nuvem via apiCall (sem depender do sync)
+  try {
+    await apiCall('PUT','/api/config',{valores:v});
+  } catch(e){ console.warn('valores save error:',e); }
+
+  // Fechar modal e re-renderizar APÓS confirmação da nuvem
+  closeModal();
+  render('valores');
+  toast('✅ Valores salvos!');
 }
 function resetarValores(){
   if(!confirm('Restaurar valores ao padrão original? As edições serão perdidas.'))return;
