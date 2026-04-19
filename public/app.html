@@ -2440,7 +2440,7 @@ function openFuncaoForm(id=null){
     </div>
     <div class="flex gap-8 mt-16 justify-between">
       ${isEdit?`<button class="btn btn-danger btn-sm" onclick="delFuncao('${id}')">Excluir</button>`:'<div></div>'}
-      <div class="flex gap-8"><button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveFuncao('${id||''}')">💾 Salvar</button></div>
+      <div class="flex gap-8"><button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveFuncao('${id||''}')">💾 Salvar</button></div>
     </div>`;
   document.getElementById('modal').style.display='flex';
 }
@@ -3516,7 +3516,7 @@ function _showAreaModal(nomeAtual, s){
       + '</div>'
     + '</div>'
     + '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">'
-      + '<button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
+      + '<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
       + `<button class="btn btn-primary" onclick="salvarAreaModal('${encodeURIComponent(nomeAtual||'')}')">💾 Salvar</button>`
     + '</div>';
 
@@ -3764,7 +3764,7 @@ function editarValores(){
       +listaEditavel('pilares',pilares,'nome')
     +'</div>'
     +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border)">'
-      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
+      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
       +'<button class="btn btn-primary" onclick="salvarEdicaoValores()">💾 Salvar Valores</button>'
     +'</div>';
   document.getElementById('modal').style.display='flex';
@@ -4170,7 +4170,7 @@ function escolherColNB(des,pot){
       +'</div>').join('')
       +(disponiveis.length===0?'<div style="text-align:center;padding:20px;color:var(--txt3)">Todos os colaboradores já estão posicionados.</div>':'')
     +'</div>'
-    +'<div style="margin-top:12px;text-align:right"><button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-sm" onclick="closeModal()">Cancelar</button></div>';
+    +'<div style="margin-top:12px;text-align:right"><button class="btn btn-sm" onclick="closeModal()">Cancelar</button></div>';
   document.getElementById('modal').style.display='flex';
 }
 
@@ -4579,7 +4579,7 @@ function editarCompetencias(){
       +secaoHtml('Competências Específicas',perfil.compEspecificas,'compEspecificas')
     +'</div>'
     +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border)">'
-      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
+      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
       +'<button class="btn btn-primary" onclick="salvarEdicaoCompetencias(\''+sel+'\')">💾 Salvar</button>'
     +'</div>';
   document.getElementById('modal').style.display='flex';
@@ -4751,7 +4751,7 @@ function enviarWhats(colId, celular){
       '<div style="margin-bottom:10px;font-size:12px;color:var(--txt2)">Escreva o recado que será enviado junto com a assinatura configurada:</div>'
       +'<textarea id="nota-texto" rows="4" style="width:100%;font-size:13px" placeholder="Ex: Parabéns pelo trabalho desta semana!"></textarea>'
       +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">'
-        +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
+        +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
         +'<button class="btn" style="background:#25D366;color:#fff;border:none" onclick="enviarWhatsFinal(\''+colId+'\',\''+celular+'\',\'nota\',document.getElementById(\'nota-texto\').value);closeModal()">📱 Abrir WhatsApp</button>'
       +'</div>';
     document.getElementById('modal').style.display='flex';
@@ -4794,7 +4794,7 @@ function enviarEmail(colId, email){
       '<div style="margin-bottom:10px;font-size:12px;color:var(--txt2)">Conteúdo do recado:</div>'
       +'<textarea id="nota-email-texto" rows="4" style="width:100%;font-size:13px" placeholder="Ex: Parabéns pelo desempenho desta semana!"></textarea>'
       +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">'
-        +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
+        +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
         +'<button class="btn btn-primary" onclick="enviarEmailFinal(\''+colId+'\',\''+email+'\',\'nota\',document.getElementById(\'nota-email-texto\').value);closeModal()">✉️ Abrir Email</button>'
       +'</div>';
     document.getElementById('modal').style.display='flex';
@@ -4905,7 +4905,7 @@ function abrirConfigGestor(){
         +'<input id="gcfg-saud" value="'+(g.saudacao||'Olá')+'" placeholder="Olá, Bom dia, Prezado..."/></div>'
     +'</div>'
     +'<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:12px;border-top:0.5px solid var(--border)">'
-      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
+      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
       +'<button class="btn btn-primary" onclick="salvarConfigGestor()">💾 Salvar configurações</button>'
     +'</div>';
   document.getElementById('modal').style.display='flex';
@@ -4953,7 +4953,7 @@ function openNivelForm(id=null){
     </div>
     <div class="flex gap-8 mt-14 justify-between">
       ${id&&colaboradores.filter(c=>c.nivel===n.nome).length===0?`<button class="btn btn-danger btn-sm" onclick="delNivel('${id}')">Excluir</button>`:'<div></div>'}
-      <div class="flex gap-8"><button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveNivel('${id||''}')">Salvar</button></div>
+      <div class="flex gap-8"><button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveNivel('${id||''}')">Salvar</button></div>
     </div>`;
   document.getElementById('modal').style.display='flex';
 }
@@ -5199,7 +5199,7 @@ function openMetaForm(id, tipoForcar){
       +'<div class="flex gap-8 mt-16 justify-between">'
         +(id?'<button class="btn btn-danger btn-sm" onclick="delMeta(\''+id+'\')">Excluir</button>':'<div></div>')
         +'<div class="flex gap-8">'
-          +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
+          +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
           +'<button class="btn btn-primary btn-sm" onclick="salvarMetaOKR(\''+( id||'')+'\')">💾 Salvar OKR</button>'
         +'</div>'
       +'</div>';
@@ -5237,7 +5237,7 @@ function openMetaForm(id, tipoForcar){
       +'<div class="flex gap-8 mt-4 justify-between">'
         +(id?'<button class="btn btn-danger btn-sm" onclick="delMeta(\''+id+'\')">Excluir</button>':'<div></div>')
         +'<div class="flex gap-8">'
-          +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
+          +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
           +'<button class="btn btn-purple btn-sm" onclick="salvarMetaSMART(\''+( id||'')+'\')">💾 Salvar Meta SMART</button>'
         +'</div>'
       +'</div>';
@@ -5507,7 +5507,7 @@ function showApiKeyModal(){
     </div>
 
     <div class="flex gap-8 mt-16 justify-between">
-      <button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-sm" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-sm" onclick="closeModal()">Cancelar</button>
       <button class="btn btn-sm" onclick="resetarModeloIA()" style="border-color:#854F0B;color:#854F0B" title="Limpa a configuração salva e usa gemma3:1b">↺ Resetar modelo</button>
       <button class="btn btn-primary" onclick="saveIAConfigFromModal()">💾 Salvar configuração</button>
     </div>`;
@@ -6689,7 +6689,7 @@ function _showColForm(id,c){
         +'<button class="btn btn-sm" onclick="solicitouDemissaoCol(\''+id+'\')" style="border-color:#854F0B;color:#854F0B">✋ Solicitou Demissão</button>'
         +'<button class="btn btn-danger btn-sm" onclick="delCol(\''+id+'\')">🗑 Excluir</button>'
       +'</div>'
-      :'')    +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">'      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'      +'<button class="btn btn-primary" onclick="saveCol(\''+( id||'')+'\')">💾 Salvar</button>'    +'</div>';
+      :'')    +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">'      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'      +'<button class="btn btn-primary" onclick="saveCol(\''+( id||'')+'\')">💾 Salvar</button>'    +'</div>';
     document.getElementById('modal').style.display='flex';
 }
 
@@ -7037,14 +7037,14 @@ function abrirNotasParticulares(){
     document.getElementById('modal-title').textContent = '🔒 Definir Senha das Notas Particulares';
     document.getElementById('modal-box').classList.remove('modal-lg');
     document.getElementById('modal-body').innerHTML =
-      '<div style="font-size:12px;color:var(--txt3);margin-bottom:12px">Esta senha protege suas notas particulares. Guarde-a em local seguro.</div>'      +'<div class="field-group"><div class="field-label">Nova senha</div><input id="np-senha1" type="password" placeholder="Mínimo 4 caracteres"/></div>'      +'<div class="field-group" style="margin-top:8px"><div class="field-label">Confirmar senha</div><input id="np-senha2" type="password" placeholder="Repita a senha"/></div>'      +'<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">'        +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'        +'<button class="btn btn-primary" onclick="definirSenhaNP()">Definir e Abrir</button>'      +'</div>';
+      '<div style="font-size:12px;color:var(--txt3);margin-bottom:12px">Esta senha protege suas notas particulares. Guarde-a em local seguro.</div>'      +'<div class="field-group"><div class="field-label">Nova senha</div><input id="np-senha1" type="password" placeholder="Mínimo 4 caracteres"/></div>'      +'<div class="field-group" style="margin-top:8px"><div class="field-label">Confirmar senha</div><input id="np-senha2" type="password" placeholder="Repita a senha"/></div>'      +'<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">'        +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'        +'<button class="btn btn-primary" onclick="definirSenhaNP()">Definir e Abrir</button>'      +'</div>';
     document.getElementById('modal').style.display='flex';
   } else {
     // Pedir senha
     document.getElementById('modal-title').textContent = '🔒 Notas Particulares';
     document.getElementById('modal-box').classList.remove('modal-lg');
     document.getElementById('modal-body').innerHTML =
-      '<div style="font-size:12px;color:var(--txt3);margin-bottom:12px">Digite a senha para acessar suas notas particulares.</div>'      +'<div class="field-group"><div class="field-label">Senha</div><input id="np-senha-acesso" type="password" placeholder="Sua senha" autofocus/></div>'      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">'        +'<button class="btn btn-sm" onclick="resetarSenhaNP()" style="color:var(--txt3);border-color:var(--border);font-size:11px">Esqueci a senha</button>'        +'<div style="display:flex;gap:8px">'          +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'          +'<button class="btn btn-primary" onclick="verificarSenhaNP()">Entrar</button>'        +'</div>'      +'</div>';
+      '<div style="font-size:12px;color:var(--txt3);margin-bottom:12px">Digite a senha para acessar suas notas particulares.</div>'      +'<div class="field-group"><div class="field-label">Senha</div><input id="np-senha-acesso" type="password" placeholder="Sua senha" autofocus/></div>'      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">'        +'<button class="btn btn-sm" onclick="resetarSenhaNP()" style="color:var(--txt3);border-color:var(--border);font-size:11px">Esqueci a senha</button>'        +'<div style="display:flex;gap:8px">'          +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'          +'<button class="btn btn-primary" onclick="verificarSenhaNP()">Entrar</button>'        +'</div>'      +'</div>';
     document.getElementById('modal').style.display='flex';
     setTimeout(()=>{ const el=document.getElementById('np-senha-acesso'); if(el){el.focus();el.addEventListener('keydown',e=>{if(e.key==='Enter')verificarSenhaNP();});} },100);
   }
@@ -7795,7 +7795,7 @@ function _showFuncCapModal(f, isNew) {
     + '<div class="flex gap-8 mt-16 justify-between">'
       + (!isNew ? '<button class="btn btn-danger btn-sm" onclick="deletarFuncaoCapacidade(\''+f.id+'\')">Excluir</button>' : '<div></div>')
       + '<div class="flex gap-8">'
-        + '<button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
+        + '<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
         + '<button class="btn btn-primary" onclick="salvarFuncaoCapacidade(\''+( f.id||'')+'\')">💾 Salvar</button>'
       + '</div>'
     + '</div>';
