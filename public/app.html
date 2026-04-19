@@ -745,6 +745,12 @@ input[type=number]{
 .modal-content input:focus,.modal-content textarea:focus{border-color:#0F6E56!important;outline:none!important;background:#fff!important}
 .field-label{font-size:12px!important;font-weight:600!important;color:#3A4240!important;margin-bottom:5px!important}
 
+
+/* Sidebar cleanup */
+.sidebar-footer button[onclick="showApiKeyModal()"] { display: none !important; }
+
+#btn-migrar { display: none !important; }
+#btn-sair-sidebar { display: none !important; }
 </style>
 </head>
 <body>
@@ -810,7 +816,7 @@ input[type=number]{
         <div id="sq-sb-trial" style="font-size:9px;color:#9FE1CB"></div>
       </div>
     </div>
-    <button id="btn-migrar" onclick="squadoMigrarDados()" style="display:none" style="display:none;width:100%;font-size:10px;padding:5px 8px;background:#EF9F27;border:none;border-radius:6px;color:#412402;font-weight:700;cursor:pointer">☁️ Migrar dados para nuvem</button>
+    <button id="btn-migrar" onclick="squadoMigrarDados()" style="display:none;width:100%;font-size:10px;padding:5px 8px;background:#EF9F27;border:none;border-radius:6px;color:#412402;font-weight:700;cursor:pointer">☁️ Migrar dados para nuvem</button>
     <button class="btn btn-sm" onclick="showApiKeyModal()" style="display:none;font-size:11px;padding:5px 10px;background:#F5F6F4;border:1px solid #E0E2E0;color:#3A4240;border-radius:5px;cursor:pointer;width:100%;text-align:left;font-family:'Inter',sans-serif">⚙️ Configurar IA</button>
     <div style="font-size:9px;color:#9BA09E;text-align:center;margin-top:4px;letter-spacing:.05em">Squado v6.0 · 2025</div>
     <div id="sq-sync-ind" style="font-size:9px;color:#9BA09E;text-align:center;min-height:12px;transition:color .3s"></div>
