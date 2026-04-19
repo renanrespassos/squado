@@ -635,7 +635,7 @@ select:focus{border-bottom-color:#0F6E56;outline:none}
 #page-content [style*="border-radius:6px"]{border-radius:2px!important}
 
 /* Manter avatars circulares e barras */
-#page-content [style*="border-radius:50%"]{border-radius:50%!important}
+
 #page-content [style*="border-radius:3px"]{border-radius:0!important}
 #page-content [style*="border-radius:4px"]{border-radius:2px!important}
 
@@ -888,7 +888,7 @@ function avColor(n){
 function av(nome, large=false, small=false){
   const sz=large?48:small?24:32;
   const fs=large?18:small?10:13;
-  return '<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+avColor(nome)+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:'+fs+'px;font-weight:700;flex-shrink:0">'+initials(nome)+'</div>';
+  return '<div style="width:'+sz+'px;height:'+sz+'px;border-radius:8px;background:'+avColor(nome)+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:'+fs+'px;font-weight:700;flex-shrink:0">'+initials(nome)+'</div>';
 }
 
 // buildDefaultFuncoes — constrói funções padrão a partir do seed de colaboradores
@@ -6334,8 +6334,8 @@ function renderPerfilAba(id, aba){
         +'<div class="field-group" style="grid-column:1/-1">'+flabel('Observações')+'<textarea id="p-obs" style="min-height:50px" placeholder="Informações adicionais...">'+(p.obs||'')+'</textarea></div>'
       +'</div>'
       +'<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">'
-        +'<button class="btn" onclick="renderPerfilAba(\''+id+'\',\'pessoal\')">Cancelar</button>'
-        +'<button class="btn btn-primary" onclick="salvarDadosPessoais(\''+id+'\')">💾 Salvar dados pessoais</button>'
+        +'<button onclick="renderPerfilAba(\''+id+'\',\'pessoal\')" style="background:transparent;color:#3A4240;border:1px solid #E0E2E0;border-radius:6px;padding:7px 16px;font-size:13px;cursor:pointer">Cancelar</button>'
+        +'<button onclick="salvarDadosPessoais(\''+id+'\')" style="background:#0F6E56;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer">💾 Salvar</button>'
       +'</div>';
   }
 
