@@ -745,7 +745,6 @@ input[type=number]{
 .modal-content input:focus,.modal-content textarea:focus{border-color:#0F6E56!important;outline:none!important;background:#fff!important}
 .field-label{font-size:12px!important;font-weight:600!important;color:#3A4240!important;margin-bottom:5px!important}
 
-.modal-content button{font-family:'Inter',sans-serif!important}
 </style>
 </head>
 <body>
@@ -2631,9 +2630,9 @@ function verAvaliacao(id){
       +'<div style="display:flex;gap:8px">'
         +'<button class="btn btn-sm" onclick="editarAvaliacao(\''+id+'\')">✏️ Editar</button>'
         +'<button class="btn btn-sm" onclick="gerarPDFAvaliacao(\''+id+'\')" style="border-color:#185FA5;color:#185FA5">📄 PDF</button>'
-        +'<button onclick="iniciarAvaliacaoPara(\''+id+'\');closeModal()" style="background:#0F6E56;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer">📋 Avaliar</button>'
-        +'<button onclick="verLineaTempo(\''+c.nome+'\')" style="border:1px solid #E0E2E0;background:transparent;color:#3A4240;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer">⏰ Linha do Tempo</button>'
-        +'<button onclick="quickAsk(\'Analise o perfil de '+c.nome.split(' ')[0]+' e sugira ações\');closeModal();go(\'agente\')" style="background:#F0EDF8;color:#534AB7;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer">🤖 Analisar com IA</button>'
+        +'<button class="btn btn-primary btn-sm" onclick="iniciarAvaliacaoPara(\''+id+'\');closeModal()">📋 Avaliar</button>'
+        +'<button class="btn btn-sm" onclick="verLineaTempo(\''+c.nome+'\')" >⏰ Linha do Tempo</button>'
+        +'<button class="btn btn-purple btn-sm" onclick="quickAsk(\'Analise o perfil de '+c.nome.split(' ')[0]+' e sugira ações\');closeModal();go(\'agente\')">🤖 Analisar com IA</button>'
       +'</div>'
     +'</div>';
 
@@ -6336,8 +6335,8 @@ function renderPerfilAba(id, aba){
         +'<div class="field-group" style="grid-column:1/-1">'+flabel('Observações')+'<textarea id="p-obs" style="min-height:50px" placeholder="Informações adicionais...">'+(p.obs||'')+'</textarea></div>'
       +'</div>'
       +'<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">'
-        +'<button onclick="renderPerfilAba(\''+id+'\',\'pessoal\')" style="background:transparent;color:#3A4240;border:1px solid #E0E2E0;border-radius:6px;padding:7px 16px;font-size:13px;cursor:pointer">Cancelar</button>'
-        +'<button onclick="salvarDadosPessoais(\''+id+'\')" style="background:#0F6E56;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer">💾 Salvar</button>'
+        +'<button class="btn btn-sm" onclick="renderPerfilAba(\''+id+'\',\'pessoal\')">Cancelar</button>'
+        +'<button class="btn btn-primary btn-sm" onclick="salvarDadosPessoais(\''+id+'\')">💾 Salvar</button>'
       +'</div>';
   }
 
