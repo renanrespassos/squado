@@ -6258,7 +6258,7 @@ function renderPerfilAba(id, aba){
           +(p.celular?'<div style="font-size:12px;color:var(--txt2);margin-top:2px">📱 '+p.celular+'</div>':'')
         +'</div>'
         +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">'
-          +'<button onclick="closeModal();setTimeout(()=>openColFormDirect(\''+id+'\'),100)" style="background:#0F6E56;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer">✏️ Editar</button>'
+          +'<button class="btn btn-primary btn-sm" onclick="closeModal();setTimeout(()=>openColFormDirect(\''+id+'\'),100)">✏️ Editar</button>'
           +'<div style="font-size:10px;color:var(--txt3)">Status</div>'
           +'</div>'
         +'</div>'
@@ -6294,9 +6294,9 @@ function renderPerfilAba(id, aba){
       :'')
       // Botões
       +'<div style="display:flex;gap-8px;flex-wrap:wrap;gap:8px;padding-top:12px;border-top:0.5px solid var(--border)">'
-        +'<button onclick="iniciarAvaliacaoPara(\''+id+'\');closeModal()" style="background:#0F6E56;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer">📋 Avaliar</button>'
-        +'<button onclick="verLineaTempo(\''+c.nome+'\')" style="background:transparent;color:#3A4240;border:1px solid #E0E2E0;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer">⏰ Linha do Tempo</button>'
-        +'<button onclick="quickAsk(\'Analise o perfil de '+c.nome.split(' ')[0]+' e sugira ações\');closeModal();go(\'agente\')" style="background:#F0EDF8;color:#534AB7;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer">🤖 Analisar com IA</button>'
+        +'<button class="btn btn-primary btn-sm" onclick="iniciarAvaliacaoPara(\''+id+'\');closeModal()">📋 Avaliar</button>'
+        +'<button class="btn btn-sm" onclick="verLineaTempo(\''+c.nome+'\')">⏰ Linha do Tempo</button>'
+        +'<button class="btn btn-purple btn-sm" onclick="quickAsk(\'Analise o perfil de '+c.nome.split(' ')[0]+' e sugira ações\');closeModal();go(\'agente\')">🤖 Analisar com IA</button>'
       +'</div>';
   }
 
