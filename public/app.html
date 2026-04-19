@@ -3703,14 +3703,19 @@ function renderValores(){
 function editarValores(){
   const vCustom=getValores();
   const pucrs=vCustom?vCustom.pucrs:[
-    {icon:'❤️',nome:'Amor ao Trabalho'},{icon:'🔥',nome:'Audácia'},
-    {icon:'👨‍👩‍👧‍👦',nome:'Espírito de Família'},{icon:'🙏',nome:'Espiritualidade'},
-    {icon:'🌟',nome:'Presença'},{icon:'🌿',nome:'Simplicidade'},
-    {icon:'🤝',nome:'Solidariedade'}
+    {icon:'❤️',nome:'Amor ao Trabalho',desc:'Dedicação, paixão e entrega em tudo que fazemos.'},
+    {icon:'🔥',nome:'Audácia',desc:'Coragem para inovar, ousar e buscar novos caminhos.'},
+    {icon:'👨\u200d👩\u200d👧\u200d👦',nome:'Espírito de Família',desc:'União, confiança mútua e cuidado genuíno com o próximo.'},
+    {icon:'🙏',nome:'Espiritualidade',desc:'Abertura ao transcendente e ao sentido mais profundo da vida.'},
+    {icon:'🌟',nome:'Presença',desc:'Estar inteiramente disponível — de corpo, mente e coração.'},
+    {icon:'🌿',nome:'Simplicidade',desc:'Clareza, objetividade e ausência de pretensão no agir.'},
+    {icon:'🤝',nome:'Solidariedade',desc:'Compromisso com o bem comum e com quem mais precisa.'},
   ];
   const labelo=vCustom?vCustom.labelo:[
-    {icon:'💚',nome:'Vida'},{icon:'👥',nome:'Pessoas'},
-    {icon:'⭐',nome:'Cliente'},{icon:'📈',nome:'Resultado'}
+    {icon:'💚',nome:'Vida',desc:'Cuidado com a saúde, segurança e bem-estar de todos.'},
+    {icon:'👥',nome:'Pessoas',desc:'Desenvolvimento humano como centro da nossa missão.'},
+    {icon:'⭐',nome:'Cliente',desc:'Excelência na entrega e satisfação de quem nos escolhe.'},
+    {icon:'📈',nome:'Resultado',desc:'Comprometimento com metas, qualidade e impacto real.'},
   ];
   const naoNeg=vCustom?vCustom.naoNegociamos:[
     {icon:'⏰',text:'Atrasos sem aviso ou justificativa prévia.'},
@@ -3733,13 +3738,29 @@ function editarValores(){
     {icon:'📋',nome:'ISO IEC 17025:2017'},
     {icon:'🔬',nome:'Conhecimento Técnico da Área'},
   ];
+  // Títulos customizáveis
+  const titulos=vCustom?.titulos||{pucrs:'🎓 Valores PUCRS',labelo:'🔬 Valores LABELO',naoNeg:'🚫 Não Negociamos',resps:'📌 Responsabilidades',pilares:'🏛️ Pilares'};
+
+  function secTitle(id,label){
+    return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
+      +'<input id="ve-title-'+id+'" value="'+label.replace(/"/g,'&quot;')+'" style="font-size:12px;font-weight:700;color:var(--txt);flex:1;border:none;border-bottom:1px solid var(--border2);background:transparent;padding:2px 0"/>'
+    +'</div>';
+  }
 
   function listaEditavel(id,itens,campo){
+    const temDesc = campo==='nome' && itens[0]?.desc!==undefined;
     return '<div id="ve-'+id+'" style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px">'
-      +itens.map((it,i)=>'<div style="display:flex;gap:6px;align-items:center">'
-        +'<input value="'+(it[campo]||it.nome||it.text||'').replace(/"/g,'&quot;')+'" data-id="'+id+'" data-idx="'+i+'" style="flex:1;font-size:12px"/>'
-        +'<button class="btn btn-xs btn-danger" data-id="'+id+'" onclick="this.parentElement.remove()">×</button>'
-      +'</div>').join('')
+      +itens.map((it,i)=>{
+        const val=(it[campo]||it.nome||it.text||'').replace(/"/g,'&quot;');
+        const desc=(it.desc||'').replace(/"/g,'&quot;');
+        return '<div style="display:flex;gap:6px;align-items:flex-start">'
+          +'<div style="flex:1;display:flex;flex-direction:column;gap:2px">'
+            +'<input value="'+val+'" data-id="'+id+'" data-idx="'+i+'" placeholder="Nome/título" style="flex:1;font-size:12px"/>'
+            +(temDesc?'<input value="'+desc+'" data-id="'+id+'" data-desc="'+i+'" placeholder="Descrição (opcional)" style="flex:1;font-size:11px;color:var(--txt2)"/>':'')
+          +'</div>'
+          +'<button class="btn btn-xs btn-danger" data-id="'+id+'" onclick="this.parentElement.remove()" style="margin-top:2px">×</button>'
+        +'</div>';
+      }).join('')
     +'</div>'
     +'<button class="btn btn-xs" data-id="'+id+'" data-campo="'+campo+'" onclick="addItemValor(this)">+ Adicionar</button>';
   }
@@ -3748,28 +3769,27 @@ function editarValores(){
   document.getElementById('modal-box').classList.add('modal-lg');
   document.getElementById('modal-body').innerHTML=
     '<div style="max-height:65vh;overflow-y:auto;padding-right:4px">'
-      +'<div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px">🎓 Valores PUCRS</div>'
+      +secTitle('pucrs',titulos.pucrs)
       +listaEditavel('pucrs',pucrs,'nome')
       +'<div style="border-top:0.5px solid var(--border);margin:12px 0"></div>'
-      +'<div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px">🔬 Valores LABELO</div>'
+      +secTitle('labelo',titulos.labelo)
       +listaEditavel('labelo',labelo,'nome')
       +'<div style="border-top:0.5px solid var(--border);margin:12px 0"></div>'
-      +'<div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px">🚫 Não Negociamos</div>'
+      +secTitle('naoNeg',titulos.naoNeg)
       +listaEditavel('naoNeg',naoNeg,'text')
       +'<div style="border-top:0.5px solid var(--border);margin:12px 0"></div>'
-      +'<div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px">📌 Responsabilidades</div>'
+      +secTitle('resps',titulos.resps)
       +listaEditavel('resps',resps,'nome')
       +'<div style="border-top:0.5px solid var(--border);margin:12px 0"></div>'
-      +'<div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px">🏛️ Pilares</div>'
+      +secTitle('pilares',titulos.pilares)
       +listaEditavel('pilares',pilares,'nome')
     +'</div>'
     +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border)">'
       +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
-      +'<button class="btn btn-primary" onclick="salvarEdicaoValores()">💾 Salvar Valores</button>'
+      +'<button class="btn btn-primary btn-sm" onclick="salvarEdicaoValores()">💾 Salvar Valores</button>'
     +'</div>';
   document.getElementById('modal').style.display='flex';
 }
-
 function addItemValor(btn){
   const id=btn.dataset.id;
   const campo=btn.dataset.campo||'nome';
@@ -3796,24 +3816,35 @@ function lerListaValores(id,campo,iconPadrao){
 }
 
 function salvarEdicaoValores(){
-  const iconsPN=['❤️','🔥','👨‍👩‍👧‍👦','🙏','🌟','🌿','🤝','⭐','🏅','💡'];
-  const iconsLB=['💚','👥','⭐','📈','🔑','🌐'];
-  const iconsNN=['⏰','🧹','🚫','👔','🔁','💬','⚠️'];
-  const iconsRP=['🧹','🦺','⏰','👔','📋','🔬','📌'];
-  const iconsPL=['📋','🤝','✅','⚙️','🎯','🏛️'];
-
-  const pucrs=lerListaValores('pucrs','nome','⭐').map(function(it,i){return Object.assign({},it,{icon:iconsPN[i]||'⭐',desc:'',nome:it.nome});});
-  const labelo=lerListaValores('labelo','nome','🔬').map(function(it,i){return Object.assign({},it,{icon:iconsLB[i]||'🔬',desc:'',nome:it.nome});});
-  const naoNegociamos=lerListaValores('naoNeg','text','🚫').map(function(it,i){return Object.assign({},it,{icon:iconsNN[i]||'🚫'});});
-  const responsabilidades=lerListaValores('resps','nome','📌').map(function(it,i){return Object.assign({},it,{icon:iconsRP[i]||'📌',desc:'',nome:it.nome});});
-  const pilares=lerListaValores('pilares','nome','🏛️').map(function(it,i){return Object.assign({},it,{icon:iconsPL[i]||'🏛️',nome:it.nome,itens:[]});});
-
-  saveValores({pucrs,labelo,naoNegociamos,responsabilidades,pilares});
-  closeModal();
-  toast('Valores salvos! ✓');
-  render('valores');
+  function coletarLista(id,campo){
+    const rows=document.getElementById('ve-'+id)?.querySelectorAll('input[data-idx]')||[];
+    const descs=document.getElementById('ve-'+id)?.querySelectorAll('input[data-desc]')||[];
+    const descMap={};
+    descs.forEach(d=>{ descMap[d.getAttribute('data-desc')]=d.value; });
+    return [...rows].map((inp,i)=>{
+      const it={icon:''};
+      if(campo==='text') it.text=inp.value;
+      else { it.nome=inp.value; if(descMap[inp.getAttribute('data-idx')]!==undefined) it.desc=descMap[inp.getAttribute('data-idx')]; }
+      return it;
+    });
+  }
+  function getTitulo(id){ return document.getElementById('ve-title-'+id)?.value||''; }
+  const v={
+    pucrs:coletarLista('pucrs','nome'),
+    labelo:coletarLista('labelo','nome'),
+    naoNegociamos:coletarLista('naoNeg','text'),
+    responsabilidades:coletarLista('resps','nome'),
+    pilares:coletarLista('pilares','nome'),
+    titulos:{
+      pucrs:getTitulo('pucrs'),
+      labelo:getTitulo('labelo'),
+      naoNeg:getTitulo('naoNeg'),
+      resps:getTitulo('resps'),
+      pilares:getTitulo('pilares'),
+    }
+  };
+  ls('valores_v1',v);saveAll();closeModal();render('valores');toast('Valores salvos!');
 }
-
 function resetarValores(){
   if(!confirm('Restaurar valores ao padrão original? As edições serão perdidas.'))return;
   localStorage.removeItem('valores_v1');
