@@ -3754,17 +3754,17 @@ function editarValores(){
         const val=(it[campo]||it.nome||it.text||'').replace(/"/g,'&quot;');
         const desc=(it.desc||'').replace(/"/g,'&quot;');
         if(temDesc){
-          return '<div style="display:flex;gap:6px;align-items:stretch">'
+          return '<div class="ve-row" style="display:flex;gap:6px;align-items:stretch">'
             +'<div style="flex:1;background:var(--bg2);border:0.5px solid var(--border);border-radius:6px;padding:6px 8px;display:flex;flex-direction:column;gap:3px">'
               +'<input value="'+val+'" data-id="'+id+'" data-idx="'+i+'" placeholder="Nome do valor" style="font-size:12px;font-weight:600;border:none;background:transparent;padding:0"/>'
               +'<input value="'+desc+'" data-id="'+id+'" data-desc="'+i+'" placeholder="Descrição..." style="font-size:11px;color:var(--txt2);border:none;background:transparent;padding:0"/>'
             +'</div>'
-            +'<button class="btn btn-xs btn-danger" data-id="'+id+'" onclick="this.closest('div[style*=gap]').remove()">×</button>'
+            +'<button class="btn btn-xs btn-danger" onclick="this.closest(\".ve-row\").remove()">×</button>'
           +'</div>';
         } else {
-          return '<div style="display:flex;gap:6px;align-items:center">'
+          return '<div class="ve-row" style="display:flex;gap:6px;align-items:center">'
             +'<input value="'+val+'" data-id="'+id+'" data-idx="'+i+'" style="flex:1;font-size:12px"/>'
-            +'<button class="btn btn-xs btn-danger" data-id="'+id+'" onclick="this.parentElement.remove()">×</button>'
+            +'<button class="btn btn-xs btn-danger" onclick="this.parentElement.remove()">×</button>'
           +'</div>';
         }
       }).join('')
