@@ -3749,17 +3749,24 @@ function editarValores(){
 
   function listaEditavel(id,itens,campo){
     const temDesc = campo==='nome' && itens[0]?.desc!==undefined;
-    return '<div id="ve-'+id+'" style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px">'
+    return '<div id="ve-'+id+'" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px">'
       +itens.map((it,i)=>{
         const val=(it[campo]||it.nome||it.text||'').replace(/"/g,'&quot;');
         const desc=(it.desc||'').replace(/"/g,'&quot;');
-        return '<div style="display:flex;gap:6px;align-items:flex-start">'
-          +'<div style="flex:1;display:flex;flex-direction:column;gap:2px">'
-            +'<input value="'+val+'" data-id="'+id+'" data-idx="'+i+'" placeholder="Nome/título" style="flex:1;font-size:12px"/>'
-            +(temDesc?'<input value="'+desc+'" data-id="'+id+'" data-desc="'+i+'" placeholder="Descrição (opcional)" style="flex:1;font-size:11px;color:var(--txt2)"/>':'')
-          +'</div>'
-          +'<button class="btn btn-xs btn-danger" data-id="'+id+'" onclick="this.parentElement.remove()" style="margin-top:2px">×</button>'
-        +'</div>';
+        if(temDesc){
+          return '<div style="display:flex;gap:6px;align-items:stretch">'
+            +'<div style="flex:1;background:var(--bg2);border:0.5px solid var(--border);border-radius:6px;padding:6px 8px;display:flex;flex-direction:column;gap:3px">'
+              +'<input value="'+val+'" data-id="'+id+'" data-idx="'+i+'" placeholder="Nome do valor" style="font-size:12px;font-weight:600;border:none;background:transparent;padding:0"/>'
+              +'<input value="'+desc+'" data-id="'+id+'" data-desc="'+i+'" placeholder="Descrição..." style="font-size:11px;color:var(--txt2);border:none;background:transparent;padding:0"/>'
+            +'</div>'
+            +'<button class="btn btn-xs btn-danger" data-id="'+id+'" onclick="this.closest('div[style*=gap]').remove()">×</button>'
+          +'</div>';
+        } else {
+          return '<div style="display:flex;gap:6px;align-items:center">'
+            +'<input value="'+val+'" data-id="'+id+'" data-idx="'+i+'" style="flex:1;font-size:12px"/>'
+            +'<button class="btn btn-xs btn-danger" data-id="'+id+'" onclick="this.parentElement.remove()">×</button>'
+          +'</div>';
+        }
       }).join('')
     +'</div>'
     +'<button class="btn btn-xs" data-id="'+id+'" data-campo="'+campo+'" onclick="addItemValor(this)">+ Adicionar</button>';
@@ -3843,7 +3850,7 @@ function salvarEdicaoValores(){
       pilares:getTitulo('pilares'),
     }
   };
-  ls('valores_v1',v);saveAll();closeModal();render('valores');toast('Valores salvos!');
+  lss('valores_v1',v);saveAll();closeModal();render('valores');toast('Valores salvos!');
 }
 function resetarValores(){
   if(!confirm('Restaurar valores ao padrão original? As edições serão perdidas.'))return;
