@@ -3883,7 +3883,14 @@ function salvarEdicaoValores(){
       pilares:getTitulo('pilares'),
     }
   };
-  lss('valores_v1',v);saveAll();if(typeof squadoSyncSnapshot==='function')squadoSyncSnapshot('valores');closeModal();render('valores');toast('Valores salvos!');
+  lss('valores_v1',v);saveAll();
+  // Aguardar sync com a nuvem antes de fechar (evita race condition)
+  document.querySelector('#modal-body button[onclick*="salvarEdicaoValores"]') && null;
+  const _saveBtn = document.querySelector('#modal [onclick*="salvarEdicaoValores"]');
+  if(_saveBtn){ _saveBtn.disabled=true; _saveBtn.textContent='⏳ Salvando...'; }
+  (typeof squadoSyncSnapshot==='function'?squadoSyncSnapshot('valores'):Promise.resolve()).then(()=>{
+    closeModal();render('valores');toast('✅ Valores salvos!');
+  }).catch(()=>{ closeModal();render('valores');toast('Valores salvos!'); });
 }
 function resetarValores(){
   if(!confirm('Restaurar valores ao padrão original? As edições serão perdidas.'))return;
