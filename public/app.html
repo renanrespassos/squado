@@ -3567,6 +3567,12 @@ function salvarAreaModal(nomeAtualEncoded){
 
 function renderValores(){
   const vCustom=getValores();
+  const _titulos=(vCustom?.titulos)||{};
+  const _tPucrs=_titulos.pucrs||'🎓 Valores PUCRS';
+  const _tLabelo=_titulos.labelo||'🔬 Valores LABELO';
+  const _tNaoNeg=_titulos.naoNeg||'🚫 Não Negociamos';
+  const _tResps=_titulos.resps||'📌 Responsabilidades';
+  const _tPilares=_titulos.pilares||'🏛️ Pilares do Laboratório';
   const pucrs=vCustom?vCustom.pucrs:[
     {icon:'❤️',nome:'Amor ao Trabalho',desc:'Dedicação, paixão e entrega em tudo que fazemos.'},
     {icon:'🔥',nome:'Audácia',desc:'Coragem para inovar, ousar e buscar novos caminhos.'},
