@@ -4527,10 +4527,7 @@ function renderCompetencias(){
 
   // Tabs de perfil
   const tabs='<div style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;overflow:hidden;margin-bottom:20px;width:fit-content">'
-    +perfis.map(p=>'<button onclick="window._compSel=\''+p.id+'\';render(\'competencias\')" '
-      +'style="padding:8px 18px;border:none;border-left:0.5px solid var(--border2);font-size:12.5px;font-weight:600;cursor:pointer;'
-      +'background:'+(p.id===sel?'var(--green)':'var(--bg2)')+';color:'+(p.id===sel?'#fff':'var(--txt2)')+';transition:all .15s">'
-      +p.cargo+'</button>'
+    +perfis.map(p=>'<button onclick="window._compSel=\\'+p.id+'\\';render(\\'competencias\\')" class="'+(p.id===sel?'btn btn-primary btn-sm':'btn btn-sm')+'">'+p.cargo+'</button>'
     ).join('')
   +'</div>';
 
