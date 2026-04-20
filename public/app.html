@@ -1764,7 +1764,7 @@ function renderColaboradores(search=''){
     '<button class="btn btn-primary btn-sm" onclick="openColForm()">+ Novo Colaborador</button>',
     '</div>','</div>',
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">',
-      '<button class="btn btn-danger btn-sm" id="btn-excluir-cols" onclick="excluirColsSelecionados()" style="display:none">Excluir selecionados</button>',
+      '<button class="btn btn-danger btn-sm" id="btn-excluir-cols" onclick="excluirColsSelecionados()" style="display:none">🗑 Excluir selecionados</button>',
     '</div>',
     '<div class="card" style="padding:0;overflow:hidden"><div class="table-wrap"><table class="tbl">',
     '<thead><tr>',
@@ -2444,7 +2444,7 @@ function openFuncaoForm(id=null){
     </div>
     <div class="flex gap-8 mt-16 justify-between">
       ${isEdit?`<button class="btn btn-danger btn-sm" onclick="delFuncao('${id}')">Excluir</button>`:'<div></div>'}
-      <div class="flex gap-8"><button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveFuncao('${id||''}')">Salvar</button></div>
+      <div class="flex gap-8"><button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveFuncao('${id||''}')">💾 Salvar</button></div>
     </div>`;
   document.getElementById('modal').style.display='flex';
 }
@@ -2535,7 +2535,7 @@ function renderAvaliacao(){
   </div><div class="flex gap-8 mt-12 justify-end">
     <button class="btn btn-purple btn-sm" onclick="gerarSugestoesIA()" id="btn-ia-aval">🤖 Sugestões da IA</button>
     <button class="btn" onclick="avalState={colId:'',nivel:'',respostas:{},obs:{},pontosPos:'',oportunidades:''};aiSugestoes='';render('avaliacao')">Limpar</button>
-    <button class="btn btn-primary" onclick="salvarAvaliacao()">Salvar Avaliação</button>
+    <button class="btn btn-primary" onclick="salvarAvaliacao()">💾 Salvar Avaliação</button>
   </div>
   <div id="ai-sug-aval-wrap"></div>
   </div>`:''}`;
@@ -2642,11 +2642,11 @@ function verAvaliacao(id){
     +'<div class="flex gap-8 mt-14 justify-between">'
       +'<button class="btn btn-danger btn-sm" onclick="delAvaliacao(\''+id+'\')">Excluir</button>'
       +'<div style="display:flex;gap:8px">'
-        +'<button class="btn btn-sm" onclick="editarAvaliacao(\''+id+'\')">Editar</button>'
+        +'<button class="btn btn-sm" onclick="editarAvaliacao(\''+id+'\')">✏️ Editar</button>'
         +'<button class="btn btn-sm" onclick="gerarPDFAvaliacao(\''+id+'\')" style="border-color:#185FA5;color:#185FA5">📄 PDF</button>'
-        +'<button class="btn btn-primary btn-sm" onclick="iniciarAvaliacaoPara(\''+id+'\');closeModal()">Avaliar</button>'
-        +'<button class="btn btn-sm" onclick="verLineaTempo(\''+c.nome+'\')" >Linha do Tempo</button>'
-        +'<button class="btn btn-purple btn-sm" onclick="quickAsk(\'Analise o perfil de '+c.nome.split(' ')[0]+' e sugira ações\');closeModal();go(\'agente\')">Analisar com IA</button>'
+        +'<button class="btn btn-primary btn-sm" onclick="iniciarAvaliacaoPara(\''+id+'\');closeModal()">📋 Avaliar</button>'
+        +'<button class="btn btn-sm" onclick="verLineaTempo(\''+c.nome+'\')" >⏰ Linha do Tempo</button>'
+        +'<button class="btn btn-purple btn-sm" onclick="quickAsk(\'Analise o perfil de '+c.nome.split(' ')[0]+' e sugira ações\');closeModal();go(\'agente\')">🤖 Analisar com IA</button>'
       +'</div>'
     +'</div>';
 
@@ -2819,7 +2819,7 @@ function renderPergTabContent(nivel){
       </div>
     </div>
     ${qs.map((q,qi)=>`<div class="edit-q-row"><input value="${q.replace(/"/g,'&quot;')}" onchange="updatePergunta('${nivel}','${sec}',${qi},this.value)"/><button class="btn btn-xs btn-danger" onclick="delPergunta('${nivel}','${sec}',${qi})">×</button></div>`).join('')}
-  </div>`).join('')}<div class="flex gap-8 mt-12"><button class="btn btn-sm" onclick="addSecao('${nivel}')">+ Nova Seção</button><button class="btn btn-primary btn-sm" onclick="salvarPerguntas()">Salvar</button></div></div>`;
+  </div>`).join('')}<div class="flex gap-8 mt-12"><button class="btn btn-sm" onclick="addSecao('${nivel}')">+ Nova Seção</button><button class="btn btn-primary btn-sm" onclick="salvarPerguntas()">💾 Salvar</button></div></div>`;
 }
 function updatePergunta(nivel,sec,qi,val){if(perguntas[nivel]&&perguntas[nivel][sec])perguntas[nivel][sec][qi]=val}
 function delPergunta(nivel,sec,qi){if(!confirm('Excluir?'))return;perguntas[nivel][sec].splice(qi,1);saveAll();render('perguntas')}
@@ -3095,7 +3095,7 @@ function renderModalPDI(pdi,col){
 
     // Rodapé
     +'<div style="display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border)">'
-      +'<button class="btn btn-xs" data-pdi="'+pdi.id+'" onclick="gerarPDFPDI(this.dataset.pdi)" style="border-color:#185FA5;color:#185FA5">Exportar PDF</button>'
+      +'<button class="btn btn-xs" data-pdi="'+pdi.id+'" onclick="gerarPDFPDI(this.dataset.pdi)" style="border-color:#185FA5;color:#185FA5">📄 Exportar PDF</button>'
       +'<button class="btn btn-xs" data-col="'+col.id+'" onclick="verHistoricoPDI(this.dataset.col)" style="border-color:var(--txt3);color:var(--txt3)">📂 Histórico</button>'
       +'<button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="closeModal();render(\'pdi\')">✓ Fechar</button>'
     +'</div>';
@@ -3219,7 +3219,7 @@ function editarAcaoPDI(pdiId,acaoIdx){
   var a=pdi.acoes[i];if(!a)return;
   var tiposAcao=['Treinamento','Mentoria','Projeto','Leitura','Curso','Shadowing','Autodesenvolvimento','Outro'];
   var stAcao=['Não iniciada','Em andamento','Concluída','Pausada'];
-  document.getElementById('modal-title').textContent='Editar Ação do PDI';
+  document.getElementById('modal-title').textContent='✏️ Editar Ação do PDI';
   document.getElementById('modal-box').classList.remove('modal-lg');
   document.getElementById('modal-body').innerHTML=
     '<div class="form-grid">'
@@ -3235,7 +3235,7 @@ function editarAcaoPDI(pdiId,acaoIdx){
     +'</div>'
     +'<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">'
       +'<button class="btn" data-pdi="'+pdiId+'" data-col="'+pdi.colId+'" onclick="abrirPDIById(this.dataset.pdi,this.dataset.col)">Cancelar</button>'
-      +'<button class="btn btn-primary" data-pdi="'+pdiId+'" data-idx="'+i+'" onclick="salvarEdicaoAcaoPDI(this.dataset.pdi,this.dataset.idx)">Salvar</button>'
+      +'<button class="btn btn-primary" data-pdi="'+pdiId+'" data-idx="'+i+'" onclick="salvarEdicaoAcaoPDI(this.dataset.pdi,this.dataset.idx)">💾 Salvar</button>'
     +'</div>';
   document.getElementById('modal').style.display='flex';
 }
@@ -3393,9 +3393,9 @@ function renderAvaliacaoHub(){
 
   return `
     <div style="display:flex;gap:4px;margin-bottom:18px">
-      <button id="tab-aval-nova" class="btn btn-primary btn-sm" onclick="go('avaliacao')">Nova Avaliação</button>
-      <button id="tab-aval-hist" class="btn btn-sm" onclick="go('historico_aval')">Histórico</button>
-      <button id="tab-aval-conf" class="btn btn-sm" onclick="go('perguntas')">Configurar Perguntas</button>
+      <button id="tab-aval-nova" class="btn btn-primary btn-sm" onclick="go('avaliacao')">📋 Nova Avaliação</button>
+      <button id="tab-aval-hist" class="btn btn-sm" onclick="go('historico_aval')">🕐 Histórico</button>
+      <button id="tab-aval-conf" class="btn btn-sm" onclick="go('perguntas')">⚙️ Configurar Perguntas</button>
     </div>
     ${conteudo}`;
 }
@@ -3443,7 +3443,7 @@ function renderAreas(){
         <div style="width:14px;height:14px;border-radius:3px;background:${s.cor}"></div>
         <span style="font-size:10px;color:var(--txt3);font-family:monospace">${s.cor}</span>
       </div>
-      <button class="btn btn-xs" onclick="editarArea('${enc}')">Editar</button>
+      <button class="btn btn-xs" onclick="editarArea('${enc}')">✏️ Editar</button>
       ${podeExcluir
         ? `<button class="btn btn-xs btn-danger" onclick="excluirArea('${enc}')">🗑</button>`
         : `<button class="btn btn-xs" disabled style="opacity:.3" title="Área em uso">🗑</button>`}
@@ -3513,7 +3513,7 @@ function _showAreaModal(nomeAtual, s){
     + '</div>'
     + '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">'
       + '<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
-      + `<button class="btn btn-primary" onclick="salvarAreaModal('${encodeURIComponent(nomeAtual||'')}')">Salvar</button>`
+      + `<button class="btn btn-primary" onclick="salvarAreaModal('${encodeURIComponent(nomeAtual||'')}')">💾 Salvar</button>`
     + '</div>';
 
   // Preview ao vivo
@@ -4146,7 +4146,7 @@ function renderNineBox(){
 
   // Botão exportar PDF
   const exportBtn='<div style="display:flex;justify-content:flex-end;margin-bottom:16px">'
-    +'<button class="btn btn-sm" onclick="exportarPDFNineBox()" style="border-color:#185FA5;color:#185FA5">Exportar PDF</button>'
+    +'<button class="btn btn-sm" onclick="exportarPDFNineBox()" style="border-color:#185FA5;color:#185FA5">📄 Exportar PDF</button>'
   +'</div>';
 
   return exportBtn
@@ -4599,9 +4599,9 @@ function renderCompetencias(){
 
   // Botão exportar PDF
   const exportBtn='<div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:16px">'
-    +'<button class="btn btn-sm" onclick="editarCompetencias()" style="border-color:#854F0B;color:#854F0B">Editar Competências</button>'
+    +'<button class="btn btn-sm" onclick="editarCompetencias()" style="border-color:#854F0B;color:#854F0B">✏️ Editar Competências</button>'
     +'<button class="btn btn-sm" onclick="resetarCompetencias()" style="border-color:var(--txt3);color:var(--txt3)" title="Restaurar padrão">Restaurar padrão</button>'
-    +'<button class="btn btn-sm" data-perfil="'+perfil.id+'" onclick="exportarPDFCompetencias(this.dataset.perfil)" style="border-color:#185FA5;color:#185FA5">Exportar PDF</button>'
+    +'<button class="btn btn-sm" data-perfil="'+perfil.id+'" onclick="exportarPDFCompetencias(this.dataset.perfil)" style="border-color:#185FA5;color:#185FA5">📄 Exportar PDF</button>'
   +'</div>';
 
   return '<div>'
@@ -4630,7 +4630,7 @@ function editarCompetencias(){
   const sel=window._compSel||'assistente';
   const perfil=mc.perfis.find(p=>p.id===sel)||mc.perfis[0];
 
-  document.getElementById('modal-title').textContent='Editar Competências · '+perfil.cargo;
+  document.getElementById('modal-title').textContent='✏️ Editar Competências · '+perfil.cargo;
   document.getElementById('modal-box').classList.add('modal-lg');
 
   function secaoHtml(titulo,itens,dataKey){
@@ -4666,7 +4666,7 @@ function editarCompetencias(){
     +'</div>'
     +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border)">'
       +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
-      +'<button class="btn btn-primary" onclick="salvarEdicaoCompetencias(\''+sel+'\')">Salvar</button>'
+      +'<button class="btn btn-primary" onclick="salvarEdicaoCompetencias(\''+sel+'\')">💾 Salvar</button>'
     +'</div>';
   document.getElementById('modal').style.display='flex';
 }
@@ -4992,7 +4992,7 @@ function abrirConfigGestor(){
     +'</div>'
     +'<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:12px;border-top:0.5px solid var(--border)">'
       +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
-      +'<button class="btn btn-primary" onclick="salvarConfigGestor()">Salvar configurações</button>'
+      +'<button class="btn btn-primary" onclick="salvarConfigGestor()">💾 Salvar configurações</button>'
     +'</div>';
   document.getElementById('modal').style.display='flex';
 }
@@ -5132,7 +5132,7 @@ function renderMetas(search=''){
       +'</div>'
       // Ações
       +'<div style="display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:0.5px solid var(--border)">'
-        +'<button class="btn btn-xs" onclick="openMetaForm(\''+okr.id+'\')">Editar</button>'
+        +'<button class="btn btn-xs" onclick="openMetaForm(\''+okr.id+'\')">✏️ Editar</button>'
         +'<button class="btn btn-xs btn-primary" onclick="editarKRs(\''+okr.id+'\')">📊 Atualizar KRs</button>'
         +'<button class="btn btn-xs btn-danger" onclick="delMeta(\''+okr.id+'\')">×</button>'
       +'</div>'
@@ -5214,8 +5214,8 @@ function renderMetas(search=''){
 
     // Botões de criar
     +'<div style="display:flex;gap:8px;margin-bottom:18px">'
-      +'<button class="btn btn-primary btn-sm" onclick="openMetaForm(null,\'okr\')">+ Novo OKR</button>'
-      +'<button class="btn btn-purple btn-sm" onclick="openMetaForm(null,\'smart\')">+ Meta SMART</button>'
+      +'<button class="btn btn-primary btn-sm" onclick="openMetaForm(null,\'okr\')">🎯 + Novo OKR</button>'
+      +'<button class="btn btn-purple btn-sm" onclick="openMetaForm(null,\'smart\')">✅ + Meta SMART</button>'
     +'</div>'
 
     // OKRs
@@ -5286,7 +5286,7 @@ function openMetaForm(id, tipoForcar){
         +(id?'<button class="btn btn-danger btn-sm" onclick="delMeta(\''+id+'\')">Excluir</button>':'<div></div>')
         +'<div class="flex gap-8">'
           +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
-          +'<button class="btn btn-primary btn-sm" onclick="salvarMetaOKR(\''+( id||'')+'\')">Salvar OKR</button>'
+          +'<button class="btn btn-primary btn-sm" onclick="salvarMetaOKR(\''+( id||'')+'\')">💾 Salvar OKR</button>'
         +'</div>'
       +'</div>';
   } else {
@@ -5324,7 +5324,7 @@ function openMetaForm(id, tipoForcar){
         +(id?'<button class="btn btn-danger btn-sm" onclick="delMeta(\''+id+'\')">Excluir</button>':'<div></div>')
         +'<div class="flex gap-8">'
           +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
-          +'<button class="btn btn-purple btn-sm" onclick="salvarMetaSMART(\''+( id||'')+'\')">Salvar Meta SMART</button>'
+          +'<button class="btn btn-purple btn-sm" onclick="salvarMetaSMART(\''+( id||'')+'\')">💾 Salvar Meta SMART</button>'
         +'</div>'
       +'</div>';
   }
@@ -5595,7 +5595,7 @@ function showApiKeyModal(){
     <div class="flex gap-8 mt-16 justify-between">
       <button class="btn btn-sm" onclick="closeModal()">Cancelar</button>
       <button class="btn btn-sm" onclick="resetarModeloIA()" style="border-color:#854F0B;color:#854F0B" title="Limpa a configuração salva e usa gemma3:1b">↺ Resetar modelo</button>
-      <button class="btn btn-primary" onclick="saveIAConfigFromModal()">Salvar configuração</button>
+      <button class="btn btn-primary" onclick="saveIAConfigFromModal()">💾 Salvar configuração</button>
     </div>`;
   document.getElementById('modal').style.display='flex';
   // Auto-detectar modelos ao abrir
@@ -6168,9 +6168,9 @@ function verLineaTempo(colNome){
     +'<div style="max-height:60vh;overflow-y:auto;padding-right:4px" class="timeline-scroll">'+timelineHtml+'</div>'
     +'<div class="flex gap-8 mt-14">'
       +'<div style="display:flex;gap:8px;margin-top:16px">'
-      +'<button onclick="iniciarAvaliacaoPara(\''+id+'\');closeModal()" style="background:#0F6E56;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer">Avaliar</button>'
-      +'<button onclick="verLineaTempo(\''+c.nome+'\')" style="background:transparent;color:#3A4240;border:1px solid #E0E2E0;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer">Linha do Tempo</button>'
-      +'<button onclick="quickAsk(\'Analise o perfil de '+c.nome.split(' ')[0]+' e sugira ações\');closeModal();go(\'agente\')" style="background:#F0EDF8;color:#534AB7;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer">Analisar com IA</button>'
+      +'<button onclick="iniciarAvaliacaoPara(\''+id+'\');closeModal()" style="background:#0F6E56;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer">📋 Avaliar</button>'
+      +'<button onclick="verLineaTempo(\''+c.nome+'\')" style="background:transparent;color:#3A4240;border:1px solid #E0E2E0;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer">⏰ Linha do Tempo</button>'
+      +'<button onclick="quickAsk(\'Analise o perfil de '+c.nome.split(' ')[0]+' e sugira ações\');closeModal();go(\'agente\')" style="background:#F0EDF8;color:#534AB7;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer">🤖 Analisar com IA</button>'
       +'</div>';
   document.getElementById('modal').style.display='flex';
 }
@@ -6367,7 +6367,7 @@ function renderPerfilAba(id, aba){
           +(p.celular?'<div style="font-size:12px;color:var(--txt2);margin-top:2px">📱 '+p.celular+'</div>':'')
         +'</div>'
         +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">'
-          +'<button class="btn btn-primary btn-sm" onclick="closeModal();setTimeout(()=>openColFormDirect(\''+id+'\'),100)">Editar</button>'
+          +'<button class="btn btn-primary btn-sm" onclick="closeModal();setTimeout(()=>openColFormDirect(\''+id+'\'),100)">✏️ Editar</button>'
           +'<div style="font-size:10px;color:var(--txt3)">Status</div>'
           +'</div>'
         +'</div>'
@@ -6403,9 +6403,9 @@ function renderPerfilAba(id, aba){
       :'')
       // Botões
       +'<div style="display:flex;gap-8px;flex-wrap:wrap;gap:8px;padding-top:12px;border-top:0.5px solid var(--border)">'
-        +'<button class="btn btn-primary btn-sm" onclick="iniciarAvaliacaoPara(\''+id+'\');closeModal()">Avaliar</button>'
-        +'<button class="btn btn-sm" onclick="verLineaTempo(\''+c.nome+'\')">Linha do Tempo</button>'
-        +'<button class="btn btn-purple btn-sm" onclick="quickAsk(\'Analise o perfil de '+c.nome.split(' ')[0]+' e sugira ações\');closeModal();go(\'agente\')">Analisar com IA</button>'
+        +'<button class="btn btn-primary btn-sm" onclick="iniciarAvaliacaoPara(\''+id+'\');closeModal()">📋 Avaliar</button>'
+        +'<button class="btn btn-sm" onclick="verLineaTempo(\''+c.nome+'\')">⏰ Linha do Tempo</button>'
+        +'<button class="btn btn-purple btn-sm" onclick="quickAsk(\'Analise o perfil de '+c.nome.split(' ')[0]+' e sugira ações\');closeModal();go(\'agente\')">🤖 Analisar com IA</button>'
       +'</div>';
   }
 
@@ -6445,7 +6445,7 @@ function renderPerfilAba(id, aba){
       +'</div>'
       +'<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">'
         +'<button class="btn btn-sm" onclick="renderPerfilAba(\''+id+'\',\'pessoal\')">Cancelar</button>'
-        +'<button class="btn btn-primary btn-sm" onclick="salvarDadosPessoais(\''+id+'\')">Salvar</button>'
+        +'<button class="btn btn-primary btn-sm" onclick="salvarDadosPessoais(\''+id+'\')">💾 Salvar</button>'
       +'</div>';
   }
 
@@ -6775,7 +6775,7 @@ function _showColForm(id,c){
         +'<button class="btn btn-sm" onclick="solicitouDemissaoCol(\''+id+'\')" style="border-color:#854F0B;color:#854F0B">✋ Solicitou Demissão</button>'
         +'<button class="btn btn-danger btn-sm" onclick="delCol(\''+id+'\')">🗑 Excluir</button>'
       +'</div>'
-      :'')    +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">'      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'      +'<button class="btn btn-primary" onclick="saveCol(\''+( id||'')+'\')">Salvar</button>'    +'</div>';
+      :'')    +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">'      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'      +'<button class="btn btn-primary" onclick="saveCol(\''+( id||'')+'\')">💾 Salvar</button>'    +'</div>';
     document.getElementById('modal').style.display='flex';
 }
 
@@ -7184,7 +7184,7 @@ function renderNotasParticulares(){
     </div>`).join('') || '<div style="text-align:center;color:var(--txt3);padding:24px">Nenhuma nota ainda.</div>';
 
   document.getElementById('modal-body').innerHTML =
-    '<div style="margin-bottom:12px">'      +'<textarea id="np-nova" placeholder="Escreva sua nota particular..." style="min-height:80px;width:100%"></textarea>'      +'<div style="display:flex;justify-content:flex-end;margin-top:6px">'        +'<button class="btn btn-primary btn-sm" onclick="salvarNotaParticular()">Salvar Nota</button>'      +'</div>'    +'</div>'    +'<div style="max-height:400px;overflow-y:auto">'+rows+'</div>'    +'<div style="display:flex;justify-content:space-between;margin-top:12px;border-top:0.5px solid var(--border);padding-top:10px">'      +'<button class="btn btn-sm" onclick="resetarSenhaNP()" style="color:var(--txt3);border-color:var(--border);font-size:11px">🔑 Alterar/Resetar senha</button>'      +'<button class="btn" onclick="closeModal()">Fechar</button>'    +'</div>';
+    '<div style="margin-bottom:12px">'      +'<textarea id="np-nova" placeholder="Escreva sua nota particular..." style="min-height:80px;width:100%"></textarea>'      +'<div style="display:flex;justify-content:flex-end;margin-top:6px">'        +'<button class="btn btn-primary btn-sm" onclick="salvarNotaParticular()">💾 Salvar Nota</button>'      +'</div>'    +'</div>'    +'<div style="max-height:400px;overflow-y:auto">'+rows+'</div>'    +'<div style="display:flex;justify-content:space-between;margin-top:12px;border-top:0.5px solid var(--border);padding-top:10px">'      +'<button class="btn btn-sm" onclick="resetarSenhaNP()" style="color:var(--txt3);border-color:var(--border);font-size:11px">🔑 Alterar/Resetar senha</button>'      +'<button class="btn" onclick="closeModal()">Fechar</button>'    +'</div>';
   document.getElementById('modal').style.display='flex';
 }
 
@@ -7525,8 +7525,8 @@ function renderCapacidade() {
     // Botões de acesso rápido
     if(col){
       card += '<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);display:flex;gap:6px">'
-        + '<button class="btn btn-xs" onclick="event.stopPropagation();verCol(\''+col.id+'\')" style="flex:1">Perfil</button>'
-        + '<button class="btn btn-xs btn-purple" onclick="event.stopPropagation();verColCapacidade(\''+col.id+'\')" style="flex:1">Funções</button>'
+        + '<button class="btn btn-xs" onclick="event.stopPropagation();verCol(\''+col.id+'\')" style="flex:1">👤 Perfil</button>'
+        + '<button class="btn btn-xs btn-purple" onclick="event.stopPropagation();verColCapacidade(\''+col.id+'\')" style="flex:1">📌 Funções</button>'
       + '</div>';
     }
 
@@ -7645,9 +7645,9 @@ function renderCapacidade() {
     + '</div>'
     + '<div style="font-size:11px;color:var(--txt3)">→ Cálculos atualizam automaticamente</div>'
     + '<div style="margin-left:auto;display:flex;gap:8px">'
-      + '<button class="btn btn-sm" onclick="gerarRelatorioCapacidade()" style="border-color:#185FA5;color:#185FA5">Relatório PDF</button>'
+      + '<button class="btn btn-sm" onclick="gerarRelatorioCapacidade()" style="border-color:#185FA5;color:#185FA5">📄 Relatório PDF</button>'
       + '<button class="btn btn-sm btn-primary" onclick="abrirNovaFuncaoCapacidade()">+ Nova Função</button>'
-      + '<button class="btn btn-sm btn-danger" id="btn-excluir-sel" onclick="excluirFuncoesSelecionadas()" style="display:none">Excluir selecionadas</button>'
+      + '<button class="btn btn-sm btn-danger" id="btn-excluir-sel" onclick="excluirFuncoesSelecionadas()" style="display:none">🗑 Excluir selecionadas</button>'
     + '</div>'
   + '<div style="border-top:0.5px solid var(--border);padding-top:10px;margin-top:10px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">'
     + '<span style="font-size:12px;font-weight:600;color:var(--txt2)">📅 Dias úteis:</span>'
@@ -7729,11 +7729,11 @@ function renderCapacidade() {
   // TABS: Pessoas | Por Área
   + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">'
     + '<div style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;overflow:hidden;width:fit-content">'
-      + '<button id="tab-cap-pessoas" class="btn btn-primary btn-sm" onclick="switchCapTab(\'pessoas\')">Por Pessoa</button>'
-      + '<button id="tab-cap-areas" class="btn btn-sm" onclick="switchCapTab(\'areas\')">Por Área / Função</button>'
+      + '<button id="tab-cap-pessoas" class="btn btn-primary btn-sm" onclick="switchCapTab(\'pessoas\')">👥 Por Pessoa</button>'
+      + '<button id="tab-cap-areas" class="btn btn-sm" onclick="switchCapTab(\'areas\')">📋 Por Área / Função</button>'
     + '</div>'
-    + '<button class="btn btn-sm btn-danger" id="btn-excluir-selecionadas" onclick="excluirFuncoesSelecionadas()" style="display:none">Excluir selecionadas</button>'
-    + '<button class="btn btn-sm" onclick="render(\'capacidade\')" style="display:flex;align-items:center;gap:5px;border-color:var(--green);color:var(--green)">Atualizar</button>'
+    + '<button class="btn btn-sm btn-danger" id="btn-excluir-selecionadas" onclick="excluirFuncoesSelecionadas()" style="display:none">🗑 Excluir selecionadas</button>'
+    + '<button class="btn btn-sm" onclick="render(\'capacidade\')" style="display:flex;align-items:center;gap:5px;border-color:var(--green);color:var(--green)">🔄 Atualizar</button>'
   + '</div>'
 
   + '<div id="cap-panel-pessoas" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">'
@@ -7858,7 +7858,7 @@ function _showFuncCapModal(f, isNew) {
     + '</div>'
   ).join('');
 
-  document.getElementById('modal-title').textContent = isNew ? '+ Nova Função' : 'Editar: '+f.nome;
+  document.getElementById('modal-title').textContent = isNew ? '+ Nova Função' : '✏️ Editar: '+f.nome;
   document.getElementById('modal-box').classList.add('modal-lg');
   document.getElementById('modal-body').innerHTML =
     '<div class="form-grid mb-12">'
@@ -7882,7 +7882,7 @@ function _showFuncCapModal(f, isNew) {
       + (!isNew ? '<button class="btn btn-danger btn-sm" onclick="deletarFuncaoCapacidade(\''+f.id+'\')">Excluir</button>' : '<div></div>')
       + '<div class="flex gap-8">'
         + '<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
-        + '<button class="btn btn-primary" onclick="salvarFuncaoCapacidade(\''+( f.id||'')+'\')">Salvar</button>'
+        + '<button class="btn btn-primary" onclick="salvarFuncaoCapacidade(\''+( f.id||'')+'\')">💾 Salvar</button>'
       + '</div>'
     + '</div>';
   document.getElementById('modal').style.display = 'flex';
