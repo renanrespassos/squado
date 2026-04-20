@@ -3625,7 +3625,7 @@ function renderValores(){
     +pucrs.map(v=>'<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:16px;border-left:3px solid #185FA5">'
       
       +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:4px">'+v.nome+'</div>'
-      +'<div style="font-size:11.5px;color:var(--txt2);line-height:1.5">'+v.desc+'</div>'
+      +'<div style="font-size:11.5px;color:var(--txt2);line-height:1.5">'+(v.desc||'')+'</div>'
     +'</div>').join('')
   +'</div>';
 
@@ -3634,7 +3634,7 @@ function renderValores(){
     +labelo.map(v=>'<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:16px;text-align:center;border-top:3px solid #0F6E56">'
       
       +'<div style="font-size:13px;font-weight:800;color:var(--txt);margin-bottom:4px">'+v.nome+'</div>'
-      +'<div style="font-size:11px;color:var(--txt2);line-height:1.5">'+v.desc+'</div>'
+      +'<div style="font-size:11px;color:var(--txt2);line-height:1.5">'+(v.desc||'')+'</div>'
     +'</div>').join('')
   +'</div>';
 
@@ -3692,7 +3692,7 @@ function renderValores(){
       +responsabilidades.map(r=>'<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:16px;border-left:3px solid #854F0B">'
         
         +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:4px">'+r.nome+'</div>'
-        +'<div style="font-size:11.5px;color:var(--txt2);line-height:1.5">'+r.desc+'</div>'
+        +'<div style="font-size:11.5px;color:var(--txt2);line-height:1.5">'+(r.desc||'')+'</div>'
       +'</div>').join('')
     +'</div>'
     +secTitle('',_tPilares,'Os fundamentos que sustentam nossa excelência operacional','#534AB7')
@@ -3973,7 +3973,7 @@ function imprimirValores(){
       +pucrs.map(v=>'<div style="border:1px solid #dbeafe;border-radius:10px;padding:12px;border-left:3px solid #185FA5">'
         
         +'<div style="font-size:12px;font-weight:700;margin-bottom:3px">'+v.nome+'</div>'
-        +'<div style="font-size:10px;color:#6b7280;line-height:1.5">'+v.desc+'</div>'
+        +'<div style="font-size:10px;color:#6b7280;line-height:1.5">'+(v.desc||'')+'</div>'
       +'</div>').join('')
     +'</div>'
     // LABELO
@@ -3982,7 +3982,7 @@ function imprimirValores(){
       +labelo.map(v=>'<div style="border:1px solid #E1F5EE;border-radius:10px;padding:14px;text-align:center;border-top:3px solid #0F6E56">'
         
         +'<div style="font-size:13px;font-weight:800;margin-bottom:4px">'+v.nome+'</div>'
-        +'<div style="font-size:10px;color:#6b7280;line-height:1.5">'+v.desc+'</div>'
+        +'<div style="font-size:10px;color:#6b7280;line-height:1.5">'+(v.desc||'')+'</div>'
       +'</div>').join('')
     +'</div>'
     // Não Negociamos
@@ -4006,7 +4006,7 @@ function imprimirValores(){
       ].map(r=>'<div style="border:1px solid #FAEEDA;border-radius:10px;padding:12px;border-left:3px solid #854F0B">'
         
         +'<div style="font-size:11px;font-weight:700;margin-bottom:3px">'+r.nome+'</div>'
-        +'<div style="font-size:10px;color:#6b7280;line-height:1.5">'+r.desc+'</div>'
+        +'<div style="font-size:10px;color:#6b7280;line-height:1.5">'+(r.desc||'')+'</div>'
       +'</div>').join('')
     +'</div>'
     +'<h2 style="color:#534AB7;border-bottom:2px solid #EEEDFE">Pilares</h2>'
