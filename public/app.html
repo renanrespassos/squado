@@ -4264,7 +4264,7 @@ function escolherColNB(des,pot){
 function salvarPosNB(colId,des,pot){
   const posNB=ls('ninebox_v1',{});
   posNB[colId]={desempenho:parseInt(des),potencial:parseInt(pot),data:new Date().toISOString().slice(0,10)};
-  lss('ninebox_v1',posNB);
+  lss('ninebox_v1',posNB); if(typeof agendarSync==='function')agendarSync();
   closeModal();
   toast('Posição salva! ✓');
   render('ninebox');
@@ -4273,7 +4273,7 @@ function salvarPosNB(colId,des,pot){
 function removerPosNB(colId){
   const posNB=ls('ninebox_v1',{});
   delete posNB[colId];
-  lss('ninebox_v1',posNB);
+  lss('ninebox_v1',posNB); if(typeof agendarSync==='function')agendarSync();
   closeModal();
   toast('Removido do Nine-Box!');
   render('ninebox');
@@ -8194,6 +8194,9 @@ async function squadoCarregarDaNuvem() {
       }
       if (cfg.snapshot_pdis && Array.isArray(cfg.snapshot_pdis)) {
         lss('pdis_v1', cfg.snapshot_pdis);
+      }
+      if (cfg.snapshot_ninebox && typeof cfg.snapshot_ninebox === 'object') {
+        lss('ninebox_v1', cfg.snapshot_ninebox);
       }
       if (cfg.snapshot_areas && typeof cfg.snapshot_areas === 'object') {
         AREA_COLORS = cfg.snapshot_areas;
