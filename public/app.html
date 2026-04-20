@@ -2922,6 +2922,10 @@ function criarNovoPDI(colId){
   var ano=new Date().getFullYear();
   var novo={id:uid(),colId:colId,colNome:col.nome,ciclo:'1º Semestre '+ano,ano:ano,status:'Em andamento',competencias:[],acoes:[],dataCriacao:new Date().toISOString().slice(0,10),observacoes:'',revisoes:[],dataProxRevisao:''};
   var pdis=getPDIs();pdis.push(novo);savePDIs(pdis);
+  // Sync com banco
+  apiCall('POST','/api/pdis',{colaborador_id:colId,col_nome:col.nome,objetivo:'',competencias:[],acoes:[],revisoes:[],status:'Em andamento'})
+    .then(r=>{if(r&&r.id){novo.dbId=r.id;savePDIs(getPDIs().map(p=>p.id===novo.id?{...p,dbId:r.id}:p));console.log('PDI criado no banco:',r.id);}})
+    .catch(e=>console.warn('PDI create err',e));
   renderModalPDI(novo,col);
 }
 
@@ -2960,7 +2964,9 @@ function abrirPDIById(pdiId,colId){
 
 function deletarPDI(pdiId,colId){
   if(!confirm('Excluir este PDI?'))return;
+  const pdi=getPDIs().find(x=>x.id===pdiId);
   savePDIs(getPDIs().filter(function(x){return x.id!==pdiId;}));
+  if(pdi&&pdi.dbId) apiCall('DELETE','/api/pdis/'+pdi.dbId).catch(e=>console.warn('PDI del err',e));
   toast('PDI excluído!');
   verHistoricoPDI(colId);
   render('pdi');
@@ -3209,6 +3215,12 @@ function atualizarCampoPDI(pdiId,campo,valor){
   var idx=pdis.findIndex(function(x){return x.id===pdiId;});if(idx<0)return;
   pdis[idx][campo]=valor;
   savePDIs(pdis);
+  // Sync com banco
+  const pdi=pdis[idx];
+  if(pdi.dbId){
+    const body={objetivo:pdi.objetivo||'',competencias:pdi.competencias||[],acoes:pdi.acoes||[],revisoes:pdi.revisoes||[],proxima_revisao:pdi.dataProxRevisao||null,status:pdi.status||'Em andamento'};
+    apiCall('PUT','/api/pdis/'+pdi.dbId,body).catch(e=>console.warn('PDI update err',e));
+  }
 }
 
 function editarAcaoPDI(pdiId,acaoIdx){
@@ -5377,7 +5389,15 @@ function salvarMetaOKR(id){
     keyResults:krs};
   if(id){var i=metas.findIndex(function(x){return x.id===id;});if(i>=0)metas[i]=nova;else metas.push(nova);}
   else metas.push(nova);
-  saveAll();closeModal();toast('OKR salvo! 🎯');render(currentPage);
+  saveAll();
+  // Sync com banco
+  (async()=>{
+    try{
+      if(nova.dbId){ await apiCall('PUT','/api/metas/'+nova.dbId,{tipo:'okr',titulo:nova.titulo||nova.objetivo,objetivo:nova.objetivo,area:nova.area,periodo:nova.periodo,key_results:nova.keyResults||[],status:nova.status||'Em andamento',progresso:nova.progresso||0}); }
+      else{ const r=await apiCall('POST','/api/metas',{tipo:'okr',titulo:nova.titulo||nova.objetivo,objetivo:nova.objetivo,area:nova.area,periodo:nova.periodo,key_results:nova.keyResults||[],status:nova.status||'Em andamento',progresso:nova.progresso||0}); if(r&&r.id){nova.dbId=r.id;lss('metas_v2',metas);} }
+    }catch(e){console.warn('OKR sync err',e);}
+  })();
+  closeModal();toast('OKR salvo! 🎯');render(currentPage);
 }
 
 function salvarMetaSMART(id){
@@ -5396,7 +5416,14 @@ function salvarMetaSMART(id){
     temporal:gv('sm-tem')};
   if(id){var i=metas.findIndex(function(x){return x.id===id;});if(i>=0)metas[i]=nova;else metas.push(nova);}
   else metas.push(nova);
-  saveAll();closeModal();toast('Meta SMART salva! ✅');render(currentPage);
+  saveAll();
+  (async()=>{
+    try{
+      if(nova.dbId){ await apiCall('PUT','/api/metas/'+nova.dbId,{tipo:'smart',titulo:nova.titulo,status:nova.status,progresso:nova.progresso,prazo:nova.prazo,colaborador:nova.colaborador,especifica:nova.especifica,mensuravel:nova.mensuravel,atingivel:nova.atingivel,relevante:nova.relevante,temporal:nova.temporal}); }
+      else{ const r=await apiCall('POST','/api/metas',{tipo:'smart',titulo:nova.titulo,status:nova.status||'Pendente',progresso:nova.progresso||0,prazo:nova.prazo||null,colaborador:nova.colaborador||'',especifica:nova.especifica||'',mensuravel:nova.mensuravel||'',atingivel:nova.atingivel||'',relevante:nova.relevante||'',temporal:nova.temporal||''}); if(r&&r.id){nova.dbId=r.id;lss('metas_v2',metas);} }
+    }catch(e){console.warn('SMART sync err',e);}
+  })();
+  closeModal();toast('Meta SMART salva! ✅');render(currentPage);
 }
 
 function atualizarMetaPct(id,val){
@@ -5407,8 +5434,11 @@ function atualizarMetaPct(id,val){
 
 function delMeta(id){
   if(!confirm('Excluir esta meta/OKR?'))return;
+  const meta = metas.find(x=>x.id===id);
   metas=metas.filter(function(x){return x.id!==id;});
-  saveAll();closeModal();toast('Excluído!');render(currentPage);
+  saveAll();
+  if(meta&&meta.dbId) apiCall('DELETE','/api/metas/'+meta.dbId).catch(e=>console.warn('del meta err',e));
+  closeModal();toast('Excluído!');render(currentPage);
 }
 
 function editarKRs(okrId){
