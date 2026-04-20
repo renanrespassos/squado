@@ -3741,7 +3741,7 @@ function editarValores(){
     {icon:'🔬',nome:'Conhecimento Técnico da Área'},
   ];
   // Títulos customizáveis
-  const titulos=vCustom?.titulos||{pucrs:'🎓 Valores PUCRS',labelo:'🔬 Valores LABELO',naoNeg:'🚫 Não Negociamos',resps:'📌 Responsabilidades',pilares:'🏛️ Pilares'};
+  const titulos=vCustom?.titulos||{pucrs:'Valores Institucionais',labelo:'Valores da Empresa',naoNeg:'Não Negociamos',resps:'Responsabilidades',pilares:'Pilares'};
 
   function secTitle(id,label){
     return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
@@ -3971,7 +3971,7 @@ function imprimirValores(){
     +'<h2 style="color:#185FA5;border-bottom:2px solid #dbeafe">Valores PUCRS</h2>'
     +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">'
       +pucrs.map(v=>'<div style="border:1px solid #dbeafe;border-radius:10px;padding:12px;border-left:3px solid #185FA5">'
-        +'<div style="font-size:20px;margin-bottom:6px">'+v.icon+'</div>'
+        
         +'<div style="font-size:12px;font-weight:700;margin-bottom:3px">'+v.nome+'</div>'
         +'<div style="font-size:10px;color:#6b7280;line-height:1.5">'+v.desc+'</div>'
       +'</div>').join('')
@@ -3980,7 +3980,7 @@ function imprimirValores(){
     +'<h2 style="color:#0F6E56;border-bottom:2px solid #E1F5EE">Valores LABELO</h2>'
     +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">'
       +labelo.map(v=>'<div style="border:1px solid #E1F5EE;border-radius:10px;padding:14px;text-align:center;border-top:3px solid #0F6E56">'
-        +'<div style="font-size:24px;margin-bottom:6px">'+v.icon+'</div>'
+        
         +'<div style="font-size:13px;font-weight:800;margin-bottom:4px">'+v.nome+'</div>'
         +'<div style="font-size:10px;color:#6b7280;line-height:1.5">'+v.desc+'</div>'
       +'</div>').join('')
