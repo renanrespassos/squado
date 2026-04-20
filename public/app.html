@@ -3968,7 +3968,7 @@ function imprimirValores(){
       +'<div style="font-size:11px;color:#9ca3af">'+dataHoje+'</div>'
     +'</div>'
     // PUCRS
-    +'<h2 style="color:#185FA5;border-bottom:2px solid #dbeafe">Valores PUCRS</h2>'
+    +'<h2 style="color:#185FA5;border-bottom:2px solid #dbeafe">Valores Institucionais</h2>'
     +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">'
       +pucrs.map(v=>'<div style="border:1px solid #dbeafe;border-radius:10px;padding:12px;border-left:3px solid #185FA5">'
         
@@ -3977,7 +3977,7 @@ function imprimirValores(){
       +'</div>').join('')
     +'</div>'
     // LABELO
-    +'<h2 style="color:#0F6E56;border-bottom:2px solid #E1F5EE">Valores LABELO</h2>'
+    +'<h2 style="color:#0F6E56;border-bottom:2px solid #E1F5EE">Valores da Empresa</h2>'
     +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">'
       +labelo.map(v=>'<div style="border:1px solid #E1F5EE;border-radius:10px;padding:14px;text-align:center;border-top:3px solid #0F6E56">'
         
@@ -4004,7 +4004,7 @@ function imprimirValores(){
         {icon:'📋',nome:'ISO IEC 17025:2017',desc:'Conhecer e cumprir os requisitos da norma de acreditação.'},
         {icon:'🔬',nome:'Conhecimento Técnico da Área',desc:'Desenvolver continuamente o conhecimento técnico da área.'},
       ].map(r=>'<div style="border:1px solid #FAEEDA;border-radius:10px;padding:12px;border-left:3px solid #854F0B">'
-        +'<div style="font-size:18px;margin-bottom:5px">'+r.icon+'</div>'
+        
         +'<div style="font-size:11px;font-weight:700;margin-bottom:3px">'+r.nome+'</div>'
         +'<div style="font-size:10px;color:#6b7280;line-height:1.5">'+r.desc+'</div>'
       +'</div>').join('')
@@ -4012,7 +4012,7 @@ function imprimirValores(){
     +'<h2 style="color:#534AB7;border-bottom:2px solid #EEEDFE">Pilares</h2>'
     +'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:24px">'
       +pilares.map(p=>'<div style="border:1px solid '+p.cor+'33;border-radius:10px;padding:12px;border-top:3px solid '+p.cor+'">'
-        +'<div style="font-size:20px;margin-bottom:6px">'+p.icon+'</div>'
+        
         +'<div style="font-size:12px;font-weight:800;color:'+p.cor+';margin-bottom:6px">'+p.nome+'</div>'
         +((p.itens||[]).length?'<ul style="padding-left:14px;margin:0">'
           +(p.itens||[]).map(i=>'<li style="font-size:10px;color:#6b7280;margin-bottom:3px">'+i+'</li>').join('')
