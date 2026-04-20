@@ -4261,19 +4261,21 @@ function escolherColNB(des,pot){
   document.getElementById('modal').style.display='flex';
 }
 
-function salvarPosNB(colId,des,pot){
+async function salvarPosNB(colId,des,pot){
   const posNB=ls('ninebox_v1',{});
   posNB[colId]={desempenho:parseInt(des),potencial:parseInt(pot),data:new Date().toISOString().slice(0,10)};
-  lss('ninebox_v1',posNB); if(typeof agendarSync==='function')agendarSync();
+  lss('ninebox_v1',posNB);
+  try{ await apiCall('POST','/api/ninebox',{colaborador_id:colId,desempenho:parseInt(des),potencial:parseInt(pot)}); }catch(e){console.warn('ninebox save err',e);}
   closeModal();
   toast('Posição salva! ✓');
   render('ninebox');
 }
 
-function removerPosNB(colId){
+async function removerPosNB(colId){
   const posNB=ls('ninebox_v1',{});
   delete posNB[colId];
-  lss('ninebox_v1',posNB); if(typeof agendarSync==='function')agendarSync();
+  lss('ninebox_v1',posNB);
+  try{ await apiCall('DELETE','/api/ninebox/'+colId); }catch(e){console.warn('ninebox del err',e);}
   closeModal();
   toast('Removido do Nine-Box!');
   render('ninebox');
@@ -8232,6 +8234,48 @@ async function squadoCarregarDaNuvem() {
       if (cfg.gestor_config)  lss('gestor_config_v1', cfg.gestor_config);
       if (cfg.historico_ia)   { aiHistory = cfg.historico_ia; lss('aiHistory', aiHistory); }
     }
+
+    // ── Carregar dados das rotas dedicadas ──────────────────────────
+    try {
+      const [nbRows, metasRows, pdisRows] = await Promise.all([
+        apiCall('GET','/api/ninebox'),
+        apiCall('GET','/api/metas'),
+        apiCall('GET','/api/pdis'),
+      ]);
+      // Nine-Box
+      if(Array.isArray(nbRows) && nbRows.length > 0){
+        const nb={};
+        nbRows.forEach(r=>nb[r.colaborador_id]={desempenho:r.desempenho,potencial:r.potencial,data:r.data_avaliacao});
+        lss('ninebox_v1',nb);
+      }
+      // Metas
+      if(Array.isArray(metasRows) && metasRows.length > 0){
+        // Converter formato banco → formato app
+        const metasApp = metasRows.map(m=>({
+          id:m.id, tipo:m.tipo, titulo:m.titulo, objetivo:m.objetivo,
+          area:m.area, periodo:m.periodo,
+          keyResults:typeof m.key_results==='string'?JSON.parse(m.key_results):m.key_results||[],
+          status:m.status, progresso:m.progresso, prazo:m.prazo,
+          colId:m.colaborador_id, colaborador:m.colaborador,
+          especifica:m.especifica, mensuravel:m.mensuravel,
+          atingivel:m.atingivel, relevante:m.relevante, temporal:m.temporal,
+        }));
+        metas = metasApp;
+        lss('metas_v2', metas);
+      }
+      // PDIs
+      if(Array.isArray(pdisRows) && pdisRows.length > 0){
+        const pdisApp = pdisRows.map(p=>({
+          id:p.id, colId:p.colaborador_id, colNome:p.col_nome,
+          objetivo:p.objetivo,
+          competencias:typeof p.competencias==='string'?JSON.parse(p.competencias):p.competencias||[],
+          acoes:typeof p.acoes==='string'?JSON.parse(p.acoes):p.acoes||[],
+          revisoes:typeof p.revisoes==='string'?JSON.parse(p.revisoes):p.revisoes||[],
+          proximaRevisao:p.proxima_revisao, status:p.status,
+        }));
+        lss('pdis_v1', pdisApp);
+      }
+    } catch(eRoutes){ console.warn('[Squado] Erro ao carregar rotas dedicadas:', eRoutes); }
 
     render(currentPage || 'dashboard');
     toast('✅ Dados sincronizados!');
