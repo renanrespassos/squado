@@ -3657,9 +3657,10 @@ function renderValores(){
       const cor=corMap[p.nome]||'#888';
       return '<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid '+cor+'">'
         
-        +'<div style="font-size:13px;font-weight:800;color:'+cor+';margin-bottom:'+((p.itens||[]).length?'10px':'0')+'">'
+        +'<div style="font-size:13px;font-weight:800;color:'+cor+';margin-bottom:'+(p.desc||((p.itens||[]).length)?'6px':'0')+'">'
           +p.nome
         +'</div>'
+        +(p.desc?'<div style="font-size:11px;color:var(--txt2);line-height:1.5;margin-bottom:'+((p.itens||[]).length?'8px':'0')+'">'+p.desc+'</div>':'')
         +((p.itens||[]).length
           ?'<ul style="margin:0;padding-left:16px;display:flex;flex-direction:column;gap:4px">'
             +(p.itens||[]).map(i=>'<li style="font-size:11.5px;color:var(--txt2)">'+i+'</li>').join('')
