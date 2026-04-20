@@ -3563,11 +3563,11 @@ function salvarAreaModal(nomeAtualEncoded){
 function renderValores(){
   const vCustom=getValores();
   const _titulos=(vCustom?.titulos)||{};
-  const _tPucrs=_titulos.pucrs||'🎓 Valores PUCRS';
-  const _tLabelo=_titulos.labelo||'🔬 Valores LABELO';
-  const _tNaoNeg=_titulos.naoNeg||'🚫 Não Negociamos';
-  const _tResps=_titulos.resps||'📌 Responsabilidades';
-  const _tPilares=_titulos.pilares||'🏛️ Pilares do Laboratório';
+  const _tPucrs=_titulos.pucrs||'Valores PUCRS';
+  const _tLabelo=_titulos.labelo||'Valores LABELO';
+  const _tNaoNeg=_titulos.naoNeg||'Não Negociamos';
+  const _tResps=_titulos.resps||'Responsabilidades';
+  const _tPilares=_titulos.pilares||'Pilares do Laboratório';
   const pucrs=vCustom?vCustom.pucrs:[
     {icon:'❤️',nome:'Amor ao Trabalho',desc:'Dedicação, paixão e entrega em tudo que fazemos.'},
     {icon:'🔥',nome:'Audácia',desc:'Coragem para inovar, ousar e buscar novos caminhos.'},
@@ -3678,16 +3678,16 @@ function renderValores(){
       +'</button>'
     +'</div>'
     // PUCRS
-    +secTitle('🎓',_tPucrs,'Fundamentos da nossa identidade institucional','#185FA5')
+    +secTitle('',_tPucrs,'Fundamentos da nossa identidade institucional','#185FA5')
     +pucrsCards
     // LABELO
-    +secTitle('🔬',_tLabelo,'Os pilares que guiam nossa operação','#0F6E56')
+    +secTitle('',_tLabelo,'Os pilares que guiam nossa operação','#0F6E56')
     +labeloCards
     // Não Negociamos
-    +secTitle('🚫',_tNaoNeg,'Comportamentos que não são aceitos em nossa cultura','#A32D2D')
+    +secTitle('',_tNaoNeg,'Comportamentos que não são aceitos em nossa cultura','#A32D2D')
     +nnCards
     // Pilares
-    +secTitle('📌',_tResps,'Compromissos de todos os colaboradores do laboratório','#854F0B')
+    +secTitle('',_tResps,'Compromissos de todos os colaboradores do laboratório','#854F0B')
     +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:32px">'
       +responsabilidades.map(r=>'<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:16px;border-left:3px solid #854F0B">'
         
@@ -3695,7 +3695,7 @@ function renderValores(){
         +'<div style="font-size:11.5px;color:var(--txt2);line-height:1.5">'+r.desc+'</div>'
       +'</div>').join('')
     +'</div>'
-    +secTitle('🏛️',_tPilares,'Os fundamentos que sustentam nossa excelência operacional','#534AB7')
+    +secTitle('',_tPilares,'Os fundamentos que sustentam nossa excelência operacional','#534AB7')
     +pilaresCards
   +'</div>';
 }
