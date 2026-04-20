@@ -3632,7 +3632,7 @@ function renderValores(){
   // Cards LABELO
   const labeloCards='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:32px">'
     +labelo.map(v=>'<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:16px;text-align:center;border-top:3px solid #0F6E56">'
-      +'<div style="font-size:28px;margin-bottom:8px">'+v.icon+'</div>'
+      
       +'<div style="font-size:13px;font-weight:800;color:var(--txt);margin-bottom:4px">'+v.nome+'</div>'
       +'<div style="font-size:11px;color:var(--txt2);line-height:1.5">'+v.desc+'</div>'
     +'</div>').join('')
@@ -3642,7 +3642,7 @@ function renderValores(){
   const nnCards='<div style="background:#FCEBEB;border:0.5px solid rgba(163,45,45,.2);border-radius:12px;padding:20px;margin-bottom:32px">'
     +'<div style="display:flex;flex-direction:column;gap:10px">'
     +naoNegociamos.map(n=>'<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:rgba(255,255,255,.6);border-radius:8px">'
-      +'<span style="font-size:18px;flex-shrink:0;margin-top:1px">'+n.icon+'</span>'
+      
       +'<div style="font-size:12.5px;color:#374151;line-height:1.6">'
         +'<span style="font-weight:700;color:#A32D2D">Não negociamos </span>'+n.text
       +'</div>'
@@ -3656,7 +3656,7 @@ function renderValores(){
       const corMap={'Organização':'#185FA5','Respeito':'#0F6E56','Responsabilidade':'#854F0B','Processo':'#534AB7','Postura':'#3B6D11'};
       const cor=corMap[p.nome]||'#888';
       return '<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid '+cor+'">'
-        +'<div style="font-size:22px;margin-bottom:8px">'+p.icon+'</div>'
+        
         +'<div style="font-size:13px;font-weight:800;color:'+cor+';margin-bottom:'+((p.itens||[]).length?'10px':'0')+'">'
           +p.nome
         +'</div>'
@@ -3690,7 +3690,7 @@ function renderValores(){
     +secTitle('📌',_tResps,'Compromissos de todos os colaboradores do laboratório','#854F0B')
     +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:32px">'
       +responsabilidades.map(r=>'<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:16px;border-left:3px solid #854F0B">'
-        +'<div style="font-size:22px;margin-bottom:8px">'+r.icon+'</div>'
+        
         +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:4px">'+r.nome+'</div>'
         +'<div style="font-size:11.5px;color:var(--txt2);line-height:1.5">'+r.desc+'</div>'
       +'</div>').join('')
