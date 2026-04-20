@@ -3949,7 +3949,7 @@ function imprimirValores(){
   ];
   const dataHoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
 
-  const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Valores e Cultura · Lab Industrial</title>'
+  const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Valores e Cultura</title>'
     +'<style>*{margin:0;padding:0;box-sizing:border-box}'
     +'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111827;background:#fff;padding:40px}'
     +'@media print{body{padding:0}.np{display:none!important}@page{margin:18mm;size:A4}}'
@@ -3968,7 +3968,7 @@ function imprimirValores(){
       +'<div style="font-size:11px;color:#9ca3af">'+dataHoje+'</div>'
     +'</div>'
     // PUCRS
-    +'<h2 style="color:#185FA5;border-bottom:2px solid #dbeafe">🎓 Valores PUCRS</h2>'
+    +'<h2 style="color:#185FA5;border-bottom:2px solid #dbeafe">Valores PUCRS</h2>'
     +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">'
       +pucrs.map(v=>'<div style="border:1px solid #dbeafe;border-radius:10px;padding:12px;border-left:3px solid #185FA5">'
         +'<div style="font-size:20px;margin-bottom:6px">'+v.icon+'</div>'
@@ -3977,7 +3977,7 @@ function imprimirValores(){
       +'</div>').join('')
     +'</div>'
     // LABELO
-    +'<h2 style="color:#0F6E56;border-bottom:2px solid #E1F5EE">🔬 Valores LABELO</h2>'
+    +'<h2 style="color:#0F6E56;border-bottom:2px solid #E1F5EE">Valores LABELO</h2>'
     +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">'
       +labelo.map(v=>'<div style="border:1px solid #E1F5EE;border-radius:10px;padding:14px;text-align:center;border-top:3px solid #0F6E56">'
         +'<div style="font-size:24px;margin-bottom:6px">'+v.icon+'</div>'
@@ -3986,7 +3986,7 @@ function imprimirValores(){
       +'</div>').join('')
     +'</div>'
     // Não Negociamos
-    +'<h2 style="color:#A32D2D;border-bottom:2px solid #FCEBEB">🚫 Não Negociamos</h2>'
+    +'<h2 style="color:#A32D2D;border-bottom:2px solid #FCEBEB">Não Negociamos</h2>'
     +'<div style="background:#FCEBEB;border-radius:10px;padding:16px;margin-bottom:24px">'
       +naoNegociamos.map(n=>'<div style="display:flex;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid rgba(163,45,45,.1)">'
         +'<span style="color:#A32D2D;font-weight:700;font-size:11px;white-space:nowrap">✗ Não negociamos</span>'
@@ -3994,7 +3994,7 @@ function imprimirValores(){
       +'</div>').join('')
     +'</div>'
     // Pilares
-    +'<h2 style="color:#854F0B;border-bottom:2px solid #FAEEDA">📌 Responsabilidades</h2>'
+    +'<h2 style="color:#854F0B;border-bottom:2px solid #FAEEDA">Responsabilidades</h2>'
     +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px">'
       +[
         {icon:'🧹',nome:'Organização do Laboratório',desc:'Bancadas, equipamentos e áreas comuns organizados e limpos.'},
@@ -4009,7 +4009,7 @@ function imprimirValores(){
         +'<div style="font-size:10px;color:#6b7280;line-height:1.5">'+r.desc+'</div>'
       +'</div>').join('')
     +'</div>'
-    +'<h2 style="color:#534AB7;border-bottom:2px solid #EEEDFE">🏛️ Pilares do Laboratório</h2>'
+    +'<h2 style="color:#534AB7;border-bottom:2px solid #EEEDFE">Pilares</h2>'
     +'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:24px">'
       +pilares.map(p=>'<div style="border:1px solid '+p.cor+'33;border-radius:10px;padding:12px;border-top:3px solid '+p.cor+'">'
         +'<div style="font-size:20px;margin-bottom:6px">'+p.icon+'</div>'
@@ -4303,7 +4303,7 @@ function exportarPDFNineBox(){
   const posicionados=colaboradores.filter(c=>c.status==='Ativo'&&posNB[c.id]&&posNB[c.id].desempenho).length;
   const dataHoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
 
-  const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Nine-Box · Lab Industrial</title>'
+  const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Nine-Box</title>'
     +'<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111827;background:#fff;padding:36px}'
     +'@media print{body{padding:0}.np{display:none!important}@page{margin:15mm;size:A4 landscape}}'
     +'</style></head><body>'
@@ -8963,7 +8963,7 @@ function gerarRelatorioCapacidade(){
   const dataHoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
 
   const html='<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">'
-    +'<title>Relatório de Capacidade · Lab Industrial</title>'
+    +'<title>Relatório de Capacidade</title>'
     +'<style>*{margin:0;padding:0;box-sizing:border-box}'
     +'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111827;background:#fff;padding:40px}'
     +'@media print{body{padding:0}.no-print{display:none!important}@page{margin:20mm;size:A4}}'
