@@ -2607,7 +2607,6 @@ function verAvaliacao(id){
   var respostas=a.respostas||(typeof window.respostas!=='undefined'?window.respostas:{});
   var pergNivel=a.perguntasSnapshot||a.perguntas||(typeof perguntas!=='undefined'&&perguntas[a.nivel]?perguntas[a.nivel]:(typeof window.pergNivel!=='undefined'?window.pergNivel:{}));
   var radarImg=a.radarImg||'';
-  try{var _rc=document.getElementById('radar-canvas');if(_rc&&_rc.toDataURL&&!radarImg){radarImg=_rc.toDataURL('image/png');}}catch(_){}
   function scoreColor(v){return v>=8?'#1D9E75':v>=5?'#D97706':'#DC2626';}
   function scoreBg(v){return v>=8?'#E1F5EE':v>=5?'#FEF3C7':'#FEE2E2';}
   function scoreLabel(v){return v>=8?'Excelente':v>=5?'Em desenvolvimento':'Crítico';}
@@ -2662,6 +2661,66 @@ function verAvaliacao(id){
         +'<button class="btn btn-purple btn-sm" onclick="quickAsk(\'Analise o perfil de '+c.nome.split(' ')[0]+' e sugira ações\');closeModal();go(\'agente\')">🤖 Analisar com IA</button>'
       +'</div>'
     +'</div>';
+
+  // Desenhar radar chart no canvas (sincrono) e gerar radarImg
+  (function(){
+    try{
+      var _cv=document.getElementById('radar-canvas');
+      if(!_cv||!_cv.getContext)return;
+      var _ctx=_cv.getContext('2d');
+      var _W=_cv.width,_H=_cv.height;
+      var _cx=_W/2,_cy=_H/2,_r=Math.min(_W,_H)/2-30;
+      var _labels=Object.keys(a.secaoMedias||{});
+      var _values=_labels.map(function(l){return a.secaoMedias[l]||0;});
+      var _N=_labels.length;
+      if(_N<3)return;
+      _ctx.clearRect(0,0,_W,_H);
+      _ctx.strokeStyle='#e5e7eb';_ctx.lineWidth=1;
+      for(var _g=1;_g<=5;_g++){
+        _ctx.beginPath();
+        for(var _i=0;_i<_N;_i++){
+          var _ang=Math.PI*2*_i/_N-Math.PI/2;
+          var _rr=_r*_g/5;
+          var _x=_cx+_rr*Math.cos(_ang),_y=_cy+_rr*Math.sin(_ang);
+          if(_i===0)_ctx.moveTo(_x,_y);else _ctx.lineTo(_x,_y);
+        }
+        _ctx.closePath();_ctx.stroke();
+      }
+      for(var _a2=0;_a2<_N;_a2++){
+        var _ang2=Math.PI*2*_a2/_N-Math.PI/2;
+        _ctx.beginPath();_ctx.moveTo(_cx,_cy);
+        _ctx.lineTo(_cx+_r*Math.cos(_ang2),_cy+_r*Math.sin(_ang2));
+        _ctx.stroke();
+      }
+      _ctx.beginPath();
+      for(var _d=0;_d<_N;_d++){
+        var _ang3=Math.PI*2*_d/_N-Math.PI/2;
+        var _val=Math.max(0,Math.min(10,_values[_d]));
+        var _rd=_r*_val/10;
+        var _xd=_cx+_rd*Math.cos(_ang3),_yd=_cy+_rd*Math.sin(_ang3);
+        if(_d===0)_ctx.moveTo(_xd,_yd);else _ctx.lineTo(_xd,_yd);
+      }
+      _ctx.closePath();
+      _ctx.fillStyle='rgba(29,158,117,.25)';_ctx.fill();
+      _ctx.strokeStyle='#1D9E75';_ctx.lineWidth=2;_ctx.stroke();
+      for(var _p=0;_p<_N;_p++){
+        var _ang4=Math.PI*2*_p/_N-Math.PI/2;
+        var _val2=Math.max(0,Math.min(10,_values[_p]));
+        var _rp=_r*_val2/10;
+        var _xp=_cx+_rp*Math.cos(_ang4),_yp=_cy+_rp*Math.sin(_ang4);
+        _ctx.beginPath();_ctx.arc(_xp,_yp,3,0,Math.PI*2);
+        _ctx.fillStyle='#1D9E75';_ctx.fill();
+      }
+      _ctx.fillStyle='#374151';_ctx.font='9px -apple-system,sans-serif';_ctx.textAlign='center';_ctx.textBaseline='middle';
+      for(var _k=0;_k<_N;_k++){
+        var _ang5=Math.PI*2*_k/_N-Math.PI/2;
+        var _xl=_cx+(_r+15)*Math.cos(_ang5),_yl=_cy+(_r+15)*Math.sin(_ang5);
+        var _lbl=_labels[_k].length>15?_labels[_k].slice(0,13)+'..':_labels[_k];
+        _ctx.fillText(_lbl,_xl,_yl);
+      }
+      radarImg=_cv.toDataURL('image/png');
+    }catch(_e){}
+  })();
 
   // Tabela macro de seções
   var macroRows=secoes.map(function(sv){
