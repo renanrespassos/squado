@@ -2259,6 +2259,11 @@ function renderHistoricoAval(search=''){
 }
 function verAvaliacao(id){
   var a=avaliacoes.find(function(x){return x.id===id;});if(!a)return;
+  var c=(typeof colaboradores!=='undefined'?colaboradores.find(function(x){return x.nome===a.colaborador;}):null)||{nome:a.colaborador,area:''};
+  var col=c;
+  var respostas=a.respostas||(typeof window.respostas!=='undefined'?window.respostas:{});
+  var pergNivel=a.perguntasSnapshot||a.perguntas||(typeof window.pergNivel!=='undefined'?window.pergNivel:{});
+  var radarImg=a.radarImg||'';
   var secoes=Object.entries(a.secaoMedias||{});
   function sc(v){return v>=8?'score-hi':v>=5?'score-mid':'score-lo';}
   var secoesGrid=secoes.map(function(sv){
