@@ -2796,7 +2796,7 @@ function verAvaliacao(id){
     // Cabeçalho
     +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:16px;border-bottom:3px solid #1D9E75">'
       +'<div>'
-        +'<div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Lab. Industrial · Gest\u00E3o de Pessoas</div>'
+        +'<div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Squado · Gest\u00E3o de Pessoas</div>'
         +'<h1 style="font-size:22px;font-weight:800;margin-bottom:3px">Avalia\u00E7\u00E3o de Desempenho</h1>'
         +'<div style="font-size:16px;color:#1D9E75;font-weight:700">'+a.colaborador+'</div>'
         +'<div style="font-size:12px;color:#888;margin-top:4px">'+a.nivel+(col.area?' \u00B7 '+col.area:'')+'</div>'
@@ -2842,7 +2842,7 @@ function verAvaliacao(id){
     // ── PÁGINA 2+: Detalhe por Seção ─────────────────────────
     +'<div style="page-break-before:always"></div>'
     +'<div style="margin-bottom:18px;padding-bottom:10px;border-bottom:2px solid #1D9E75">'
-      +'<div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Lab. Industrial · Avalia\u00E7\u00E3o de Desempenho</div>'
+      +'<div style="font-size:9px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Squado · Avalia\u00E7\u00E3o de Desempenho</div>'
       +'<h2 style="font-size:18px;font-weight:800">Detalhe por Pergunta \u00B7 '+a.colaborador+'</h2>'
       +'<div style="font-size:11px;color:#888;margin-top:2px">'+a.data+(a.avaliador?' · Avaliador: '+a.avaliador:'')+' · Nível: '+a.nivel+'</div>'
     +'</div>'
@@ -5073,7 +5073,7 @@ function abrirConfigGestor(){
       +'<div class="field-group form-full"><div class="field-label">🔗 URL do sistema (para incluir nos envios)</div>'
         +'<input id="gcfg-url" value="'+(g.urlSistema||'')+'" placeholder="http://localhost:3000/gestao_pessoas_v6.html"/></div>'
       +'<div class="field-group form-full"><div class="field-label">✍️ Assinatura automática nas mensagens</div>'
-        +'<textarea id="gcfg-ass" rows="3" placeholder="Renan Escobar&#10;Coordenador — Lab. Industrial">'+(g.assinatura||'')+'</textarea></div>'
+        +'<textarea id="gcfg-ass" rows="3" placeholder="Renan Escobar&#10;Coordenador — Squado">'+(g.assinatura||'')+'</textarea></div>'
       +'<div class="field-group"><div class="field-label">Saudação inicial</div>'
         +'<input id="gcfg-saud" value="'+(g.saudacao||'Olá')+'" placeholder="Olá, Bom dia, Prezado..."/></div>'
     +'</div>'
