@@ -2632,6 +2632,7 @@ function verAvaliacao(id){
       +(a.oportunidades?'<div class="field-group form-full"><div class="field-label" style="color:#854F0B">\uD83D\uDD27 Oportunidades</div><div style="font-size:12px;padding:8px;background:#FAEEDA;border-radius:7px">'+a.oportunidades+'</div></div>':'')
     +'</div>';
   }
+  document.getElementById('modal').style.display='flex';
   document.getElementById('modal-title').textContent='Avalia\u00E7\u00E3o \u00B7 '+a.colaborador;
   document.getElementById('modal-box').classList.add('modal-lg');
   document.getElementById('modal-body').innerHTML=
