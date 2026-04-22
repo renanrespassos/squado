@@ -2607,6 +2607,12 @@ function verAvaliacao(id){
   var respostas=a.respostas||(typeof window.respostas!=='undefined'?window.respostas:{});
   var pergNivel=a.perguntasSnapshot||a.perguntas||(typeof window.pergNivel!=='undefined'?window.pergNivel:{});
   var radarImg=a.radarImg||'';
+  function scoreColor(v){return v>=8?'#1D9E75':v>=5?'#D97706':'#DC2626';}
+  function scoreBg(v){return v>=8?'#E1F5EE':v>=5?'#FEF3C7':'#FEE2E2';}
+  function scoreLabel(v){return v>=8?'Excelente':v>=5?'Em desenvolvimento':'Crítico';}
+  function barHtml(v,w){w=w||'100px';return '<div style="display:inline-block;width:'+w+';height:8px;background:#eee;border-radius:4px;overflow:hidden;vertical-align:middle"><div style="width:'+(v*10)+'%;height:100%;background:'+scoreColor(v)+'"></div></div>';}
+  if(typeof window.gerarPDFAvaliacao!=='function'){window.gerarPDFAvaliacao=function(x){verAvaliacao(x);};}
+  if(typeof window.editarAvaliacao!=='function'){window.editarAvaliacao=function(x){alert('Edição em construção');};}
   var secoes=Object.entries(a.secaoMedias||{});
   function sc(v){return v>=8?'score-hi':v>=5?'score-mid':'score-lo';}
   var secoesGrid=secoes.map(function(sv){
