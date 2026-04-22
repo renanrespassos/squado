@@ -2605,8 +2605,9 @@ function verAvaliacao(id){
   var c=(typeof colaboradores!=='undefined'?colaboradores.find(function(x){return x.nome===a.colaborador;}):null)||{nome:a.colaborador,area:''};
   var col=c;
   var respostas=a.respostas||(typeof window.respostas!=='undefined'?window.respostas:{});
-  var pergNivel=a.perguntasSnapshot||a.perguntas||(typeof window.pergNivel!=='undefined'?window.pergNivel:{});
+  var pergNivel=a.perguntasSnapshot||a.perguntas||(typeof perguntas!=='undefined'&&perguntas[a.nivel]?perguntas[a.nivel]:(typeof window.pergNivel!=='undefined'?window.pergNivel:{}));
   var radarImg=a.radarImg||'';
+  try{var _rc=document.getElementById('radar-canvas');if(_rc&&_rc.toDataURL&&!radarImg){radarImg=_rc.toDataURL('image/png');}}catch(_){}
   function scoreColor(v){return v>=8?'#1D9E75':v>=5?'#D97706':'#DC2626';}
   function scoreBg(v){return v>=8?'#E1F5EE':v>=5?'#FEF3C7':'#FEE2E2';}
   function scoreLabel(v){return v>=8?'Excelente':v>=5?'Em desenvolvimento':'Crítico';}
