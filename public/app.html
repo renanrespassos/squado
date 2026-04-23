@@ -5509,7 +5509,7 @@ function delMeta(id){
   const meta = metas.find(x=>x.id===id);
   metas=metas.filter(function(x){return x.id!==id;});
   saveAll();
-  if(meta&&meta.dbId) apiCall('DELETE','/api/metas/'+meta.dbId).catch(e=>console.warn('del meta err',e));
+  var _metaDbId=(meta&&(meta.dbId||meta.id));if(_metaDbId) apiCall('DELETE','/api/metas/'+_metaDbId).catch(e=>console.warn('del meta err',e));
   closeModal();toast('Excluído!');render(currentPage);
 }
 
@@ -8354,7 +8354,7 @@ async function squadoCarregarDaNuvem() {
       if(Array.isArray(metasRows) && metasRows.length > 0){
         // Converter formato banco → formato app
         const metasApp = metasRows.map(m=>({
-          id:m.id, tipo:m.tipo, titulo:m.titulo, objetivo:m.objetivo,
+          id:m.id, dbId:m.id, tipo:m.tipo, titulo:m.titulo, objetivo:m.objetivo,
           area:m.area, periodo:m.periodo,
           keyResults:typeof m.key_results==='string'?JSON.parse(m.key_results):m.key_results||[],
           status:m.status, progresso:m.progresso, prazo:m.prazo,
