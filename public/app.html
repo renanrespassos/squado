@@ -8570,18 +8570,7 @@ async function squadoMigrarDados() {
       } catch(e) { erros++; }
     }
 
-    // 2. Avaliações
-    for (const a of avaliacoes) {
-      try {
-        await apiCall('POST', '/api/avaliacoes', {
-          colaborador_id: a.colId, periodo: a.periodo,
-          notas: a.notas, media: a.mediaGeral
-        });
-        ok++;
-      } catch(e) { erros++; }
-    }
-
-    // 3. Metas
+    // 2. Metas
     for (const m of metas) {
       try {
         await apiCall('POST', '/api/metas', {
@@ -8592,7 +8581,7 @@ async function squadoMigrarDados() {
       } catch(e) { erros++; }
     }
 
-    // 4. PDIs
+    // 3. PDIs
     const pdisLocal = getPDIs();
     for (const p of pdisLocal) {
       try {
@@ -8604,17 +8593,8 @@ async function squadoMigrarDados() {
       } catch(e) { erros++; }
     }
 
-    // 5. Notas
-    for (const n of notas) {
-      try {
-        await apiCall('POST', '/api/notas', {
-          colaborador_id: n.colId, conteudo: n.conteudo, tipo: n.tipo
-        });
-        ok++;
-      } catch(e) { erros++; }
-    }
-
-    // 6. Configurações (valores, competências, níveis, organograma, gestor, IA)
+    // 4. Configurações (valores, competências, níveis, organograma, gestor, IA,
+    //                   avaliacoes, notas e funcoes vão tudo via snapshot_*)
     await apiCall('PUT', '/api/config', {
       valores:         ls('valores_v1', null),
       matriz_comp:     ls('matriz_comp_v1', null),
