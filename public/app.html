@@ -3054,7 +3054,7 @@ function salvarPerguntas(){saveAll();toast('Perguntas salvas!')}
 // PDI — PLANO DE DESENVOLVIMENTO INDIVIDUAL
 // ═══════════════════════════════════════════════════════════════
 function getPDIs(){ return ls('pdis_v1',[]); }
-function savePDIs(arr){ lss('pdis_v1',arr); }
+function savePDIs(arr){ lss('pdis_v1',arr); if(typeof agendarSync==='function')agendarSync(); }
 
 function renderPDI(search){
   search=search||'';
@@ -3586,7 +3586,7 @@ function gerarPDFPDI(pdiId){
 function getValores(){
   return ls('valores_v1',null);
 }
-function saveValores(obj){lss('valores_v1',obj);}
+function saveValores(obj){lss('valores_v1',obj);if(typeof agendarSync==='function')agendarSync();}
 
 // ══════════════════════════════════════════════════
 // GESTÃO DE ÁREAS
@@ -4730,7 +4730,7 @@ function getMatrizCompetencias(){
   const saved=ls('matriz_comp_v1',null);
   return saved||MATRIZ_COMPETENCIAS;
 }
-function saveMatrizCompetencias(m){lss('matriz_comp_v1',m);}
+function saveMatrizCompetencias(m){lss('matriz_comp_v1',m);if(typeof agendarSync==='function')agendarSync();}
 
 function renderCompetencias(){
   const mc=getMatrizCompetencias();
