@@ -4863,9 +4863,10 @@ function editarCompetencias(){
   const sel=window._compSel||'assistente';
   const perfil=mc.perfis.find(p=>p.id===sel)||mc.perfis[0];
 
-  document.getElementById('modal-title').textContent='✏️ Editar Competências · '+perfil.cargo;
+  document.getElementById('modal-title').textContent='Editar Competencias · '+perfil.cargo;
   document.getElementById('modal-box').classList.add('modal-lg');
 
+  // Helper: seção de competências (nome + tipo)
   function secaoHtml(titulo,itens,dataKey){
     return '<div style="margin-bottom:14px">'
       +'<div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">'+titulo+'</div>'
@@ -4876,45 +4877,117 @@ function editarCompetencias(){
             +'<option'+(c.tipo==='Comportamental'?' selected':'')+'>Comportamental</option>'
             +'<option'+(c.tipo==='Técnica'?' selected':'')+'>Técnica</option>'
           +'</select>'
-          +'<button class="btn btn-xs btn-danger" data-sec="'+dataKey+'" data-idx="'+i+'" onclick="removerItemComp(this)">×</button>'
+          +'<button class="btn btn-xs btn-danger" onclick="this.closest(\'div[style*=grid]\').remove()">×</button>'
         +'</div>').join('')
       +'</div>'
-      +'<button class="btn btn-xs" style="margin-top:6px" data-sec="'+dataKey+'" onclick="adicionarItemComp(this)">+ Adicionar</button>'
+      +'<button class="btn btn-xs" style="margin-top:6px" onclick="adicionarItemComp(\''+dataKey+'\')">+ Adicionar</button>'
     +'</div>';
   }
 
+  // Helper: lista de textos simples (entregas, escopo, niveis)
+  function listaHtml(titulo,itens,dataKey,placeholder){
+    return '<div style="margin-bottom:14px">'
+      +'<div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">'+titulo+'</div>'
+      +'<div id="comp-edit-'+dataKey+'" style="display:flex;flex-direction:column;gap:6px">'
+        +(itens||[]).map((t,i)=>'<div style="display:flex;gap:6px;align-items:center">'
+          +'<input value="'+(t||'').replace(/"/g,'&quot;')+'" data-lista="'+dataKey+'" style="font-size:12px;flex:1" placeholder="'+placeholder+'"/>'
+          +'<button class="btn btn-xs btn-danger" onclick="this.parentElement.remove()">×</button>'
+        +'</div>').join('')
+      +'</div>'
+      +'<button class="btn btn-xs" style="margin-top:6px" onclick="adicionarItemLista(\''+dataKey+'\',\''+placeholder+'\')">+ Adicionar</button>'
+    +'</div>';
+  }
+
+  // Tabs dos perfis
+  var tabsHtml='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">';
+  mc.perfis.forEach(function(p){
+    var active=p.id===sel?'background:var(--primary);color:#fff':'background:var(--bg2);color:var(--txt)';
+    tabsHtml+='<button class="btn btn-xs" style="'+active+'" onclick="window._compSel=\''+p.id+'\';editarCompetencias()">'+p.cargo+'</button>';
+  });
+  tabsHtml+='<button class="btn btn-xs" style="background:#E1F5EE;color:#0F6E56" onclick="criarNovoPerfil()">+ Novo Perfil</button></div>';
+
   document.getElementById('modal-body').innerHTML=
     '<div style="max-height:65vh;overflow-y:auto;padding-right:4px">'
+      +tabsHtml
+      // Dados do perfil
+      +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">Dados do Perfil</div>'
+      +'<div style="margin-bottom:14px"><div class="field-label">Nome do Cargo</div><input id="comp-edit-cargo" value="'+perfil.cargo.replace(/"/g,'&quot;')+'" style="font-size:12px;width:100%"/></div>'
+      // Escolaridade
+      +'<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">ESCOLARIDADE</div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+          +'<div><div class="field-label">Basica</div><input id="comp-edit-esc-basica" value="'+(perfil.escolaridade&&perfil.escolaridade.basica||'').replace(/"/g,'&quot;')+'" style="font-size:12px;width:100%"/></div>'
+          +'<div><div class="field-label">Excelencia</div><input id="comp-edit-esc-excelencia" value="'+(perfil.escolaridade&&perfil.escolaridade.excelencia||'').replace(/"/g,'&quot;')+'" style="font-size:12px;width:100%"/></div>'
+        +'</div></div>'
+      // Níveis aplicáveis
+      +listaHtml('Niveis Aplicaveis',perfil.niveis,'niveis','Ex: Assistente I')
+      +'<div style="border-top:0.5px solid var(--border);margin:14px 0"></div>'
+      // Escopo do grupo
+      +listaHtml('Escopo do Grupo',perfil.escopo,'escopo','Descreva uma responsabilidade do escopo')
+      // Entregas do cargo
+      +listaHtml('Entregas do Cargo',perfil.entregas,'entregas','Descreva uma entrega esperada')
+      +'<div style="border-top:0.5px solid var(--border);margin:14px 0"></div>'
       // Essenciais
-      +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">💎 Competências Essenciais</div>'
+      +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">Competencias Essenciais</div>'
       +secaoHtml('Essenciais (todos os cargos)',mc.essenciais,'essenciais')
       +'<div style="border-top:0.5px solid var(--border);margin:14px 0"></div>'
       // Grupo Ocupacional
-      +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">🏆 Grupo Ocupacional — '+perfil.cargo+'</div>'
-      +secaoHtml('Competências do Grupo',perfil.compGrupo,'compGrupo')
+      +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">Grupo Ocupacional — '+perfil.cargo+'</div>'
+      +secaoHtml('Competencias do Grupo',perfil.compGrupo||[],'compGrupo')
       +'<div style="border-top:0.5px solid var(--border);margin:14px 0"></div>'
       // Específicas
-      +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">🔧 Específicas — '+perfil.cargo+'</div>'
-      +secaoHtml('Competências Específicas',perfil.compEspecificas,'compEspecificas')
+      +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">Especificas — '+perfil.cargo+'</div>'
+      +secaoHtml('Competencias Especificas',perfil.compEspecificas||[],'compEspecificas')
     +'</div>'
-    +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border)">'
-      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
-      +'<button class="btn btn-primary" onclick="salvarEdicaoCompetencias(\''+sel+'\')">💾 Salvar</button>'
+    +'<div style="display:flex;gap:8px;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border)">'
+      +(mc.perfis.length>1?'<button class="btn btn-sm" style="border-color:#DC2626;color:#DC2626" onclick="excluirPerfilComp(\''+sel+'\')">Excluir Perfil</button>':'<div></div>')
+      +'<div style="display:flex;gap:8px"><button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicaoCompetencias(\''+sel+'\')">Salvar</button></div>'
     +'</div>';
   document.getElementById('modal').style.display='flex';
 }
 
-function adicionarItemComp(btn){
-  const sec=btn.dataset.sec;
-  const container=document.getElementById('comp-edit-'+sec);
+function adicionarItemComp(dataKey){
+  var container=document.getElementById('comp-edit-'+dataKey);
   if(!container)return;
-  const idx=container.querySelectorAll('[data-sec]').length/3; // 3 inputs por item
-  const div=document.createElement('div');
+  var idx=container.children.length;
+  var div=document.createElement('div');
   div.style.cssText='display:grid;grid-template-columns:2fr 1fr auto;gap:6px;align-items:center';
-  div.innerHTML='<input placeholder="Nome da competência" data-sec="'+sec+'" data-idx="'+idx+'" data-field="nome" style="font-size:12px"/>'
-    +'<select data-sec="'+sec+'" data-idx="'+idx+'" data-field="tipo" style="font-size:12px"><option>Comportamental</option><option>Técnica</option></select>'
-    +'<button class="btn btn-xs btn-danger" data-sec="'+sec+'" data-idx="'+idx+'" onclick="removerItemComp(this)">×</button>';
+  div.innerHTML='<input placeholder="Nome da competencia" data-sec="'+dataKey+'" data-idx="'+idx+'" data-field="nome" style="font-size:12px"/>'
+    +'<select data-sec="'+dataKey+'" data-idx="'+idx+'" data-field="tipo" style="font-size:12px"><option>Comportamental</option><option>Técnica</option></select>'
+    +'<button class="btn btn-xs btn-danger" onclick="this.closest(\'div[style*=grid]\').remove()">×</button>';
   container.appendChild(div);
+}
+
+function adicionarItemLista(dataKey,placeholder){
+  var container=document.getElementById('comp-edit-'+dataKey);
+  if(!container)return;
+  var div=document.createElement('div');
+  div.style.cssText='display:flex;gap:6px;align-items:center';
+  div.innerHTML='<input data-lista="'+dataKey+'" style="font-size:12px;flex:1" placeholder="'+placeholder+'"/>'
+    +'<button class="btn btn-xs btn-danger" onclick="this.parentElement.remove()">×</button>';
+  container.appendChild(div);
+}
+
+function criarNovoPerfil(){
+  var nome=prompt('Nome do novo perfil (ex: Diretor, Gerente):');
+  if(!nome||!nome.trim())return;
+  nome=nome.trim();
+  var mc=JSON.parse(JSON.stringify(getMatrizCompetencias()));
+  var id=nome.toLowerCase().replace(/[^a-z0-9]/g,'_');
+  if(mc.perfis.find(function(p){return p.id===id})){alert('Perfil com esse nome ja existe.');return;}
+  mc.perfis.push({id:id,cargo:nome,niveis:[],escolaridade:{basica:'',excelencia:''},escopo:[],entregas:[],compGrupo:[],compEspecificas:[]});
+  saveMatrizCompetencias(mc);
+  window._compSel=id;
+  editarCompetencias();
+  toast('Perfil "'+nome+'" criado!');
+}
+
+function excluirPerfilComp(perfilId){
+  if(!confirm('Excluir este perfil? As competencias e dados serao perdidos.'))return;
+  var mc=JSON.parse(JSON.stringify(getMatrizCompetencias()));
+  mc.perfis=mc.perfis.filter(function(p){return p.id!==perfilId});
+  saveMatrizCompetencias(mc);
+  window._compSel=mc.perfis.length?mc.perfis[0].id:'';
+  closeModal();toast('Perfil excluido!');render('competencias');
 }
 
 function removerItemComp(btn){
@@ -4940,6 +5013,15 @@ function salvarEdicaoCompetencias(perfilId){
     return result;
   }
 
+  function lerLista(key){
+    const container=document.getElementById('comp-edit-'+key);
+    if(!container)return null;
+    const inputs=container.querySelectorAll('[data-lista="'+key+'"]');
+    const result=[];
+    inputs.forEach(function(inp){var v=(inp.value||'').trim();if(v)result.push(v);});
+    return result;
+  }
+
   // Salvar essenciais
   const ess=lerSecao('essenciais');
   if(ess)mc.essenciais=ess;
@@ -4947,15 +5029,27 @@ function salvarEdicaoCompetencias(perfilId){
   // Salvar no perfil correto
   const pi=mc.perfis.findIndex(p=>p.id===perfilId);
   if(pi>=0){
+    // Competências
     const grp=lerSecao('compGrupo');
     const esp=lerSecao('compEspecificas');
     if(grp)mc.perfis[pi].compGrupo=grp;
     if(esp)mc.perfis[pi].compEspecificas=esp;
+    // Cargo
+    var cargoEl=document.getElementById('comp-edit-cargo');
+    if(cargoEl&&cargoEl.value.trim())mc.perfis[pi].cargo=cargoEl.value.trim();
+    // Escolaridade
+    var escBas=document.getElementById('comp-edit-esc-basica');
+    var escExc=document.getElementById('comp-edit-esc-excelencia');
+    mc.perfis[pi].escolaridade={basica:escBas?escBas.value:'',excelencia:escExc?escExc.value:''};
+    // Listas
+    var niv=lerLista('niveis');if(niv)mc.perfis[pi].niveis=niv;
+    var esc=lerLista('escopo');if(esc)mc.perfis[pi].escopo=esc;
+    var ent=lerLista('entregas');if(ent)mc.perfis[pi].entregas=ent;
   }
 
   saveMatrizCompetencias(mc);
   closeModal();
-  toast('Competências salvas! ✓');
+  toast('Competencias salvas!');
   render('competencias');
 }
 
