@@ -9486,10 +9486,13 @@ function squadoEntrar(user) {
   // Carregar dados da nuvem após login — mostrar loading até terminar
   const _loadingEl = document.getElementById('squado-loading-overlay');
   if(_loadingEl){ _loadingEl.style.display = 'flex'; }
+  // Safety timeout: se loading travar, dismiss após 15s
+  const _safetyTimeout = setTimeout(()=>{ if(_loadingEl && _loadingEl.style.display !== 'none'){ _loadingEl.style.display = 'none'; render(currentPage||'dashboard'); console.warn('[Squado] Loading timeout 15s — forçando dismiss'); }}, 15000);
   // requestAnimationFrame garante que o browser repinta o overlay antes de iniciar o fetch
   requestAnimationFrame(()=>{
     const _t0 = Date.now();
     squadoCarregarDaNuvem().finally(()=>{
+      clearTimeout(_safetyTimeout);
       // Mínimo 600ms de loading para evitar flash
       const elapsed = Date.now() - _t0;
       const delay = Math.max(0, 600 - elapsed);
