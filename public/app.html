@@ -2369,8 +2369,10 @@ async function squadoRegistro() {
 }
 
 function squadoEntrar(user) {
-  document.getElementById('squado-auth-overlay').style.display = 'none';
-  document.getElementById('squado-user-badge').style.display = 'flex';
+  const _authOv = document.getElementById('squado-auth-overlay');
+  if(_authOv) _authOv.style.display = 'none';
+  const _userBadge = document.getElementById('squado-user-badge');
+  if(_userBadge) _userBadge.style.display = 'flex';
   document.getElementById('squado-user-nome').textContent = (user.nome||'').split(' ')[0];
   document.getElementById('squado-menu-email').textContent = user.email || '';
   const diasRestantes = user.trialExpira ? Math.max(0, Math.ceil((new Date(user.trialExpira) - new Date()) / 86400000)) : 0;
