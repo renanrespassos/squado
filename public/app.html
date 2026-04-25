@@ -7694,16 +7694,6 @@ function saveCol(id){
   if(id){const i=colaboradores.findIndex(x=>x.id===id);if(i>=0)colaboradores[i]=obj;}
   else colaboradores.push(obj);
   saveAll();closeModal();toast('Colaborador salvo!');render(currentPage);
-  // Sync com API
-  const token=squadoGetToken();
-  if(token){
-    const payload={nome,cargo:status,area,nivel,email:emailQuick||perfilAtual.email||'',whatsapp:celQuick||perfilAtual.celular||'',ativo:status!=='Desligado'};
-    if(id&&existente&&existente._apiId){
-      fetch(SQUADO_API+'/api/colaboradores/'+existente._apiId,{method:'PUT',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(()=>{});
-    } else if(!id||!existente){
-      fetch(SQUADO_API+'/api/colaboradores',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(r=>r.json()).then(d=>{if(d.id){const c=colaboradores.find(x=>x.id===obj.id);if(c)c._apiId=d.id;saveAll();}}).catch(()=>{});
-    }
-  }
 }
 
 function delCol(id){
@@ -7753,11 +7743,6 @@ function desligarCol(id){
   saveAll();closeModal();
   toast(nomeCol+' desligado. Histórico mantido ✓');
   render(currentPage);
-  // Sync com API
-  const token=squadoGetToken();
-  if(token&&col._apiId){
-    fetch(SQUADO_API+'/api/colaboradores/'+col._apiId,{method:'PUT',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({nome:col.nome,cargo:col.status,area:col.area||'',nivel:col.nivel||'',email:(col.perfil&&col.perfil.email)||'',whatsapp:(col.perfil&&col.perfil.celular)||'',ativo:false})}).catch(()=>{});
-  }
 }
 
 function demitirCol(id){
@@ -7768,11 +7753,6 @@ function demitirCol(id){
   if(!col.historico) col.historico = [];
   col.historico.push({tipo:'Desligamento', data: dataHoje, obs:'Demitido pela empresa', registradoPor: squadoGetUser()?.email||''});
   saveAll();
-  // Atualizar na API
-  const token = squadoGetToken();
-  if(token && col._apiId){
-    fetch(SQUADO_API+'/api/colaboradores/'+col._apiId,{method:'PUT',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({ativo:false, status:'Desligado'})}).catch(()=>{});
-  }
   closeModal();
   toast('Colaborador desligado e histórico registrado.');
   render(currentPage);
@@ -7786,10 +7766,6 @@ function solicitouDemissaoCol(id){
   if(!col.historico) col.historico = [];
   col.historico.push({tipo:'Desligamento', data: dataHoje, obs:'Pedido de demissão — solicitado pelo colaborador', registradoPor: squadoGetUser()?.email||''});
   saveAll();
-  const token = squadoGetToken();
-  if(token && col._apiId){
-    fetch(SQUADO_API+'/api/colaboradores/'+col._apiId,{method:'PUT',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({ativo:false, status:'Desligado'})}).catch(()=>{});
-  }
   closeModal();
   toast('Pedido de demissão registrado no histórico.');
   render(currentPage);
@@ -7831,11 +7807,6 @@ function excluirColPermanente(id){
   const metas=ls('metas_v2',[]).filter(m=>m.colId!==id);
   lss('metas_v2',metas);
   saveAll();closeModal();toast('Excluído permanentemente.');render(currentPage);
-  // Sync com API
-  const token=squadoGetToken();
-  if(token&&col._apiId){
-    fetch(SQUADO_API+'/api/colaboradores/'+col._apiId,{method:'DELETE',headers:{'Authorization':'Bearer '+token}}).catch(()=>{});
-  }
 }
 
 
@@ -9195,19 +9166,7 @@ async function squadoMigrarDados() {
   try {
     let ok = 0, erros = 0;
 
-    // 1. Colaboradores
-    for (const c of colaboradores) {
-      try {
-        await apiCall('POST', '/api/colaboradores', {
-          nome: c.nome, cargo: c.cargo, area: c.area, nivel: c.nivel,
-          email: c.email, whatsapp: c.whatsapp, data_admissao: c.dataAdmissao,
-          ativo: c.status !== 'Desligado', historico: c.historico || [], obs: c.obs || ''
-        });
-        ok++;
-      } catch(e) { erros++; }
-    }
-
-    // 2. Metas
+    // 1. Metas
     for (const m of metas) {
       try {
         await apiCall('POST', '/api/metas', {
