@@ -5843,13 +5843,14 @@ function getIAConfig(){
       return cfg;
     }catch{} 
   }
-  return { mode:'ollama', ollamaUrl: DEFAULT_OLLAMA_URL, ollamaModel: DEFAULT_OLLAMA_MODEL, remoteUrl:'', remoteKey:'', remoteModel:'' };
+  return { mode:'cloud', ollamaUrl: DEFAULT_OLLAMA_URL, ollamaModel: DEFAULT_OLLAMA_MODEL, remoteUrl:'', remoteKey:'', remoteModel:'' };
 }
 function saveIAConfig(cfg){ localStorage.setItem('gp8_iaconfig', JSON.stringify(cfg)); }
 function getActiveCfg(){ return getIAConfig(); }
 
 function checkApiKey(){
   const cfg = getIAConfig();
+  if(cfg.mode==='cloud') return true; // Cloud usa backend, sem config necessária
   const ok = cfg.mode==='ollama' ? !!(cfg.ollamaUrl) : !!(cfg.remoteUrl && cfg.remoteKey);
   if(!ok){ showApiKeyModal(); return false; }
   return true;
@@ -5859,6 +5860,25 @@ function checkApiKey(){
 async function callClaude(messages, maxTokens=1000){
   if(!checkApiKey()) throw new Error('NO_API_KEY');
   const cfg = getIAConfig();
+
+  // ── Modo Cloud: proxy via backend Squado ──
+  if(cfg.mode==='cloud'){
+    const token=squadoGetToken();
+    if(!token) throw new Error('Faça login para usar a IA.');
+    const resp=await fetch(SQUADO_API+'/api/ai/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({messages:messages,max_tokens:maxTokens})
+    });
+    if(!resp.ok){
+      const err=await resp.json().catch(()=>({}));
+      throw new Error(err.erro||'Erro '+resp.status+' ao consultar IA.');
+    }
+    const data=await resp.json();
+    return data.content||'';
+  }
+
+  // ── Modo Ollama / Remoto (legado) ──
   const isOllama = cfg.mode === 'ollama';
   const baseUrl = isOllama
     ? (cfg.ollamaUrl||DEFAULT_OLLAMA_URL).replace(/\/+$/,'')
@@ -5867,7 +5887,6 @@ async function callClaude(messages, maxTokens=1000){
     ? (cfg.ollamaModel||DEFAULT_OLLAMA_MODEL)
     : (cfg.remoteModel||DEFAULT_OLLAMA_MODEL);
 
-  // Usar formato OpenAI-compat (/v1/chat/completions) — suportado nativamente pelo Ollama
   const endpoint = `${baseUrl}/v1/chat/completions`;
   const headers  = { 'Content-Type': 'application/json' };
   if(!isOllama && cfg.remoteKey) headers['Authorization'] = `Bearer ${cfg.remoteKey}`;
@@ -5886,7 +5905,6 @@ async function callClaude(messages, maxTokens=1000){
       })
     });
   } catch(netErr){
-    // TypeError: failed to fetch — servidor não acessível ou CORS bloqueando
     throw new Error(
       isOllama
         ? `Sem conexão com o Ollama em ${baseUrl}.\n\nVerifique:\n1. O Ollama está rodando? (ollama serve)\n2. Rode com: OLLAMA_ORIGINS=* ollama serve\n3. Ou abra o HTML via servidor local (npx serve .)`
@@ -5899,7 +5917,6 @@ async function callClaude(messages, maxTokens=1000){
     try { const e = await resp.json(); errMsg = (e.error&&e.error.message)||JSON.stringify(e); } catch{}
     if(resp.status===401) throw new Error('Credenciais inválidas. Verifique a API Key/token.');
     if(resp.status===404){
-      // Tentar buscar modelos disponíveis para mostrar opções
       try{
         const tr=await fetch(baseUrl+'/v1/models');
         if(tr.ok){const td=await tr.json();const avail=(td.data||td.models||[]).map(m=>m.id||m.name);
@@ -5912,42 +5929,54 @@ async function callClaude(messages, maxTokens=1000){
   }
 
   const data = await resp.json();
-  // Formato OpenAI: choices[0].message.content
   return (data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content)
-      || (data.message&&data.message.content)   // Ollama nativo /api/chat fallback
-      || data.response           // Ollama nativo /api/generate fallback
+      || (data.message&&data.message.content)
+      || data.response
       || '';
 }
 
 // ─── Modal de configuração ────────────────────────────────────
 function showApiKeyModal(){
   const cfg = getIAConfig();
-  document.getElementById('modal-title').textContent = '⚙️ Configurar IA';
+  document.getElementById('modal-title').textContent = 'Configurar IA';
   document.getElementById('modal-box').classList.remove('modal-lg');
   document.getElementById('modal-body').innerHTML = `
     <div style="font-size:12px;color:var(--txt2);line-height:1.6;margin-bottom:14px">
-      Configure qual backend de IA será usado pelo Agente, Bloco de Notas e Avaliações.
-      O <strong>Ollama local</strong> é gratuito e roda offline — recomendado para começar.
+      Configure qual backend de IA sera usado pelo Agente, Bloco de Notas e Avaliações.
     </div>
 
     <!-- TABS de modo -->
     <div style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;overflow:hidden;margin-bottom:16px">
-      <button id="tab-ollama" onclick="switchIATab('ollama')"
+      <button id="tab-cloud" onclick="switchIATab('cloud')"
         style="flex:1;padding:8px;border:none;cursor:pointer;font-size:12.5px;font-weight:600;transition:all .15s;
+               background:${cfg.mode==='cloud'?'var(--green)':'var(--bg2)'};color:${cfg.mode==='cloud'?'#fff':'var(--txt2)'}">
+        ☁️ Nuvem
+      </button>
+      <button id="tab-ollama" onclick="switchIATab('ollama')"
+        style="flex:1;padding:8px;border:none;border-left:0.5px solid var(--border2);cursor:pointer;font-size:12.5px;font-weight:600;transition:all .15s;
                background:${cfg.mode==='ollama'?'var(--green)':'var(--bg2)'};color:${cfg.mode==='ollama'?'#fff':'var(--txt2)'}">
-        🖥️ Ollama Local
+        Ollama Local
       </button>
       <button id="tab-remote" onclick="switchIATab('remote')"
         style="flex:1;padding:8px;border:none;border-left:0.5px solid var(--border2);cursor:pointer;font-size:12.5px;font-weight:600;transition:all .15s;
                background:${cfg.mode==='remote'?'var(--green)':'var(--bg2)'};color:${cfg.mode==='remote'?'#fff':'var(--txt2)'}">
-        🌐 Servidor Remoto
+        Servidor Remoto
       </button>
+    </div>
+
+    <!-- Cloud -->
+    <div id="panel-cloud" style="display:${cfg.mode==='cloud'?'block':'none'}">
+      <div style="background:var(--green-bg);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:12px;color:var(--green2);line-height:1.6">
+        <strong>IA na Nuvem (recomendado)</strong><br>
+        A IA roda nos servidores do Squado. Nenhuma configuracao necessaria.<br>
+        Modelo: Llama 3.1 8B — rapido e otimizado para gestao de equipes.
+      </div>
     </div>
 
     <!-- Ollama -->
     <div id="panel-ollama" style="display:${cfg.mode==='ollama'?'block':'none'}">
       <div style="background:var(--green-bg);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:12px;color:var(--green2);line-height:1.6">
-        <strong>Instalação do Ollama:</strong><br>
+        <strong>Instalacao do Ollama:</strong><br>
         1. Acesse <a href="https://ollama.com/download" target="_blank" style="color:var(--green2)">ollama.com/download</a> e instale<br>
         2. Baixe um modelo: <code style="background:#d1fae5;padding:1px 5px;border-radius:4px">ollama pull gemma3:4b</code><br>
         3. Suba com CORS liberado:<br>
@@ -5960,51 +5989,39 @@ function showApiKeyModal(){
           <input id="ia-ollama-url" value="${cfg.ollamaUrl||DEFAULT_OLLAMA_URL}" placeholder="http://localhost:11434"/>
         </div>
         <div class="field-group form-full">
-          <div class="field-label">Modelo <span style="font-size:10px;color:var(--txt3);font-weight:400">(recomendado: gemma3:1b para Macs com pouca RAM)</span></div>
+          <div class="field-label">Modelo</div>
           <select id="ia-ollama-model">
             ${[
-              {v:'llama3.2:1b', l:'llama3.2:1b — ✓ Ultra leve (~1GB)'},
-              {v:'qwen2.5:0.5b',l:'qwen2.5:0.5b — ✓ Mínimo (~400MB)'},
+              {v:'llama3.2:1b', l:'llama3.2:1b — Ultra leve (~1GB)'},
+              {v:'qwen2.5:0.5b',l:'qwen2.5:0.5b — Minimo (~400MB)'},
               {v:'gemma3:1b',   l:'gemma3:1b — Leve (~1.5GB)'},
-              {v:'gemma3:4b',   l:'gemma3:4b — Médio (~4GB RAM)'},
-              {v:'gemma3:12b',  l:'gemma3:12b — Pesado (8GB+)'},
-              {v:'llama3.2',    l:'llama3.2'},
-              {v:'llama3.1',    l:'llama3.1'},
-              {v:'mistral',     l:'mistral'},
-              {v:'qwen2.5',     l:'qwen2.5'},
-              {v:'deepseek-r1:8b',l:'deepseek-r1:8b'},
+              {v:'gemma3:4b',   l:'gemma3:4b — Medio (~4GB RAM)'},
             ].map(m=>`<option value="${m.v}"${(cfg.ollamaModel||DEFAULT_OLLAMA_MODEL)===m.v?' selected':''}>${m.l}</option>`).join('')}
           </select>
         </div>
       </div>
-      <div style="font-size:11px;color:var(--txt3);margin-top:8px;padding:6px 10px;background:var(--bg2);border-radius:6px;line-height:1.6">
-          💡 <strong>Alternativa sem configurar CORS:</strong> sirva o HTML via servidor local:<br>
-          <code style="background:#e4e3de;padding:1px 5px;border-radius:3px">npx serve .</code>
-          &nbsp;depois acesse <code style="background:#e4e3de;padding:1px 5px;border-radius:3px">http://localhost:3000</code>
-        </div>
-        <button class="btn btn-sm mt-8" onclick="testOllamaConn()" id="btn-test-ollama">🔍 Testar conexão</button>
+      <button class="btn btn-sm mt-8" onclick="testOllamaConn()" id="btn-test-ollama">Testar conexao</button>
       <div id="ollama-test-result" style="font-size:11px;margin-top:6px;color:var(--txt3)"></div>
     </div>
 
     <!-- Remoto -->
     <div id="panel-remote" style="display:${cfg.mode==='remote'?'block':'none'}">
       <div style="background:var(--blue-bg);border-radius:8px;padding:11px 13px;margin-bottom:12px;font-size:12px;color:var(--blue);line-height:1.6">
-        <strong>Servidor Remoto com Ollama:</strong><br>
-        No servidor: instale o Ollama e suba com <code style="background:#dbeafe;padding:1px 5px;border-radius:4px">OLLAMA_HOST=0.0.0.0 ollama serve</code><br>
-        Informe a URL pública abaixo. A API Key é opcional (se o servidor não exigir).
+        <strong>Servidor Remoto (OpenAI-compatible):</strong><br>
+        Informe a URL, modelo e API Key de qualquer provedor OpenAI-compatible.
       </div>
       <div class="form-grid">
         <div class="field-group form-full">
-          <div class="field-label">URL do servidor remoto</div>
-          <input id="ia-remote-url" value="${cfg.remoteUrl||''}" placeholder="http://meu-servidor.com:11434"/>
+          <div class="field-label">URL do servidor</div>
+          <input id="ia-remote-url" value="${cfg.remoteUrl||''}" placeholder="https://api.groq.com/openai"/>
         </div>
         <div class="field-group form-full">
           <div class="field-label">Modelo</div>
-          <input id="ia-remote-model" value="${cfg.remoteModel||'gemma3:4b'}" placeholder="gemma3:4b"/>
+          <input id="ia-remote-model" value="${cfg.remoteModel||'llama-3.1-8b-instant'}" placeholder="llama-3.1-8b-instant"/>
         </div>
         <div class="field-group form-full">
-          <div class="field-label">API Key / Token (opcional)</div>
-          <input id="ia-remote-key" type="password" value="${cfg.remoteKey||''}" placeholder="Deixe vazio se o servidor não exige"/>
+          <div class="field-label">API Key</div>
+          <input id="ia-remote-key" type="password" value="${cfg.remoteKey||''}" placeholder="sk-... ou gsk_..."/>
         </div>
       </div>
     </div>
@@ -6018,8 +6035,11 @@ function showApiKeyModal(){
   // Auto-detectar modelos ao abrir
   setTimeout(()=>{ const u=document.getElementById('ia-ollama-url'); if(u&&u.value) testOllamaConn(); },400);
 }function switchIATab(mode){
+  document.getElementById('panel-cloud').style.display  = mode==='cloud'?'block':'none';
   document.getElementById('panel-ollama').style.display = mode==='ollama'?'block':'none';
   document.getElementById('panel-remote').style.display = mode==='remote'?'block':'none';
+  document.getElementById('tab-cloud').style.background  = mode==='cloud'?'var(--green)':'var(--bg2)';
+  document.getElementById('tab-cloud').style.color       = mode==='cloud'?'#fff':'var(--txt2)';
   document.getElementById('tab-ollama').style.background = mode==='ollama'?'var(--green)':'var(--bg2)';
   document.getElementById('tab-ollama').style.color      = mode==='ollama'?'#fff':'var(--txt2)';
   document.getElementById('tab-remote').style.background = mode==='remote'?'var(--green)':'var(--bg2)';
@@ -6133,24 +6153,27 @@ function resetarModeloIA(){
 }
 
 function saveIAConfigFromModal(){
+  const cloudVisible  = (document.getElementById('panel-cloud')||{style:{}}).style.display !== 'none';
   const ollamaVisible = (document.getElementById('panel-ollama')||{style:{}}).style.display !== 'none';
-  const mode = ollamaVisible ? 'ollama' : 'remote';
+  const mode = cloudVisible ? 'cloud' : ollamaVisible ? 'ollama' : 'remote';
   let cfg;
-  if(mode === 'ollama'){
+  if(mode === 'cloud'){
+    cfg = { mode:'cloud', ollamaUrl:'', ollamaModel:'', remoteUrl:'', remoteKey:'', remoteModel:'' };
+  } else if(mode === 'ollama'){
     const url   = ((document.getElementById('ia-ollama-url')||{}).value||'').trim().replace(/\/+$/,'');
     const model = (document.getElementById('ia-ollama-model')||{}).value || DEFAULT_OLLAMA_MODEL;
     if(!url){ alert('Informe a URL do Ollama.'); return; }
     cfg = { mode, ollamaUrl: url, ollamaModel: model, remoteUrl:'', remoteKey:'', remoteModel:'' };
   } else {
     const url   = ((document.getElementById('ia-remote-url')||{}).value||'');
-    const model = ((document.getElementById('ia-remote-model')||{}).value||'gemma3:4b');
+    const model = ((document.getElementById('ia-remote-model')||{}).value||'llama-3.1-8b-instant');
     const key   = ((document.getElementById('ia-remote-key')||{}).value||'');
     if(!url){ alert('Informe a URL do servidor remoto.'); return; }
     cfg = { mode, ollamaUrl:'', ollamaModel:'', remoteUrl: url, remoteKey: key, remoteModel: model };
   }
   saveIAConfig(cfg);
   closeModal();
-  toast('Configuração de IA salva! ✓');
+  toast('Configuracao de IA salva!');
   render(currentPage);
 }
 
