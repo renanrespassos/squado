@@ -9002,10 +9002,14 @@ async function squadoCarregarDaNuvem() {
   try {
     toast('☁️ Sincronizando com a nuvem...');
 
-    // Limpar dados locais de sessão anterior antes de carregar nova conta
-    // Isso previne vazamento de dados entre contas no mesmo dispositivo
+    // Guardar backup dos dados locais (restaurar se API falhar)
+    const _backupCols = [...colaboradores];
+    const _backupAvals = [...avaliacoes];
+    const _backupMetas = [...metas];
+    const _backupNotas = [...notas];
+
+    // Limpar dados em memória (previne vazamento entre contas)
     colaboradores = []; avaliacoes = []; metas = []; notas = [];
-    ['cols_v3','avaliacoes','metas_v2','notas','pdis_v1','funcoes_v8'].forEach(k => localStorage.removeItem(k));
 
     // Carregar TUDO de uma vez via /api/config (snapshot completo)
     const cfg = await apiCall('GET', '/api/config');
@@ -9014,15 +9018,18 @@ async function squadoCarregarDaNuvem() {
       console.warn('[Squado] Sessão mudou durante carregamento — descartando dados antigos');
       return;
     }
-    // Se cfg for null (erro de rede), usar dados locais silenciosamente
+    // Se cfg for null (erro de rede), RESTAURAR dados locais
     if (!cfg) {
-      console.warn('[Squado Load] /api/config retornou null — usando dados locais');
+      console.warn('[Squado Load] /api/config retornou null — restaurando dados locais');
+      colaboradores = _backupCols; avaliacoes = _backupAvals; metas = _backupMetas; notas = _backupNotas;
       toast('⚠️ Sem conexão com servidor. Usando dados locais.');
       render(currentPage || 'dashboard');
       return;
     }
     // Restaurar snapshot completo se existir
     if (cfg) {
+      // Agora sim limpar localStorage (API respondeu com sucesso)
+      ['cols_v3','avaliacoes','metas_v2','notas','pdis_v1','funcoes_v8'].forEach(k => localStorage.removeItem(k));
       // Nuvem sempre vence ao carregar (login) — sem comparação de timestamp
       if (cfg.snapshot_cols && Array.isArray(cfg.snapshot_cols)) {
         colaboradores = cfg.snapshot_cols;
@@ -9150,7 +9157,15 @@ async function squadoCarregarDaNuvem() {
     }
   } catch(e) {
     console.error('[Squado Load] Erro ao carregar da nuvem:', e.message, e.stack?.slice(0,300));
+    // Restaurar do localStorage se ainda tiver dados
+    if(colaboradores.length===0){
+      colaboradores=JSON.parse(localStorage.getItem('cols_v3')||'[]');
+      avaliacoes=JSON.parse(localStorage.getItem('avaliacoes')||'[]');
+      metas=JSON.parse(localStorage.getItem('metas_v2')||'[]');
+      notas=JSON.parse(localStorage.getItem('notas')||'[]');
+    }
     toast('⚠️ Sem conexão. Usando dados locais.');
+    render(currentPage || 'dashboard');
   }
 }
 
