@@ -6615,13 +6615,13 @@ function verLineaTempo(colNome){
   document.getElementById('modal').style.display='flex';
 }
 
-function delNota(id){notas=notas.filter(n=>n.id!==id);lss('notas',notas);render('notas')}
-function limparNotas(){if(!confirm('Apagar todas as anotações?'))return;notas=[];lss('notas',notas);render('notas')}
+function delNota(id){notas=notas.filter(n=>n.id!==id);lss('notas',notas);agendarSync();render('notas')}
+function limparNotas(){if(!confirm('Apagar todas as anotações?'))return;notas=[];lss('notas',notas);agendarSync();render('notas')}
 
 function salvarNotaRapida(){
   const raw=((document.getElementById('notes-raw')||{}).value||'');if(!raw)return;
-  notas.push({id:uid(),colId:'geral',colNome:'Geral',categoria:'Geral',texto:raw,data:new Date().toISOString().slice(0,10)});
-  lss('notas',notas);if(document.getElementById('notes-raw'))document.getElementById('notes-raw').value='';
+  notas.push({id:uid(),colId:'geral',colNome:'Geral',categoria:'Geral',texto:raw,data:new Date().toISOString().slice(0,10),dataHora:new Date().toISOString()});
+  lss('notas',notas);agendarSync();if(document.getElementById('notes-raw'))document.getElementById('notes-raw').value='';
   render('notas');toast('Nota salva!');
 }
 
@@ -6693,6 +6693,7 @@ async function processarNota(){
     });
 
     lss('notas',notas);
+    agendarSync();
     const ta=document.getElementById('notes-raw');
     if(ta)ta.value='';
     render('notas');
@@ -6707,6 +6708,7 @@ async function processarNota(){
       dataHora:now.toISOString().slice(0,16),data:now.toISOString().slice(0,10),
       dataExib:now.toLocaleDateString('pt-BR')+' '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})});
     lss('notas',notas);
+    agendarSync();
     const ta=document.getElementById('notes-raw');if(ta)ta.value='';
     render('notas');toast('Nota salva (sem IA)');
   }
@@ -6772,6 +6774,7 @@ function renderPerfilAba(id, aba){
     {id:'resumo',   icon:'👤', label:'Resumo'},
     {id:'pessoal',  icon:'📋', label:'Dados Pessoais'},
     {id:'metas_col',icon:'🎯', label:'Metas'},
+    {id:'notas_col',icon:'📝', label:'Notas'},
     {id:'historico',icon:'🕐', label:'Movimentações'},
     {id:'funcoes_col',icon:'📌',label:'Funções'},
     {id:'pdi_col',icon:'🚀',label:'PDI'},
@@ -7171,6 +7174,69 @@ function renderPerfilAba(id, aba){
       +'<div style="margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border);display:flex;gap:8px">'
         +'<button class="btn btn-primary btn-sm" onclick="closeModal();setTimeout(function(){window._presetMetaColId=\''+id+'\';go(\'metas\');setTimeout(function(){document.querySelector(\'[onclick*=META\\ SMART]\').click();setTimeout(function(){var sel=document.getElementById(\'sm-col\');if(sel){sel.value=\''+id+'\'}},200)},200)},200)">+ Meta SMART</button>'
         +'<button class="btn btn-sm" style="border-color:var(--blue);color:var(--blue)" onclick="closeModal();go(\'metas\')">Ver todas as metas</button>'
+      +'</div>';
+  }
+
+  // ── ABA NOTAS ─────────────────────────────────────────────────
+  else if(aba==='notas_col'){
+    var notasCol=notas.filter(function(n){return n.colId===id;});
+    // Agrupar por semana
+    function getWeekKey(dateStr){
+      var d=new Date(dateStr||Date.now());
+      var day=d.getDay();var diff=d.getDate()-day+(day===0?-6:1);
+      var monday=new Date(d.setDate(diff));
+      return monday.toISOString().slice(0,10);
+    }
+    var porSemana={};
+    notasCol.sort(function(a,b){return (b.dataHora||b.data||'').localeCompare(a.dataHora||a.data||'');});
+    notasCol.forEach(function(n){
+      var wk=getWeekKey(n.data||n.dataHora);
+      if(!porSemana[wk])porSemana[wk]=[];
+      porSemana[wk].push(n);
+    });
+    var semanas=Object.keys(porSemana).sort().reverse();
+
+    var sentColors={positivo:'#0F6E56',neutro:'#854F0B',negativo:'#A32D2D',alerta:'#993C1D'};
+    var sentIcons={positivo:'🟢',neutro:'🟡',negativo:'🔴',alerta:'🟠'};
+
+    function notaCard(n){
+      var sc=sentColors[n.sentimento]||'var(--txt3)';
+      var si=sentIcons[n.sentimento]||'⚪';
+      return '<div style="background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:6px;border-left:3px solid '+sc+'">'
+        +'<div style="display:flex;align-items:flex-start;gap:8px">'
+          +'<span style="font-size:12px">'+si+'</span>'
+          +'<div style="flex:1;min-width:0">'
+            +'<div style="font-size:12px;color:var(--txt);line-height:1.5">'+n.texto+'</div>'
+            +'<div style="font-size:10px;color:var(--txt3);margin-top:4px">'+(n.categoria?n.categoria+' · ':'')+( n.dataExib||n.data||'')+'</div>'
+          +'</div>'
+        +'</div>'
+      +'</div>';
+    }
+
+    function formatWeek(wkStart){
+      var d=new Date(wkStart);
+      var end=new Date(d);end.setDate(end.getDate()+6);
+      var opts={day:'2-digit',month:'short'};
+      return d.toLocaleDateString('pt-BR',opts)+' — '+end.toLocaleDateString('pt-BR',opts);
+    }
+
+    conteudo=
+      '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px">'
+        +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--blue)">'+notasCol.length+'</div><div style="font-size:10px;color:var(--txt2)">Anotacoes</div></div>'
+        +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:#854F0B">'+semanas.length+'</div><div style="font-size:10px;color:var(--txt2)">Semanas</div></div>'
+      +'</div>'
+      +(notasCol.length===0?'<div style="text-align:center;padding:30px;color:var(--txt3)">Nenhuma anotacao para este colaborador.</div>':'')
+      +(semanas.map(function(wk){
+        var notasWk=porSemana[wk];
+        return '<div style="margin-bottom:16px">'
+          +'<div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">'
+            +'<span>Semana '+formatWeek(wk)+' ('+notasWk.length+')</span>'
+          +'</div>'
+          +notasWk.map(notaCard).join('')
+        +'</div>';
+      }).join(''))
+      +'<div style="margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border);display:flex;gap:8px">'
+        +'<button class="btn btn-primary btn-sm" onclick="closeModal();go(\'notas\')">Ir para Bloco de Notas</button>'
       +'</div>';
   }
 
