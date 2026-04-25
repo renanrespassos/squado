@@ -3635,7 +3635,7 @@ function renderNiveisAreas(){
     <div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
         <div style="font-size:12px;color:var(--txt2)">${niveis.length} níveis cadastrados</div>
-        <button class="btn btn-primary btn-sm" onclick="abrirFormNivel()">+ Novo Nível</button>
+        <button class="btn btn-primary btn-sm" onclick="openNivelForm()">+ Novo Nível</button>
       </div>
       ${renderNiveis()}
     </div>`;
@@ -3992,7 +3992,7 @@ function editarValores(){
               +'<input value="'+val+'" data-id="'+id+'" data-idx="'+i+'" placeholder="Nome do valor" style="font-size:12px;font-weight:600;border:none;background:transparent;padding:0"/>'
               +'<input value="'+desc+'" data-id="'+id+'" data-desc="'+i+'" placeholder="Descrição..." style="font-size:11px;color:var(--txt2);border:none;background:transparent;padding:0"/>'
             +'</div>'
-            +'<button class="btn btn-xs btn-danger" onclick="this.closest(\".ve-row\").remove()">×</button>'
+            +'<button class="btn btn-xs btn-danger" onclick="this.closest(\'.ve-row\').remove()">×</button>'
           +'</div>';
         } else {
           return '<div class="ve-row" style="display:flex;gap:6px;align-items:center">'
@@ -5348,7 +5348,7 @@ function renderNiveis(){
       <td><span class="badge badge-blue">${count}</span></td><td>${nivelBadge(n.nome)}</td>
       <td><div class="flex gap-6"><button class="btn btn-sm" onclick="openNivelForm('${n.id}')">Editar</button>${count===0?`<button class="btn btn-sm btn-danger" onclick="delNivel('${n.id}')">×</button>`:''}</div></td>
     </tr>`;}).join('')}</tbody>
-  </table></div><div style="padding:14px"><button class="btn btn-primary btn-sm" onclick="openNivelForm()">+ Novo Nível</button></div></div>`;
+  </table></div></div>`;
 }
 function openNivelForm(id=null){
   const n=id?niveis.find(x=>x.id===id):{};
@@ -5740,10 +5740,16 @@ function salvarMetaSMART(id){
   closeModal();toast('Meta SMART salva! ✅');render(currentPage);
 }
 
+var _metaPctTimer={};
 function atualizarMetaPct(id,val){
   var i=metas.findIndex(function(x){return x.id===id;});if(i<0)return;
   metas[i].progresso=parseInt(val)||0;
   saveAll();
+  clearTimeout(_metaPctTimer[id]);
+  _metaPctTimer[id]=setTimeout(function(){
+    var m=metas.find(function(x){return x.id===id;});
+    if(m&&m.dbId){apiCall('PUT','/api/metas/'+m.dbId,{tipo:m.tipo||'smart',colaborador_id:m.colId||null,titulo:m.titulo||'',status:m.status||'Pendente',progresso:m.progresso,prazo:m.prazo||null,colaborador:m.colaborador||'',especifica:m.especifica||'',mensuravel:m.mensuravel||'',atingivel:m.atingivel||'',relevante:m.relevante||'',temporal:m.temporal||''}).catch(function(e){console.warn('sync prog err',e);});}
+  },800);
 }
 
 function delMeta(id){
@@ -5756,7 +5762,52 @@ function delMeta(id){
 }
 
 function editarKRs(okrId){
-  openMetaForm(okrId,'okr');
+  var okr=metas.find(function(m){return m.id===okrId;});
+  if(!okr)return;
+  var krs=okr.keyResults||[];
+  document.getElementById('modal-title').textContent='Atualizar Key Results · '+okr.objetivo;
+  document.getElementById('modal-box').classList.add('modal-lg');
+  document.getElementById('modal-body').innerHTML=
+    '<div style="display:flex;flex-direction:column;gap:12px;max-height:65vh;overflow-y:auto">'
+    +krs.map(function(kr,i){
+      var alvo=parseFloat(kr.alvo)||1;
+      var atual=parseFloat(kr.atual)||0;
+      var pct=Math.min(100,Math.round(atual/alvo*100));
+      var done=pct>=100;
+      return '<div style="background:var(--bg2);border-radius:10px;padding:14px;border-left:3px solid '+(done?'var(--green)':'#185FA5')+'">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
+          '<span style="font-size:10px;font-weight:700;width:20px;height:20px;border-radius:50%;background:'+(done?'var(--green)':'#185FA5')+';color:#fff;display:flex;align-items:center;justify-content:center">'+(i+1)+'</span>'+
+          '<span style="font-size:13px;font-weight:600;flex:1">'+kr.titulo+'</span>'+
+          '<span style="font-size:12px;font-weight:700;color:'+(done?'var(--green)':'var(--txt2)')+'">'+pct+'%</span>'+
+        '</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end">'+
+          '<div><div class="field-label">Atual</div><input type="number" id="kr-atual-'+i+'" value="'+atual+'" step="any" style="font-size:13px;width:100%"/></div>'+
+          '<div><div class="field-label">Alvo</div><input type="number" id="kr-alvo-'+i+'" value="'+alvo+'" step="any" style="font-size:13px;width:100%"/></div>'+
+          '<button class="btn btn-xs '+(done?'btn-primary':'')+'" onclick="document.getElementById(\'kr-atual-'+i+'\').value=document.getElementById(\'kr-alvo-'+i+'\').value" style="margin-bottom:2px">'+(done?'Concluido':'Concluir')+'</button>'+
+        '</div>'+
+        (kr.unidade?'<div style="font-size:10px;color:var(--txt3);margin-top:4px">Unidade: '+kr.unidade+'</div>':'')+
+      '</div>';
+    }).join('')
+    +'</div>'
+    +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border)">'
+      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
+      +'<button class="btn btn-primary" onclick="salvarKRs(\''+okrId+'\','+krs.length+')">Salvar</button>'
+    +'</div>';
+  document.getElementById('modal').style.display='flex';
+}
+
+function salvarKRs(okrId,count){
+  var okr=metas.find(function(m){return m.id===okrId;});
+  if(!okr)return;
+  for(var i=0;i<count;i++){
+    var atualEl=document.getElementById('kr-atual-'+i);
+    var alvoEl=document.getElementById('kr-alvo-'+i);
+    if(atualEl)okr.keyResults[i].atual=atualEl.value;
+    if(alvoEl)okr.keyResults[i].alvo=alvoEl.value;
+  }
+  saveAll();
+  if(okr.dbId){apiCall('PUT','/api/metas/'+okr.dbId,{tipo:'okr',titulo:okr.titulo||'',objetivo:okr.objetivo||'',area:okr.area||'',periodo:okr.periodo||'',key_results:okr.keyResults||[],status:okr.status||'Pendente',progresso:0}).catch(function(e){console.warn('sync KR err',e);});}
+  closeModal();toast('Key Results atualizados!');render(currentPage);
 }
 
 function getIAConfig(){
