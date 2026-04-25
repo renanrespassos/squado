@@ -865,7 +865,7 @@ input[type=number]{
         </button>
       </div>
     </div>
-    <button class="btn" id="topbar-btn" style="background:#0F6E56;border-color:#0F6E56;color:#fff;font-weight:600;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;padding:6px 14px" onclick="handleTopAction()" style="display:none">+<span id="topbar-btn-label">Novo</span></button>
+    <button class="btn" id="topbar-btn" style="background:#0F6E56;border-color:#0F6E56;color:#fff;font-weight:600;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;padding:6px 14px;display:none" onclick="handleTopAction()">+<span id="topbar-btn-label">Novo</span></button>
   </header>
   <div class="content" id="page-content-wrap">
     <div class="content-inner" id="page-content"></div>
@@ -3992,7 +3992,7 @@ function editarValores(){
               +'<input value="'+val+'" data-id="'+id+'" data-idx="'+i+'" placeholder="Nome do valor" style="font-size:12px;font-weight:600;border:none;background:transparent;padding:0"/>'
               +'<input value="'+desc+'" data-id="'+id+'" data-desc="'+i+'" placeholder="Descrição..." style="font-size:11px;color:var(--txt2);border:none;background:transparent;padding:0"/>'
             +'</div>'
-            +'<button class="btn btn-xs btn-danger" onclick="this.closest(\'.ve-row\').remove()">×</button>'
+            +'<button class="btn btn-xs btn-danger" onclick="this.parentElement.remove()">×</button>'
           +'</div>';
         } else {
           return '<div class="ve-row" style="display:flex;gap:6px;align-items:center">'
@@ -5806,7 +5806,9 @@ function salvarKRs(okrId,count){
     if(alvoEl)okr.keyResults[i].alvo=alvoEl.value;
   }
   saveAll();
-  if(okr.dbId){apiCall('PUT','/api/metas/'+okr.dbId,{tipo:'okr',titulo:okr.titulo||'',objetivo:okr.objetivo||'',area:okr.area||'',periodo:okr.periodo||'',key_results:okr.keyResults||[],status:okr.status||'Pendente',progresso:0}).catch(function(e){console.warn('sync KR err',e);});}
+  var calcPct=0;var krsLen=okr.keyResults.length;if(krsLen){var soma=0;for(var j=0;j<krsLen;j++){var a=parseFloat(okr.keyResults[j].alvo)||1;var c=parseFloat(okr.keyResults[j].atual)||0;soma+=Math.min(100,Math.round(c/a*100));}calcPct=Math.round(soma/krsLen);}
+  okr.progresso=calcPct;
+  if(okr.dbId){apiCall('PUT','/api/metas/'+okr.dbId,{tipo:'okr',titulo:okr.titulo||'',objetivo:okr.objetivo||'',area:okr.area||'',periodo:okr.periodo||'',key_results:okr.keyResults||[],status:okr.status||'Pendente',progresso:calcPct}).catch(function(e){console.warn('sync KR err',e);});}
   closeModal();toast('Key Results atualizados!');render(currentPage);
 }
 
