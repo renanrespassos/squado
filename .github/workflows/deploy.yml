@@ -4,7 +4,58 @@ on:
     branches:
       - main
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verificar que app.html existe
+        run: test -f public/app.html || (echo "app.html nao encontrado" && exit 1)
+
+      - name: Verificar modulos JS referenciados
+        run: |
+          echo "=== Verificando modulos JS ==="
+          MISSING=0
+          for file in $(grep -oP 'src="js/[^"]+' public/app.html | sed 's/src="//'); do
+            if [ ! -f "public/$file" ]; then
+              echo "FALTANDO: public/$file"
+              MISSING=$((MISSING+1))
+            else
+              echo "OK: public/$file ($(wc -l < "public/$file") linhas)"
+            fi
+          done
+          if [ $MISSING -gt 0 ]; then
+            echo "$MISSING modulo(s) faltando!"
+            exit 1
+          fi
+          echo "Todos os modulos encontrados"
+
+      - name: Validar syntax JS
+        run: |
+          echo "=== Validando syntax JS ==="
+          ERRORS=0
+          for file in public/js/*.js; do
+            if node --check "$file" 2>/dev/null; then
+              echo "OK: $(basename $file)"
+            else
+              echo "ERRO: $(basename $file)"
+              ERRORS=$((ERRORS+1))
+            fi
+          done
+          if [ $ERRORS -gt 0 ]; then
+            echo "$ERRORS arquivo(s) com erro de syntax!"
+            exit 1
+          fi
+          echo "Todos os modulos validos"
+
+      - name: Resumo
+        run: |
+          echo "app.html: $(wc -l < public/app.html) linhas"
+          echo "Modulos: $(ls public/js/*.js | wc -l) arquivos"
+          echo "Tamanho total: $(($(cat public/app.html public/js/*.js | wc -c)/1024)) KB"
+
   deploy:
+    needs: validate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
