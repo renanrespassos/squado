@@ -3055,6 +3055,15 @@ function salvarPerguntas(){saveAll();toast('Perguntas salvas!')}
 // ═══════════════════════════════════════════════════════════════
 function getPDIs(){ return ls('pdis_v1',[]); }
 function savePDIs(arr){ lss('pdis_v1',arr); if(typeof agendarSync==='function')agendarSync(); }
+var _pdiSyncTimers={};
+function _pdiSyncApi(pdiId){
+  clearTimeout(_pdiSyncTimers[pdiId]);
+  _pdiSyncTimers[pdiId]=setTimeout(function(){
+    var pdis=getPDIs();var pdi=pdis.find(function(x){return x.id===pdiId;});
+    if(!pdi||!pdi.dbId)return;
+    apiCall('PUT','/api/pdis/'+pdi.dbId,{objetivo:pdi.objetivo||'',competencias:pdi.competencias||[],acoes:pdi.acoes||[],revisoes:pdi.revisoes||[],status:pdi.status||'Em andamento'}).catch(function(e){console.warn('PDI sync err',e);});
+  },600);
+}
 
 function renderPDI(search){
   search=search||'';
@@ -3344,6 +3353,7 @@ function adicionarAcaoPDI(pdiId){
   if(!pdis[idx].acoes)pdis[idx].acoes=[];
   pdis[idx].acoes.push(acao);
   savePDIs(pdis);
+  _pdiSyncApi(pdiId);
   toast('Ação adicionada! ✓');
   renderModalPDI(pdis[idx],colaboradores.find(function(x){return x.id===pdis[idx].colId;}));
 }
@@ -3354,6 +3364,7 @@ function removerAcaoPDI(pdiId,acaoIdx){
   var idx=pdis.findIndex(function(x){return x.id===pdiId;});if(idx<0)return;
   pdis[idx].acoes.splice(parseInt(acaoIdx),1);
   savePDIs(pdis);
+  _pdiSyncApi(pdiId);
   toast('Removida!');
   renderModalPDI(pdis[idx],colaboradores.find(function(x){return x.id===pdis[idx].colId;}));
 }
@@ -3372,6 +3383,7 @@ function adicionarCompetencia(pdiId){
     if(!pdis[idx].competencias.includes(n))pdis[idx].competencias.push(n);
   });
   savePDIs(pdis);
+  _pdiSyncApi(pdiId);
   if(input)input.value='';
   renderModalPDI(pdis[idx],colaboradores.find(function(x){return x.id===pdis[idx].colId;}));
 }
@@ -3381,6 +3393,7 @@ function removerCompetencia(pdiId,compIdx){
   var idx=pdis.findIndex(function(x){return x.id===pdiId;});if(idx<0)return;
   pdis[idx].competencias.splice(parseInt(compIdx),1);
   savePDIs(pdis);
+  _pdiSyncApi(pdiId);
   renderModalPDI(pdis[idx],colaboradores.find(function(x){return x.id===pdis[idx].colId;}));
 }
 
@@ -3391,6 +3404,7 @@ function _pdiSaveRev(el){
   var idx=pdis.findIndex(function(x){return x.id===pdiId;});if(idx<0)return;
   pdis[idx].dataProxRevisao=el.value;
   savePDIs(pdis);
+  _pdiSyncApi(pdiId);
   toast('Próxima revisão salva! ✓');
 }
 
@@ -3406,6 +3420,7 @@ function adicionarRevisao(pdiId){
   var proxRev=(document.getElementById('pdi-prox-rev')||{}).value;
   if(proxRev)pdis[idx].dataProxRevisao=proxRev;
   savePDIs(pdis);
+  _pdiSyncApi(pdiId);
   toast('Revisão registrada! ✓');
   renderModalPDI(pdis[idx],colaboradores.find(function(x){return x.id===pdis[idx].colId;}));
 }
@@ -3416,6 +3431,7 @@ function removerRevisao(pdiId,revIdx){
   var idx=pdis.findIndex(function(x){return x.id===pdiId;});if(idx<0)return;
   pdis[idx].revisoes.splice(parseInt(revIdx),1);
   savePDIs(pdis);
+  _pdiSyncApi(pdiId);
   toast('Removida!');
   renderModalPDI(pdis[idx],colaboradores.find(function(x){return x.id===pdis[idx].colId;}));
 }
@@ -3486,6 +3502,7 @@ function salvarEdicaoAcaoPDI(pdiId,acaoIdx){
     observacao:((document.getElementById('ea-obs')||{}).value||''),
   });
   savePDIs(pdis);
+  _pdiSyncApi(pdiId);
   toast('Ação salva! ✓');
   renderModalPDI(pdis[idx],colaboradores.find(function(x){return x.id===pdis[idx].colId;}));
 }
@@ -6731,6 +6748,7 @@ function renderPerfilAba(id, aba){
   const abas=[
     {id:'resumo',   icon:'👤', label:'Resumo'},
     {id:'pessoal',  icon:'📋', label:'Dados Pessoais'},
+    {id:'metas_col',icon:'🎯', label:'Metas'},
     {id:'historico',icon:'🕐', label:'Movimentações'},
     {id:'funcoes_col',icon:'📌',label:'Funções'},
     {id:'pdi_col',icon:'🚀',label:'PDI'},
@@ -6773,9 +6791,10 @@ function renderPerfilAba(id, aba){
         +'</div>'
       +'</div>'
       // Stats
-      +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">'
+      +'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px">'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800">'+avsC.length+'</div><div style="font-size:10px;color:var(--txt2)">Avaliações</div></div>'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800">'+(c.historico||[]).length+'</div><div style="font-size:10px;color:var(--txt2)">Movimentações</div></div>'
+        +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--blue)">'+metas.filter(function(m){return m.colId===id;}).length+'</div><div style="font-size:10px;color:var(--txt2)">Metas</div></div>'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--green)">'+(ultimaAval?ultimaAval.mediaGeral:'-')+'</div><div style="font-size:10px;color:var(--txt2)">Última nota</div></div>'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800">'+notasCol.length+'</div><div style="font-size:10px;color:var(--txt2)">Notas</div></div>'
       +'</div>'
@@ -7067,6 +7086,68 @@ function renderPerfilAba(id, aba){
       )
       +'<div style="margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)">'
         +'<button class="btn btn-primary btn-sm" onclick="iniciarAvaliacaoPara(\''+id+'\');closeModal()">📋 Nova avaliação</button>'
+      +'</div>';
+  }
+
+  // ── ABA METAS ─────────────────────────────────────────────────
+  else if(aba==='metas_col'){
+    var metasCol=metas.filter(function(m){return m.colId===id;});
+    var smartCol=metasCol.filter(function(m){return m.tipo==='smart';});
+    var okrCol=metasCol.filter(function(m){return m.tipo==='okr';});
+    var totalMetas=metasCol.length;
+    var concluidas=metasCol.filter(function(m){return m.status==='Concluída'||m.progresso>=100;}).length;
+    var pctGeral=totalMetas?Math.round(metasCol.reduce(function(a,m){return a+(m.progresso||0);},0)/totalMetas):0;
+
+    function miniCardSmart(m){
+      var p=m.progresso||0;var cor=p>=100?'var(--green)':p>=60?'#854F0B':'#185FA5';
+      return '<div style="background:var(--bg2);border-radius:9px;padding:12px;margin-bottom:8px;border-left:3px solid '+cor+'">'
+        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+          +'<div style="flex:1"><div style="font-size:12px;font-weight:700;color:var(--txt)">'+m.titulo+'</div>'
+          +'<div style="font-size:10px;color:var(--txt3)">'+(m.prazo?'Prazo: '+m.prazo:'Sem prazo')+' · '+(m.status||'Pendente')+'</div></div>'
+          +'<span style="font-size:14px;font-weight:800;color:'+cor+'">'+p+'%</span>'
+        +'</div>'
+        +'<div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+Math.min(p,100)+'%;background:'+cor+';border-radius:2px"></div></div>'
+      +'</div>';
+    }
+
+    function miniCardOkr(o){
+      var krs=o.keyResults||[];
+      var p=krs.length?Math.round(krs.reduce(function(a,kr){var al=parseFloat(kr.alvo)||1;var at=parseFloat(kr.atual)||0;return a+Math.min(100,Math.round(at/al*100));},0)/krs.length):0;
+      var cor=p>=80?'var(--green)':p>=50?'#854F0B':'#A32D2D';
+      return '<div style="background:var(--bg2);border-radius:9px;padding:12px;margin-bottom:8px;border-left:3px solid '+cor+'">'
+        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+          +'<span style="font-size:14px">🎯</span>'
+          +'<div style="flex:1"><div style="font-size:12px;font-weight:700;color:var(--txt)">'+(o.objetivo||o.titulo)+'</div>'
+          +'<div style="font-size:10px;color:var(--txt3)">'+krs.length+' Key Results · '+(o.periodo||'')+'</div></div>'
+          +'<span style="font-size:14px;font-weight:800;color:'+cor+'">'+p+'%</span>'
+        +'</div>'
+        +'<div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+Math.min(p,100)+'%;background:'+cor+';border-radius:2px"></div></div>'
+        +(krs.length?'<div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">'+krs.map(function(kr,i){
+          var ka=parseFloat(kr.alvo)||1;var kc=parseFloat(kr.atual)||0;var kp=Math.min(100,Math.round(kc/ka*100));var done=kp>=100;
+          return '<div style="display:flex;align-items:center;gap:6px;font-size:11px"><span style="color:'+(done?'var(--green)':'var(--txt3)')+'">'+( done?'✅':'⭕')+'</span><span style="flex:1;color:var(--txt)">'+kr.titulo+'</span><span style="color:var(--txt2)">'+kc+'/'+ka+'</span></div>';
+        }).join('')+'</div>':'')
+      +'</div>';
+    }
+
+    conteudo=
+      // Stats
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">'
+        +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--blue)">'+totalMetas+'</div><div style="font-size:10px;color:var(--txt2)">Metas</div></div>'
+        +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--green)">'+concluidas+'</div><div style="font-size:10px;color:var(--txt2)">Concluídas</div></div>'
+        +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:#854F0B">'+pctGeral+'%</div><div style="font-size:10px;color:var(--txt2)">Progresso</div></div>'
+      +'</div>'
+      // SMART
+      +(smartCol.length?'<div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Metas SMART ('+smartCol.length+')</div>'
+        +'<div style="max-height:250px;overflow-y:auto;margin-bottom:14px">'+smartCol.map(miniCardSmart).join('')+'</div>':'')
+      // OKR
+      +(okrCol.length?'<div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">OKRs ('+okrCol.length+')</div>'
+        +'<div style="max-height:250px;overflow-y:auto;margin-bottom:14px">'+okrCol.map(miniCardOkr).join('')+'</div>':'')
+      // Sem metas
+      +(totalMetas===0?'<div style="text-align:center;padding:30px;color:var(--txt3)">Nenhuma meta atribuída a este colaborador.</div>':'')
+      // Botão criar
+      +'<div style="margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border);display:flex;gap:8px">'
+        +'<button class="btn btn-primary btn-sm" onclick="closeModal();setTimeout(function(){window._presetMetaColId=\''+id+'\';go(\'metas\');setTimeout(function(){document.querySelector(\'[onclick*=META\\ SMART]\').click();setTimeout(function(){var sel=document.getElementById(\'sm-col\');if(sel){sel.value=\''+id+'\'}},200)},200)},200)">+ Meta SMART</button>'
+        +'<button class="btn btn-sm" style="border-color:var(--blue);color:var(--blue)" onclick="closeModal();go(\'metas\')">Ver todas as metas</button>'
       +'</div>';
   }
 
