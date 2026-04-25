@@ -2757,7 +2757,101 @@ function verAvaliacao(id){
   function scoreBg(v){return v>=8?'#E1F5EE':v>=5?'#FEF3C7':'#FEE2E2';}
   function scoreLabel(v){return v>=8?'Excelente':v>=5?'Em desenvolvimento':'Crítico';}
   function barHtml(v,w){w=w||'100px';return '<div style="display:inline-block;width:'+w+';height:8px;background:#eee;border-radius:4px;overflow:hidden;vertical-align:middle"><div style="width:'+(v*10)+'%;height:100%;background:'+scoreColor(v)+'"></div></div>';}
-  if(typeof window.gerarPDFAvaliacao!=='function'){window.gerarPDFAvaliacao=function(x){verAvaliacao(x);};}
+  if(typeof window.gerarPDFAvaliacao!=='function'){window.gerarPDFAvaliacao=function(avalId){
+    var a=avaliacoes.find(function(x){return x.id===avalId;});if(!a){verAvaliacao(avalId);return;}
+    var col=colaboradores.find(function(c){return c.nome===a.colaborador;})||{nome:a.colaborador,area:'',nivel:a.nivel};
+    var dataHoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+    function sc(v){return v>=8?'#1D9E75':v>=5?'#D97706':'#DC2626';}
+    function sb(v){return v>=8?'#E1F5EE':v>=5?'#FEF3C7':'#FEE2E2';}
+    function sl(v){return v>=8?'Excelente':v>=5?'Em desenvolvimento':'Crítico';}
+    var secoes=Object.entries(a.secaoMedias||{});
+    var secoesRows=secoes.map(function(sv){
+      var s=sv[0],v=sv[1];
+      return '<tr><td style="padding:8px 12px;font-size:12px;font-weight:600">'+s+'</td>'
+        +'<td style="padding:8px 12px"><div style="display:flex;align-items:center;gap:8px">'
+        +'<div style="flex:1;height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden"><div style="height:100%;width:'+(v*10)+'%;background:'+sc(v)+'"></div></div>'
+        +'<span style="font-size:12px;font-weight:700;color:'+sc(v)+'">'+v+'</span></div></td>'
+        +'<td style="padding:8px 12px;text-align:center"><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:'+sb(v)+';color:'+sc(v)+'">'+sl(v)+'</span></td></tr>';
+    }).join('');
+    // Notas do colaborador
+    var notasCol=notas.filter(function(n){return n.colNome===a.colaborador;});
+    var notasHtml='';
+    if(notasCol.length){
+      notasHtml='<div style="page-break-before:always"></div>'
+        +'<div style="border-bottom:3px solid #1D9E75;padding-bottom:12px;margin-bottom:20px;margin-top:30px">'
+        +'<div style="font-size:9px;font-weight:700;color:#1D9E75;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">Squado</div>'
+        +'<div style="font-size:22px;font-weight:900;margin-bottom:4px">Resumo de Anotações</div>'
+        +'<div style="font-size:13px;color:#6b7280">'+a.colaborador+' · Gerado em '+dataHoje+'</div></div>'
+        +'<table style="width:100%;border-collapse:collapse;margin-bottom:24px"><thead><tr>'
+        +'<th style="background:#f9fafb;padding:8px 12px;font-size:10px;text-transform:uppercase;color:#6b7280;border-bottom:2px solid #e5e7eb;text-align:left">Data</th>'
+        +'<th style="background:#f9fafb;padding:8px 12px;font-size:10px;text-transform:uppercase;color:#6b7280;border-bottom:2px solid #e5e7eb;text-align:left">Categoria</th>'
+        +'<th style="background:#f9fafb;padding:8px 12px;font-size:10px;text-transform:uppercase;color:#6b7280;border-bottom:2px solid #e5e7eb;text-align:left">Anotação</th>'
+        +'</tr></thead><tbody>'
+        +notasCol.slice(-15).map(function(n){
+          var catCor={'Desempenho':'#0F6E56','Comportamento':'#185FA5','Técnico':'#854F0B','Reconhecimento':'#3B6D11','Atenção':'#A32D2D','Desenvolvimento':'#534AB7','Geral':'#666'};
+          return '<tr><td style="padding:6px 12px;font-size:11px;color:#6b7280;white-space:nowrap;border-bottom:1px solid #f3f4f6">'+(n.data||'')+'</td>'
+            +'<td style="padding:6px 12px;font-size:11px;font-weight:600;color:'+(catCor[n.categoria]||'#666')+';border-bottom:1px solid #f3f4f6">'+(n.categoria||'Geral')+'</td>'
+            +'<td style="padding:6px 12px;font-size:11px;color:#374151;border-bottom:1px solid #f3f4f6">'+n.texto+'</td></tr>';
+        }).join('')
+        +'</tbody></table>';
+    }
+    // PDI do colaborador
+    var pdiCol=getPDIs().filter(function(p){return p.colId===col.id;});
+    var pdiAtivo=pdiCol.find(function(p){return p.status==='Em andamento';})||pdiCol[0];
+    var pdiHtml='';
+    if(pdiAtivo){
+      var pdiPct=Math.round((pdiAtivo.acoes||[]).reduce(function(a2,ac){return a2+(ac.progresso||0);},0)/Math.max((pdiAtivo.acoes||[]).length,1));
+      var pdiCor=pdiPct>=80?'#1D9E75':pdiPct>=50?'#D97706':'#185FA5';
+      pdiHtml+='<div style="margin-top:24px;background:#f9fafb;border-radius:10px;padding:16px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+        +'<div style="font-size:14px;font-weight:800">PDI — '+(pdiAtivo.ciclo||'Atual')+'</div>'
+        +'<div style="font-size:24px;font-weight:900;color:'+pdiCor+'">'+pdiPct+'%</div></div>'
+        +'<div style="height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;margin-bottom:12px"><div style="height:100%;width:'+pdiPct+'%;background:'+pdiCor+'"></div></div>';
+      (pdiAtivo.acoes||[]).forEach(function(ac){
+        var acCor=ac.status==='Concluída'?'#1D9E75':ac.status==='Em andamento'?'#185FA5':'#888';
+        pdiHtml+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:11px">'
+          +'<span style="color:'+acCor+'">'+(ac.status==='Concluída'?'✅':ac.status==='Em andamento'?'🔵':'⭕')+'</span>'
+          +'<span style="flex:1;color:#374151">'+ac.descricao+'</span>'
+          +'<span style="font-weight:700;color:'+acCor+'">'+ac.progresso+'%</span></div>';
+      });
+      pdiHtml+='</div>';
+    }
+    var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Avaliação · '+a.colaborador+'</title>'
+      +'<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111827;padding:40px}'
+      +'@media print{body{padding:0}.np{display:none!important}@page{margin:18mm;size:A4}}'
+      +'table{width:100%;border-collapse:collapse}th{background:#f9fafb;text-align:left;padding:8px 12px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:700;border-bottom:2px solid #e5e7eb}td{border-bottom:1px solid #f3f4f6}'
+      +'</style></head><body>'
+      +'<div class="np" style="position:fixed;top:0;left:0;right:0;background:#1D9E75;padding:10px 24px;display:flex;align-items:center;gap:12px;z-index:999">'
+      +'<span style="color:#fff;font-weight:700;font-size:14px;flex:1">Avaliação · '+a.colaborador+'</span>'
+      +'<button onclick="window.print()" style="background:#fff;color:#1D9E75;border:none;padding:7px 20px;border-radius:7px;font-weight:700;cursor:pointer">🖨 Imprimir</button>'
+      +'<button onclick="window.close()" style="background:rgba(255,255,255,.2);color:#fff;border:none;padding:7px 12px;border-radius:7px;cursor:pointer">×</button></div>'
+      +'<div class="np" style="height:52px"></div>'
+      // Header
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:16px;border-bottom:3px solid #1D9E75;margin-bottom:24px">'
+      +'<div><div style="font-size:9px;font-weight:700;color:#1D9E75;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">Squado</div>'
+      +'<div style="font-size:26px;font-weight:900;margin-bottom:4px">Avaliação de Desempenho</div>'
+      +'<div style="font-size:13px;color:#6b7280">'+a.colaborador+' · '+(a.nivel||'')+'</div>'
+      +'<div style="font-size:11px;color:#9ca3af;margin-top:4px">Data: '+(a.data||'')+(a.avaliador?' · Avaliador: '+a.avaliador:'')+' · Gerado em '+dataHoje+'</div></div>'
+      +'<div style="text-align:center;background:'+sb(a.mediaGeral)+';border-radius:12px;padding:14px 22px;border:2px solid '+sc(a.mediaGeral)+'">'
+      +'<div style="font-size:36px;font-weight:900;color:'+sc(a.mediaGeral)+'">'+a.mediaGeral+'</div>'
+      +'<div style="font-size:10px;color:'+sc(a.mediaGeral)+';font-weight:700;text-transform:uppercase">'+sl(a.mediaGeral)+'</div></div></div>'
+      // Seções
+      +'<div style="font-size:14px;font-weight:800;margin-bottom:8px">Resultados por Seção</div>'
+      +'<table style="margin-bottom:24px"><thead><tr><th>Seção</th><th>Nota</th><th style="text-align:center">Classificação</th></tr></thead><tbody>'+secoesRows+'</tbody></table>'
+      // Pontos positivos e oportunidades
+      +(a.pontosPos?'<div style="background:#E1F5EE;border-radius:10px;padding:14px;margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:#0F6E56;text-transform:uppercase;margin-bottom:6px">Pontos Positivos</div><div style="font-size:12px;color:#374151;line-height:1.7">'+a.pontosPos+'</div></div>':'')
+      +(a.oportunidades?'<div style="background:#FAEEDA;border-radius:10px;padding:14px;margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:#854F0B;text-transform:uppercase;margin-bottom:6px">Oportunidades de Melhoria</div><div style="font-size:12px;color:#374151;line-height:1.7">'+a.oportunidades+'</div></div>':'')
+      // Assinaturas
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:40px">'
+      +'<div><div style="border-top:1px solid #374151;padding-top:8px;font-size:11px;color:#6b7280">Colaborador: '+a.colaborador+'</div></div>'
+      +'<div><div style="border-top:1px solid #374151;padding-top:8px;font-size:11px;color:#6b7280">Gestor / Avaliador'+(a.avaliador?': '+a.avaliador:'')+'</div></div></div>'
+      // Página 2: Resumo (notas + PDI)
+      +notasHtml+pdiHtml
+      +'</body></html>';
+    var w=window.open('','_blank','width=1000,height=780');
+    if(!w){alert('Permita pop-ups.');return;}
+    w.document.write(html);w.document.close();
+  };}
   if(typeof window.editarAvaliacao!=='function'){window.editarAvaliacao=function(x){alert('Edição em construção');};}
   var secoes=Object.entries(a.secaoMedias||{});
   function sc(v){return v>=8?'score-hi':v>=5?'score-mid':'score-lo';}
@@ -2802,6 +2896,7 @@ function verAvaliacao(id){
       +'<div style="display:flex;gap:8px">'
         +'<button class="btn btn-sm" onclick="editarAvaliacao(\''+id+'\')">✏️ Editar</button>'
         +'<button class="btn btn-sm" onclick="gerarPDFAvaliacao(\''+id+'\')" style="border-color:#185FA5;color:#185FA5">📄 PDF</button>'
+        +'<button class="btn btn-sm" onclick="emailAvaliacao(\''+id+'\')" style="border-color:#0F6E56;color:#0F6E56">📧 Email</button>'
         +'<button class="btn btn-primary btn-sm" onclick="iniciarAvaliacaoPara(\''+id+'\');closeModal()">📋 Avaliar</button>'
         +'<button class="btn btn-sm" onclick="verLineaTempo(\''+c.nome+'\')" >⏰ Linha do Tempo</button>'
         +'<button class="btn btn-purple btn-sm" onclick="quickAsk(\'Analise o perfil de '+c.nome.split(' ')[0]+' e sugira ações\');closeModal();go(\'agente\')">🤖 Analisar com IA</button>'
@@ -6760,6 +6855,86 @@ function emailResumoCol(tipo,colNome){
 }
 function emailResumoColaborador(weekKey,colNome){emailResumoCol('semanal',colNome);}
 
+// ─── Email de andamento do PDI ───────────────────────────────
+function emailAndamentoPDI(colId){
+  var pdis=getPDIs().filter(function(p){return p.colId===colId;});
+  var col=colaboradores.find(function(c){return c.id===colId;});if(!col)return;
+  var ativo=pdis.find(function(p){return p.status==='Em andamento';})||pdis[0];
+  if(!ativo){alert('Nenhum PDI encontrado.');return;}
+  var pct=Math.round((ativo.acoes||[]).reduce(function(a,ac){return a+(ac.progresso||0);},0)/Math.max((ativo.acoes||[]).length,1));
+  var dataHoje=new Date().toLocaleDateString('pt-BR');
+  var txt='ANDAMENTO DO PDI\n';
+  txt+='='+(new Array(40)).join('=')+'\n\n';
+  txt+='Colaborador: '+col.nome+'\n';
+  txt+='Nivel: '+(col.nivel||'')+' | Area: '+(col.area||'')+'\n';
+  txt+='Ciclo: '+(ativo.ciclo||'')+'\n';
+  txt+='Status: '+ativo.status+'\n';
+  txt+='Progresso geral: '+pct+'%\n';
+  txt+='Data: '+dataHoje+'\n\n';
+  if(ativo.competencias&&ativo.competencias.length){
+    txt+='COMPETENCIAS EM DESENVOLVIMENTO\n';
+    ativo.competencias.forEach(function(c){txt+='  - '+c+'\n';});
+    txt+='\n';
+  }
+  txt+='ACOES ('+((ativo.acoes||[]).length)+')\n';
+  txt+='-'+(new Array(40)).join('-')+'\n';
+  (ativo.acoes||[]).forEach(function(a,i){
+    var icon=a.status==='Concluída'?'[OK]':a.status==='Em andamento'?'[>>]':'[  ]';
+    txt+=(i+1)+'. '+icon+' '+a.descricao+'\n';
+    txt+='   Tipo: '+(a.tipo||'-')+' | Status: '+a.status+' | Progresso: '+a.progresso+'%';
+    if(a.prazo)txt+=' | Prazo: '+a.prazo;
+    txt+='\n';
+  });
+  if(ativo.revisoes&&ativo.revisoes.length){
+    txt+='\nULTIMAS REVISOES\n';
+    ativo.revisoes.slice(-3).reverse().forEach(function(r){
+      txt+='  '+r.data+': '+r.nota+'\n';
+    });
+  }
+  if(ativo.dataProxRevisao)txt+='\nProxima revisao prevista: '+ativo.dataProxRevisao+'\n';
+  txt+='\n---\nGerado por Squado · squado.com.br';
+  var emailTo=col.email||'';
+  var subject=encodeURIComponent('Andamento PDI — '+col.nome+' — '+dataHoje);
+  window.open('mailto:'+emailTo+'?subject='+subject+'&body='+encodeURIComponent(txt),'_blank');
+}
+
+// ─── Email de avaliação de desempenho ────────────────────────
+function emailAvaliacao(avalId){
+  var a=avaliacoes.find(function(x){return x.id===avalId;});if(!a)return;
+  var col=colaboradores.find(function(c){return c.nome===a.colaborador;})||{nome:a.colaborador,email:''};
+  var dataHoje=new Date().toLocaleDateString('pt-BR');
+  var txt='AVALIACAO DE DESEMPENHO\n';
+  txt+='='+(new Array(40)).join('=')+'\n\n';
+  txt+='Colaborador: '+a.colaborador+'\n';
+  txt+='Nivel: '+(a.nivel||'')+'\n';
+  txt+='Data da avaliacao: '+(a.data||'')+'\n';
+  if(a.avaliador)txt+='Avaliador: '+a.avaliador+'\n';
+  txt+='Media geral: '+a.mediaGeral+'/10\n\n';
+  txt+='RESULTADOS POR SECAO\n';
+  txt+='-'+(new Array(40)).join('-')+'\n';
+  var secoes=Object.entries(a.secaoMedias||{});
+  secoes.forEach(function(sv){
+    var barra='';var val=sv[1];
+    for(var i=0;i<10;i++)barra+=i<Math.round(val)?'█':'░';
+    txt+='  '+sv[0]+': '+barra+' '+val+'/10'+(val>=8?' (Excelente)':val>=5?' (Em desenvolvimento)':' (Critico)')+'\n';
+  });
+  if(a.pontosPos){txt+='\nPONTOS POSITIVOS\n'+a.pontosPos+'\n';}
+  if(a.oportunidades){txt+='\nOPORTUNIDADES DE MELHORIA\n'+a.oportunidades+'\n';}
+  // Incluir notas do colaborador (resumo)
+  var notasCol=notas.filter(function(n){return n.colNome===a.colaborador;});
+  if(notasCol.length){
+    txt+='\nANOTACOES DO GESTOR ('+notasCol.length+')\n';
+    notasCol.slice(-5).forEach(function(n){
+      txt+='  - '+(n.data||'').slice(5)+' ['+(n.categoria||'Geral')+'] '+n.texto+'\n';
+    });
+    if(notasCol.length>5)txt+='  ... e mais '+(notasCol.length-5)+' anotacoes\n';
+  }
+  txt+='\n---\nGerado por Squado · squado.com.br';
+  var emailTo=col.email||'';
+  var subject=encodeURIComponent('Avaliacao de Desempenho — '+a.colaborador+' — '+(a.data||dataHoje));
+  window.open('mailto:'+emailTo+'?subject='+subject+'&body='+encodeURIComponent(txt),'_blank');
+}
+
 function salvarNotaRapida(){
   const raw=((document.getElementById('notes-raw')||{}).value||'');if(!raw)return;
   notas.push({id:uid(),colId:'geral',colNome:'Geral',categoria:'Geral',texto:raw,data:new Date().toISOString().slice(0,10),dataHora:new Date().toISOString()});
@@ -7219,6 +7394,7 @@ function renderPerfilAba(id, aba){
         :'<div style="text-align:center;padding:20px;color:var(--txt3)">Nenhum PDI ativo.</div>')
       +'<div style="display:flex;gap:8px">'
         +'<button class="btn btn-primary btn-sm" data-col="'+id+'" onclick="abrirPDI(this.dataset.col)" style="flex:1">🚀 '+(ativo?'Abrir PDI':'Criar PDI')+'</button>'
+        +(ativo?'<button class="btn btn-sm" style="border-color:#0F6E56;color:#0F6E56" data-col="'+id+'" onclick="emailAndamentoPDI(this.dataset.col)">📧 Email</button>':'')
         +(pdisCol.length>1?'<button class="btn btn-sm" data-col="'+id+'" onclick="verHistoricoPDI(this.dataset.col)">📂 Histórico</button>':'')
       +'</div>';
   }
