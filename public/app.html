@@ -1578,6 +1578,8 @@ function areaBadge(area){const c=AREA_COLORS[area]||{cor:'#888',bg:'#eee'};retur
 let currentPage='dashboard';
 function go(page){
   currentPage=page;
+  // Atualizar URL sem recarregar (hash router)
+  if(location.hash !== '#'+page) history.pushState(null, '', '#'+page);
   // Mostrar search box apenas em colaboradores
   // Topbar-btn sempre escondido — botão de ação fica dentro da página
   const _tbBtn = document.getElementById('topbar-btn');
@@ -1593,6 +1595,16 @@ function go(page){
   render(page);
   // Atualizar nav mobile se existir
   if(typeof updateMobNav==='function') updateMobNav(page);
+}
+// Hash router: navegar ao clicar voltar/avançar do browser
+window.addEventListener('popstate', function(){
+  var pg=(location.hash||'').replace('#','') || 'dashboard';
+  if(pg !== currentPage) { currentPage=pg; render(pg); }
+});
+// Ler hash inicial (ex: squado.com.br/app#metas → abre direto em metas)
+function _initHashRouter(){
+  var pg=(location.hash||'').replace('#','');
+  if(pg && pg !== 'dashboard') { currentPage=pg; }
 }
 function handleSearch(v){render(currentPage,v)}
 function handleTopAction(){
@@ -2419,6 +2431,8 @@ function squadoEntrar(user) {
   // Mostrar botao sair mobile
   const _mob = document.getElementById('squado-sair-mobile');
   if(_mob) _mob.style.display = 'block';
+  // Inicializar router: ler hash da URL (ex: #metas → abrir metas)
+  _initHashRouter();
   // Carregar dados da nuvem após login — mostrar loading até terminar
   const _loadingEl = document.getElementById('squado-loading-overlay');
   if(_loadingEl){ _loadingEl.style.display = 'flex'; }
