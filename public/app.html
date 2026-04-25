@@ -6767,7 +6767,7 @@ function renderPerfilAba(id, aba){
     const col=colaboradores.find(x=>x.id===id);
     return col&&(r.nome===col.nome);
   }));
-  const notasCol=notas.filter(n=>n.colId===id);
+  const _notasResumo=notas.filter(n=>n.colId===id);
   const p=c.perfil||{};
 
   const abas=[
@@ -6822,7 +6822,7 @@ function renderPerfilAba(id, aba){
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800">'+(c.historico||[]).length+'</div><div style="font-size:10px;color:var(--txt2)">Movimentações</div></div>'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--blue)">'+metas.filter(function(m){return m.colId===id;}).length+'</div><div style="font-size:10px;color:var(--txt2)">Metas</div></div>'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--green)">'+(ultimaAval?ultimaAval.mediaGeral:'-')+'</div><div style="font-size:10px;color:var(--txt2)">Última nota</div></div>'
-        +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800">'+notasCol.length+'</div><div style="font-size:10px;color:var(--txt2)">Notas</div></div>'
+        +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800">'+_notasResumo.length+'</div><div style="font-size:10px;color:var(--txt2)">Notas</div></div>'
       +'</div>'
       // Funções
       +(funcsCol.length>0?
