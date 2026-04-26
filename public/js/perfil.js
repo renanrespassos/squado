@@ -568,7 +568,7 @@ function renderPerfilAba(id, aba){
   document.getElementById('modal-box').classList.add('modal-lg');
   document.getElementById('modal-body').innerHTML=
     // Tabs
-    '<div style="display:flex;gap:4px;padding:4px;background:#F5F6F4;border-radius:7px;margin-bottom:14px">'+tabsHtml+'</div>'
+    '<div style="display:flex;gap:4px;padding:4px;background:#F5F6F4;border-radius:7px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch">'+tabsHtml+'</div>'
     // Conteúdo
     +conteudo;
   document.getElementById('modal').style.display='flex';
