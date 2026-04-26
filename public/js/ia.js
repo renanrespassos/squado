@@ -377,7 +377,7 @@ function scrollAiToBottom(){const msgs=document.getElementById('ai-messages');if
 
 function renderAgente(){
   const cfg=getIAConfig();
-  const hasKey=!!(cfg.mode==='ollama'?cfg.ollamaUrl:cfg.remoteUrl);
+  const hasKey=cfg.mode==='cloud'||!!(cfg.mode==='ollama'?cfg.ollamaUrl:cfg.remoteUrl);
   const semAval=colaboradores.filter(c=>!avaliacoes.find(a=>a.colaboradorId===c.id)).length;
 
   // Montar mensagens
@@ -406,16 +406,7 @@ function renderAgente(){
   var sugBtns='';
   sugs.forEach(function(q,i){ window['_sq'+i]=q; sugBtns+='<button class="btn btn-xs" onclick="quickAsk(window._sq'+i+')">'+q+'</button>'; });
 
-  var banner='';
-  if(!hasKey){
-    banner='<div style="background:#FAEEDA;border:0.5px solid rgba(133,79,11,.3);border-radius:10px;padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:12px">'
-      +'<span style="font-size:20px">\u{1F511}</span>'
-      +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--amber)">IA n\u00E3o configurada</div>'
-      +'<div style="font-size:11.5px;color:var(--txt2);margin-top:2px">Configure o Ollama local ou um servidor remoto.</div></div>'
-      +'<button class="btn btn-sm" onclick="showApiKeyModal()" style="border-color:var(--amber);color:var(--amber)">\u2699\uFE0F Configurar IA</button></div>';
-  }
-
-  return banner
+  return ''
     +'<div class="ai-wrap">'
       +'<div class="ai-left">'
         +'<div class="ai-messages" id="ai-messages">'+msgsHtml+'</div>'
@@ -445,7 +436,6 @@ function renderAgente(){
         +'</div>'
         +'<div class="ai-ctx-card">'
           +'<button class="btn btn-sm btn-danger" style="width:100%" onclick="clearAiHistory()">\u{1F5D1} Limpar conversa</button>'
-          +'<button class="btn btn-sm" style="width:100%;margin-top:6px" onclick="showApiKeyModal()">\u2699\uFE0F Config. IA</button>'
         +'</div>'
       +'</div>'
     +'</div>';
