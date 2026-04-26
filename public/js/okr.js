@@ -1,18 +1,14 @@
 
 // ══════════════════════════════════════════
-// OKR — Objectives & Key Results
+// OKR — Objectives & Key Results (por área)
 // ══════════════════════════════════════════
 
 function renderOKR(search){
   var okrs = metas.filter(function(m){ return m.tipo === 'okr'; });
   var q = (search||'').toLowerCase();
-  var filtOkr = q ? okrs.filter(function(m){ return (m.objetivo||'').toLowerCase().includes(q) || (m.area||'').toLowerCase().includes(q); }) : okrs;
+  var areas = Object.keys(AREA_COLORS);
 
-  // Cores de status
-  function stBg(s){return{Pendente:'#FAEEDA','Em andamento':'#E6F1FB','Concluída':'#E1F5EE','Cancelada':'var(--bg3)','No prazo':'#E1F5EE','Em risco':'#FAEEDA','Atrasada':'#FCEBEB'}[s]||'var(--bg2)';}
-  function stCor(s){return{Pendente:'#854F0B','Em andamento':'#185FA5','Concluída':'#0F6E56','Cancelada':'#888','No prazo':'#0F6E56','Em risco':'#854F0B','Atrasada':'#A32D2D'}[s]||'var(--txt2)';}
-
-  // Progresso OKR (média dos KRs)
+  // Progresso OKR
   function okrPct(okr){
     var krs = okr.keyResults||[];
     if(!krs.length) return 0;
@@ -24,66 +20,116 @@ function renderOKR(search){
     return Math.round(soma/krs.length);
   }
 
-  // Card de OKR
-  function cardOkr(okr){
-    var pct = okrPct(okr);
-    var corP = pct>=80?'var(--green)':pct>=50?'#854F0B':'#A32D2D';
-    var krs = okr.keyResults||[];
-    var c2 = AREA_COLORS[okr.area]||{cor:'#888',bg:'#eee'};
-    return '<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px">'
-      +'<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px">'
-        +'<div style="font-size:22px">🎯</div>'
-        +'<div style="flex:1;min-width:0">'
-          +'<div style="font-size:14px;font-weight:800;color:var(--txt);margin-bottom:3px">'+okr.objetivo+'</div>'
-          +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
-            +(okr.area?'<span style="font-size:10px;font-weight:700;padding:1px 8px;border-radius:20px;background:'+c2.bg+';color:'+c2.cor+'">'+okr.area+'</span>':'')
-            +(okr.periodo?'<span style="font-size:10px;color:var(--txt3);padding:1px 8px;border-radius:20px;background:var(--bg2)">📅 '+okr.periodo+'</span>':'')
-          +'</div>'
-        +'</div>'
-        +'<div style="text-align:right;flex-shrink:0">'
-          +'<div style="font-size:24px;font-weight:900;color:'+corP+'">'+pct+'%</div>'
-          +'<div style="font-size:9px;color:var(--txt3)">progresso</div>'
-        +'</div>'
-      +'</div>'
-      +'<div style="height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:14px">'
-        +'<div style="height:100%;width:'+pct+'%;background:'+corP+';border-radius:3px;transition:width .4s"></div>'
-      +'</div>'
-      +'<div style="display:flex;flex-direction:column;gap:8px">'
-        +krs.map(function(kr,i){
-          var alvo=parseFloat(kr.alvo)||1;
-          var atual=parseFloat(kr.atual)||0;
-          var krPct=Math.min(100,Math.round(atual/alvo*100));
-          var krCor=krPct>=100?'var(--green)':krPct>=60?'#854F0B':'#185FA5';
-          return '<div style="background:var(--bg2);border-radius:8px;padding:10px 12px">'
-            +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
-              +'<span style="font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;background:'+krCor+';color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(i+1)+'</span>'
-              +'<span style="font-size:12px;font-weight:600;color:var(--txt);flex:1">'+kr.titulo+'</span>'
-              +'<span style="font-size:11px;font-weight:700;color:'+krCor+'">'+krPct+'%</span>'
-            +'</div>'
-            +'<div style="display:flex;align-items:center;gap:10px">'
-              +'<div style="flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden">'
-                +'<div style="height:100%;width:'+krPct+'%;background:'+krCor+';border-radius:3px"></div>'
-              +'</div>'
-              +'<span style="font-size:11px;color:var(--txt3);white-space:nowrap;flex-shrink:0">'+atual+' / '+alvo+(kr.unidade?' '+kr.unidade:'')+'</span>'
-            +'</div>'
-          +'</div>';
-        }).join('')
-      +'</div>'
-      +'<div style="display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:0.5px solid var(--border)">'
-        +'<button class="btn btn-xs" onclick="openOKRForm(\''+okr.id+'\')">✏️ Editar</button>'
-        +'<button class="btn btn-xs btn-primary" onclick="editarKRs(\''+okr.id+'\')">📊 Atualizar KRs</button>'
-        +'<button class="btn btn-xs btn-danger" onclick="delOKR(\''+okr.id+'\')">×</button>'
-      +'</div>'
-    +'</div>';
+  // Agrupar OKRs por área
+  var okrsPorArea = {};
+  okrs.forEach(function(o){
+    var key = o.area || '_sem_area';
+    if(!okrsPorArea[key]) okrsPorArea[key] = [];
+    okrsPorArea[key].push(o);
+  });
+
+  // Filtrar áreas por busca
+  var areasFiltradas = areas;
+  if(q){
+    areasFiltradas = areas.filter(function(a){
+      var areaMatch = a.toLowerCase().includes(q);
+      var okrsArea = okrsPorArea[a]||[];
+      var okrMatch = okrsArea.some(function(o){ return (o.objetivo||'').toLowerCase().includes(q); });
+      return areaMatch || okrMatch;
+    });
   }
 
   // Stats
   var totalOkrs = okrs.length;
-  var totalKrs  = okrs.reduce(function(a,o){return a+(o.keyResults||[]).length;},0);
+  var totalKrs = okrs.reduce(function(a,o){return a+(o.keyResults||[]).length;},0);
   var pctMedOkr = totalOkrs ? Math.round(okrs.reduce(function(a,o){return a+okrPct(o);},0)/totalOkrs) : 0;
+  var areasSemOkr = areas.filter(function(a){ return !(okrsPorArea[a]&&okrsPorArea[a].length); }).length;
+
+  // Card de área com seus OKRs
+  function cardArea(area){
+    var cor = AREA_COLORS[area]||{cor:'#888',bg:'#eee'};
+    var meusOkrs = okrsPorArea[area]||[];
+    var temOkr = meusOkrs.length > 0;
+
+    var html = '<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;overflow:hidden">'
+      // Header da área
+      +'<div style="padding:12px 14px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid var(--border)">'
+        +'<div style="width:36px;height:36px;border-radius:10px;background:'+cor.bg+';color:'+cor.cor+';display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0">'+area.slice(0,2).toUpperCase()+'</div>'
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:13px;font-weight:700;color:var(--txt)">'+area+'</div>'
+          +'<div style="font-size:10px;color:var(--txt3)">'+colaboradores.filter(function(c){return c.area===area;}).length+' colaboradores</div>'
+        +'</div>';
+
+    if(temOkr){
+      var pctArea = Math.round(meusOkrs.reduce(function(a,o){return a+okrPct(o);},0)/meusOkrs.length);
+      var corPct = pctArea>=80?'var(--green)':pctArea>=50?'#854F0B':'#185FA5';
+      html += '<span style="font-size:12px;font-weight:700;color:'+corPct+'">'+pctArea+'%</span>'
+        +'<span style="font-size:10px;padding:2px 8px;border-radius:12px;background:'+cor.bg+';color:'+cor.cor+';font-weight:600">'+meusOkrs.length+' OKR'+(meusOkrs.length>1?'s':'')+'</span>';
+    } else {
+      html += '<span style="font-size:10px;padding:2px 8px;border-radius:12px;background:var(--bg3);color:var(--txt3);font-weight:600">Sem OKR</span>';
+    }
+
+    html += '</div>';
+
+    // Lista de OKRs da área
+    if(temOkr){
+      html += '<div style="padding:8px 14px">';
+      meusOkrs.forEach(function(okr){
+        var pct = okrPct(okr);
+        var corP = pct>=80?'var(--green)':pct>=50?'#854F0B':'#A32D2D';
+        var krs = okr.keyResults||[];
+
+        html += '<div style="padding:8px 0;border-bottom:0.5px solid var(--border)">'
+          // Objetivo + progresso
+          +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+            +'<span style="font-size:14px">🎯</span>'
+            +'<div style="flex:1;font-size:12px;font-weight:700;color:var(--txt)">'+okr.objetivo+'</div>'
+            +(okr.periodo?'<span style="font-size:9px;color:var(--txt3);background:var(--bg2);padding:1px 6px;border-radius:8px">'+okr.periodo+'</span>':'')
+            +'<span style="font-size:13px;font-weight:800;color:'+corP+'">'+pct+'%</span>'
+          +'</div>'
+          // Barra geral
+          +'<div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:6px">'
+            +'<div style="height:100%;width:'+pct+'%;background:'+corP+';border-radius:2px"></div>'
+          +'</div>'
+          // KRs compactos
+          +'<div style="display:flex;flex-direction:column;gap:3px;margin-bottom:6px">';
+
+        krs.forEach(function(kr,i){
+          var alvo=parseFloat(kr.alvo)||1;
+          var atual=parseFloat(kr.atual)||0;
+          var krPct=Math.min(100,Math.round(atual/alvo*100));
+          var krCor=krPct>=100?'var(--green)':krPct>=60?'#854F0B':'#185FA5';
+          html += '<div style="display:flex;align-items:center;gap:6px;font-size:11px">'
+            +'<span style="width:14px;height:14px;border-radius:50%;background:'+krCor+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0">'+(i+1)+'</span>'
+            +'<span style="flex:1;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+kr.titulo+'</span>'
+            +'<div style="width:60px;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;flex-shrink:0"><div style="height:100%;width:'+krPct+'%;background:'+krCor+'"></div></div>'
+            +'<span style="font-weight:700;color:'+krCor+';width:28px;text-align:right">'+krPct+'%</span>'
+          +'</div>';
+        });
+
+        html += '</div>'
+          // Ações
+          +'<div style="display:flex;gap:4px">'
+            +'<button class="btn btn-xs" onclick="openOKRForm(\''+okr.id+'\')" style="padding:1px 6px;font-size:10px">✏️</button>'
+            +'<button class="btn btn-xs btn-primary" onclick="editarKRs(\''+okr.id+'\')" style="padding:1px 6px;font-size:10px">📊 KRs</button>'
+          +'</div>'
+        +'</div>';
+      });
+
+      html += '<button class="btn btn-xs btn-primary" onclick="openOKRFormArea(\''+area+'\')" style="margin-top:6px;width:100%;font-size:10px">🎯 + Novo OKR</button>';
+      html += '</div>';
+    } else {
+      html += '<div style="padding:10px 14px">'
+        +'<button class="btn btn-primary btn-sm" onclick="openOKRFormArea(\''+area+'\')" style="width:100%">🎯 Criar OKR</button>'
+      +'</div>';
+    }
+
+    html += '</div>';
+    return html;
+  }
 
   return '<div>'
-    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px">'
+    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">'
       +'<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:14px;text-align:center">'
         +'<div style="font-size:28px;font-weight:900;color:var(--blue)">'+totalOkrs+'</div>'
         +'<div style="font-size:11px;color:var(--txt2)">Objectives</div>'
@@ -96,27 +142,29 @@ function renderOKR(search){
         +'<div style="font-size:28px;font-weight:900;color:'+(pctMedOkr>=70?'var(--green)':'#854F0B')+'">'+pctMedOkr+'%</div>'
         +'<div style="font-size:11px;color:var(--txt2)">Progresso médio</div>'
       +'</div>'
+      +'<div style="background:#FAEEDA;border:0.5px solid var(--border);border-radius:10px;padding:14px;text-align:center">'
+        +'<div style="font-size:28px;font-weight:900;color:#854F0B">'+areasSemOkr+'</div>'
+        +'<div style="font-size:11px;color:var(--txt2)">Áreas sem OKR</div>'
+      +'</div>'
     +'</div>'
-    +'<div style="display:flex;gap:8px;margin-bottom:18px">'
-      +'<button class="btn btn-primary btn-sm" onclick="openOKRForm()">🎯 + Novo OKR</button>'
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">'
+      +areasFiltradas.map(cardArea).join('')
     +'</div>'
-    +(filtOkr.length ? filtOkr.map(cardOkr).join('')
-      : '<div style="text-align:center;padding:48px 20px">'
-          +'<div style="font-size:48px;margin-bottom:12px">🎯</div>'
-          +'<div style="font-size:16px;font-weight:700;color:var(--txt);margin-bottom:6px">Nenhum OKR definido ainda</div>'
-          +'<div style="font-size:13px;color:var(--txt3);margin-bottom:20px">OKRs definem objetivos estratégicos da equipe<br>com Key Results mensuráveis para acompanhar o progresso.</div>'
-          +'<button class="btn btn-primary" onclick="openOKRForm()">🎯 Criar primeiro OKR</button>'
-        +'</div>')
   +'</div>';
 }
 
-// ── Formulário OKR ─────────────────────────────────────────────
-function openOKRForm(id){
+// ── Formulário OKR pré-selecionando área ───────────────────────
+function openOKRFormArea(area){
+  openOKRForm(null, area);
+}
+
+function openOKRForm(id, preArea){
   id=id||null;
   var m=id?metas.find(function(x){return x.id===id;}):null;
   var isNew=!id;
   var areas=Object.keys(AREA_COLORS);
   var krs=m?m.keyResults||[]:[{titulo:'',alvo:'',atual:'',unidade:''}];
+  var selArea = (m && m.area) || preArea || '';
 
   document.getElementById('modal-title').textContent=isNew?'🎯 Novo OKR':'🎯 Editar OKR';
   document.getElementById('modal-box').classList.add('modal-lg');
@@ -125,7 +173,7 @@ function openOKRForm(id){
       +'<div class="field-group form-full"><div class="field-label">🎯 Objetivo (O) — O que queremos alcançar?</div>'
         +'<input id="okr-obj" value="'+(m&&m.objetivo||'')+'" placeholder="Ex: Aumentar a capacidade de ensaios EMC"/></div>'
       +'<div class="field-group"><div class="field-label">Área</div>'
-        +'<select id="okr-area">'+areas.map(function(a){return'<option value="'+a+'"'+(m&&m.area===a?' selected':'')+'>'+a+'</option>';}).join('')+'</select></div>'
+        +'<select id="okr-area">'+areas.map(function(a){return'<option value="'+a+'"'+(selArea===a?' selected':'')+'>'+a+'</option>';}).join('')+'</select></div>'
       +'<div class="field-group"><div class="field-label">Período</div>'
         +'<input id="okr-periodo" value="'+(m&&m.periodo||'')+'" placeholder="Ex: Q1 2025, Jan–Mar 2025"/></div>'
     +'</div>'
@@ -208,7 +256,7 @@ function delOKR(id){
   closeModal();toast('OKR excluído!');render('okr');
 }
 
-// ── Editar KRs (atualizar progresso) ───────────────────────────
+// ── Editar KRs ─────────────────────────────────────────────────
 function editarKRs(okrId){
   var okr=metas.find(function(m){return m.id===okrId;});
   if(!okr)return;
