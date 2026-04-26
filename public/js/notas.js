@@ -25,7 +25,7 @@ function renderNotas(search=''){
   const sentEmoji={'positivo':'😊','negativo':'😟','neutro':'😐'};
 
   const cats=[...new Set(notas.map(n=>n.categoria))].filter(Boolean);
-  const colNames=[...new Set(notas.map(n=>n.colNome))].filter(n=>n!=='Geral');
+  const colNames=[...new Set(notas.map(n=>n.colNome))].filter(n=>n&&n!=='Geral');
   const banner=hasKey?'':
     '<div style="background:#FAEEDA;border:0.5px solid rgba(133,79,11,.3);border-radius:10px;padding:12px;margin-bottom:12px;display:flex;align-items:center;gap:12px">'
     +'<span style="font-size:18px">\uD83D\uDD11</span>'

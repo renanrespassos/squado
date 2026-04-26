@@ -931,7 +931,7 @@ function _salvarNotaPerfil(colId){
   var cat=document.getElementById('perfil-nota-cat');
   var col=colaboradores.find(function(c){return c.id===colId;});
   var nota={
-    id:uid(),colId:colId,colaborador:col?col.nome:'',
+    id:uid(),colId:colId,colaborador:col?col.nome:'',colNome:col?col.nome:'',
     texto:txt.value.trim(),
     sentimento:sent?sent.value:'neutro',
     categoria:cat?cat.value:'Observação',
