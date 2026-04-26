@@ -16,14 +16,15 @@ function renderPerfilAba(id, aba){
   const p=c.perfil||{};
 
   const abas=[
-    {id:'resumo',   icon:'👤', label:'Resumo'},
-    {id:'pessoal',  icon:'📋', label:'Dados Pessoais'},
-    {id:'metas_col',icon:'🎯', label:'Metas'},
-    {id:'notas_col',icon:'📝', label:'Notas'},
-    {id:'historico',icon:'🕐', label:'Movimentações'},
-    {id:'funcoes_col',icon:'📌',label:'Funções'},
-    {id:'pdi_col',icon:'🚀',label:'PDI'},
-    {id:'avaliacoes',icon:'📊',label:'Avaliações'},
+    {id:'resumo',     icon:'👤', label:'Resumo'},
+    {id:'funcoes_col',icon:'📌', label:'Funções'},
+    {id:'avaliacoes', icon:'📊', label:'Avaliações'},
+    {id:'metas_col',  icon:'✅', label:'Metas'},
+    {id:'pdi_col',    icon:'🚀', label:'PDI'},
+    {id:'okr_col',    icon:'🎯', label:'OKR'},
+    {id:'notas_col',  icon:'📝', label:'Notas'},
+    {id:'historico',  icon:'🕐', label:'Movimentações'},
+    {id:'pessoal',    icon:'📋', label:'Dados Pessoais'},
   ];
 
   const tabsHtml=abas.map(a=>
@@ -93,8 +94,6 @@ function renderPerfilAba(id, aba){
       :'')
       // Botões
       +'<div style="display:flex;gap-8px;flex-wrap:wrap;gap:8px;padding-top:12px;border-top:0.5px solid var(--border)">'
-        +'<button class="btn btn-primary btn-sm" onclick="iniciarAvaliacaoPara(\''+id+'\');closeModal()">📋 Avaliar</button>'
-        +'<button class="btn btn-sm" onclick="verLineaTempo(\''+c.nome+'\')">⏰ Linha do Tempo</button>'
         +'<button class="btn btn-purple btn-sm" onclick="quickAsk(\'Analise o perfil de '+c.nome.split(' ')[0]+' e sugira ações\');closeModal();go(\'agente\')">🤖 Analisar com IA</button>'
       +'</div>';
   }
@@ -186,7 +185,8 @@ function renderPerfilAba(id, aba){
             +'</div>';
           }).join('')
         +'</div>'
-      );
+      )
+      +(p.email&&hist.length?'<div style="margin-top:10px"><button class="btn btn-sm" onclick="enviarPerfilEmail(\''+id+'\',\'movimentacoes\')">📧 Enviar por email</button></div>':'');
   }
 
   // ── ABA FUNÇÕES ──────────────────────────────────────────────
@@ -284,7 +284,8 @@ function renderPerfilAba(id, aba){
       +'<div style="border-top:0.5px solid var(--border);padding-top:14px;margin-top:6px">'
         +'<div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px">➕ Atribuir nova função</div>'
         +addSelect
-      +'</div>';
+      +'</div>'
+      +(p.email&&minhasFuncs.length?'<div style="border-top:0.5px solid var(--border);padding-top:10px;margin-top:10px"><button class="btn btn-sm" onclick="enviarPerfilEmail(\''+id+'\',\'funcoes\')">📧 Enviar funções por email</button></div>':'');
   }
 
 
@@ -356,96 +357,60 @@ function renderPerfilAba(id, aba){
           }).join('')
         +'</div>'
       )
-      +'<div style="margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)">'
+      +'<div style="margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border);display:flex;gap:8px">'
         +'<button class="btn btn-primary btn-sm" onclick="iniciarAvaliacaoPara(\''+id+'\');closeModal()">📋 Nova avaliação</button>'
+        +(p.email&&avsC.length?'<button class="btn btn-sm" onclick="enviarPerfilEmail(\''+id+'\',\'avaliacoes\')">📧 Enviar por email</button>':'')
       +'</div>';
   }
 
   // ── ABA METAS ─────────────────────────────────────────────────
   else if(aba==='metas_col'){
-    var metasCol=metas.filter(function(m){return m.colId===id;});
-    var smartCol=metasCol.filter(function(m){return m.tipo==='smart';});
-    var okrCol=metasCol.filter(function(m){return m.tipo==='okr';});
-    var totalMetas=metasCol.length;
-    var concluidas=metasCol.filter(function(m){return m.status==='Concluída'||m.progresso>=100;}).length;
-    var pctGeral=totalMetas?Math.round(metasCol.reduce(function(a,m){return a+(m.progresso||0);},0)/totalMetas):0;
+    var smartCol=metas.filter(function(m){return m.tipo==='smart'&&m.colId===id;});
+    var totalMetas=smartCol.length;
+    var concluidas=smartCol.filter(function(m){return m.status==='Concluída'||m.progresso>=100;}).length;
+    var pctGeral=totalMetas?Math.round(smartCol.reduce(function(a,m){return a+(m.progresso||0);},0)/totalMetas):0;
 
     function miniCardSmart(m){
       var p=m.progresso||0;var cor=p>=100?'var(--green)':p>=60?'#854F0B':'#185FA5';
+      var stBg={Pendente:'#FAEEDA','Em andamento':'#E6F1FB','Concluída':'#E1F5EE','No prazo':'#E1F5EE','Em risco':'#FAEEDA','Atrasada':'#FCEBEB'}[m.status]||'var(--bg3)';
+      var stCor={Pendente:'#854F0B','Em andamento':'#185FA5','Concluída':'#0F6E56','No prazo':'#0F6E56','Em risco':'#854F0B','Atrasada':'#A32D2D'}[m.status]||'var(--txt3)';
       return '<div style="background:var(--bg2);border-radius:9px;padding:12px;margin-bottom:8px;border-left:3px solid '+cor+'">'
         +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
           +'<div style="flex:1"><div style="font-size:12px;font-weight:700;color:var(--txt)">'+m.titulo+'</div>'
-          +'<div style="font-size:10px;color:var(--txt3)">'+(m.prazo?'Prazo: '+m.prazo:'Sem prazo')+' · '+(m.status||'Pendente')+'</div></div>'
+          +'<div style="font-size:10px;color:var(--txt3)">'+(m.prazo?'Prazo: '+m.prazo:'Sem prazo')+' · <span style="color:'+stCor+'">'+(m.status||'Pendente')+'</span></div></div>'
           +'<span style="font-size:14px;font-weight:800;color:'+cor+'">'+p+'%</span>'
         +'</div>'
-        +'<div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+Math.min(p,100)+'%;background:'+cor+';border-radius:2px"></div></div>'
-      +'</div>';
-    }
-
-    function miniCardOkr(o){
-      var krs=o.keyResults||[];
-      var p=krs.length?Math.round(krs.reduce(function(a,kr){var al=parseFloat(kr.alvo)||1;var at=parseFloat(kr.atual)||0;return a+Math.min(100,Math.round(at/al*100));},0)/krs.length):0;
-      var cor=p>=80?'var(--green)':p>=50?'#854F0B':'#A32D2D';
-      return '<div style="background:var(--bg2);border-radius:9px;padding:12px;margin-bottom:8px;border-left:3px solid '+cor+'">'
-        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
-          +'<span style="font-size:14px">🎯</span>'
-          +'<div style="flex:1"><div style="font-size:12px;font-weight:700;color:var(--txt)">'+(o.objetivo||o.titulo)+'</div>'
-          +'<div style="font-size:10px;color:var(--txt3)">'+krs.length+' Key Results · '+(o.periodo||'')+'</div></div>'
-          +'<span style="font-size:14px;font-weight:800;color:'+cor+'">'+p+'%</span>'
+        +'<div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:6px"><div style="height:100%;width:'+Math.min(p,100)+'%;background:'+cor+';border-radius:2px"></div></div>'
+        +'<div style="display:flex;gap:4px">'
+          +'<button class="btn btn-xs" onclick="closeModal();setTimeout(function(){openMetaForm(\''+m.id+'\')},150)" style="font-size:10px">✏️ Editar</button>'
+          +'<button class="btn btn-xs btn-danger" onclick="if(confirm(\'Excluir?\')){delMeta(\''+m.id+'\');renderPerfilAba(\''+id+'\',\'metas_col\')}" style="font-size:10px">×</button>'
         +'</div>'
-        +'<div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+Math.min(p,100)+'%;background:'+cor+';border-radius:2px"></div></div>'
-        +(krs.length?'<div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">'+krs.map(function(kr,i){
-          var ka=parseFloat(kr.alvo)||1;var kc=parseFloat(kr.atual)||0;var kp=Math.min(100,Math.round(kc/ka*100));var done=kp>=100;
-          return '<div style="display:flex;align-items:center;gap:6px;font-size:11px"><span style="color:'+(done?'var(--green)':'var(--txt3)')+'">'+( done?'✅':'⭕')+'</span><span style="flex:1;color:var(--txt)">'+kr.titulo+'</span><span style="color:var(--txt2)">'+kc+'/'+ka+'</span></div>';
-        }).join('')+'</div>':'')
       +'</div>';
     }
 
     conteudo=
-      // Stats
       '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--blue)">'+totalMetas+'</div><div style="font-size:10px;color:var(--txt2)">Metas</div></div>'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--green)">'+concluidas+'</div><div style="font-size:10px;color:var(--txt2)">Concluídas</div></div>'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:#854F0B">'+pctGeral+'%</div><div style="font-size:10px;color:var(--txt2)">Progresso</div></div>'
       +'</div>'
-      // SMART
-      +(smartCol.length?'<div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Metas SMART ('+smartCol.length+')</div>'
-        +'<div style="max-height:250px;overflow-y:auto;margin-bottom:14px">'+smartCol.map(miniCardSmart).join('')+'</div>':'')
-      // OKR
-      +(okrCol.length?'<div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">OKRs ('+okrCol.length+')</div>'
-        +'<div style="max-height:250px;overflow-y:auto;margin-bottom:14px">'+okrCol.map(miniCardOkr).join('')+'</div>':'')
-      // Sem metas
-      +(totalMetas===0?'<div style="text-align:center;padding:30px;color:var(--txt3)">Nenhuma meta atribuída a este colaborador.</div>':'')
-      // Botão criar
-      +'<div style="margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border);display:flex;gap:8px">'
-        +'<button class="btn btn-primary btn-sm" onclick="closeModal();setTimeout(function(){window._presetMetaColId=\''+id+'\';go(\'metas\');setTimeout(function(){document.querySelector(\'[onclick*=META\\ SMART]\').click();setTimeout(function(){var sel=document.getElementById(\'sm-col\');if(sel){sel.value=\''+id+'\'}},200)},200)},200)">+ Meta SMART</button>'
-        +'<button class="btn btn-sm" style="border-color:var(--blue);color:var(--blue)" onclick="closeModal();go(\'metas\')">Ver todas as metas</button>'
+      +(smartCol.length?'<div style="max-height:300px;overflow-y:auto;margin-bottom:14px">'+smartCol.map(miniCardSmart).join('')+'</div>'
+        :'<div style="text-align:center;padding:30px;color:var(--txt3)">Nenhuma meta atribuída.</div>')
+      +'<div style="display:flex;gap:8px;padding-top:12px;border-top:0.5px solid var(--border)">'
+        +'<button class="btn btn-purple btn-sm" onclick="closeModal();setTimeout(function(){openMetaFormCol(\''+id+'\')},150)">✅ + Nova Meta</button>'
+        +(p.email&&smartCol.length?'<button class="btn btn-sm" onclick="enviarPerfilEmail(\''+id+'\',\'metas\')">📧 Enviar por email</button>':'')
       +'</div>';
   }
 
   // ── ABA NOTAS ─────────────────────────────────────────────────
   else if(aba==='notas_col'){
     var notasCol=notas.filter(function(n){return n.colId===id;});
-    // Agrupar por semana
-    function getWeekKey(dateStr){
-      var d=new Date(dateStr||Date.now());
-      var day=d.getDay();var diff=d.getDate()-day+(day===0?-6:1);
-      var monday=new Date(d.setDate(diff));
-      return monday.toISOString().slice(0,10);
-    }
-    var porSemana={};
     notasCol.sort(function(a,b){return (b.dataHora||b.data||'').localeCompare(a.dataHora||a.data||'');});
-    notasCol.forEach(function(n){
-      var wk=getWeekKey(n.data||n.dataHora);
-      if(!porSemana[wk])porSemana[wk]=[];
-      porSemana[wk].push(n);
-    });
-    var semanas=Object.keys(porSemana).sort().reverse();
 
     var sentColors={positivo:'#0F6E56',neutro:'#854F0B',negativo:'#A32D2D',alerta:'#993C1D'};
     var sentIcons={positivo:'🟢',neutro:'🟡',negativo:'🔴',alerta:'🟠'};
 
-    function notaCard(n){
+    function notaCard(n,idx){
       var sc=sentColors[n.sentimento]||'var(--txt3)';
       var si=sentIcons[n.sentimento]||'⚪';
       return '<div style="background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:6px;border-left:3px solid '+sc+'">'
@@ -455,34 +420,82 @@ function renderPerfilAba(id, aba){
             +'<div style="font-size:12px;color:var(--txt);line-height:1.5">'+n.texto+'</div>'
             +'<div style="font-size:10px;color:var(--txt3);margin-top:4px">'+(n.categoria?n.categoria+' · ':'')+( n.dataExib||n.data||'')+'</div>'
           +'</div>'
+          +'<button class="btn btn-xs btn-danger" onclick="if(confirm(\'Excluir nota?\')){notas.splice(notas.indexOf(notas.filter(function(x){return x.colId===\''+id+'\'}).sort(function(a,b){return(b.dataHora||b.data||\'\').localeCompare(a.dataHora||a.data||\'\')})['+idx+']),1);saveAll();renderPerfilAba(\''+id+'\',\'notas_col\')}" style="font-size:9px;padding:1px 4px">×</button>'
         +'</div>'
       +'</div>';
     }
 
-    function formatWeek(wkStart){
-      var d=new Date(wkStart);
-      var end=new Date(d);end.setDate(end.getDate()+6);
-      var opts={day:'2-digit',month:'short'};
-      return d.toLocaleDateString('pt-BR',opts)+' — '+end.toLocaleDateString('pt-BR',opts);
-    }
-
     conteudo=
       '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px">'
-        +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--blue)">'+notasCol.length+'</div><div style="font-size:10px;color:var(--txt2)">Anotacoes</div></div>'
-        +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:#854F0B">'+semanas.length+'</div><div style="font-size:10px;color:var(--txt2)">Semanas</div></div>'
+        +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--blue)">'+notasCol.length+'</div><div style="font-size:10px;color:var(--txt2)">Anotações</div></div>'
+        +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--green)">'+notasCol.filter(function(n){return n.sentimento==='positivo';}).length+'</div><div style="font-size:10px;color:var(--txt2)">Positivas</div></div>'
       +'</div>'
-      +(notasCol.length===0?'<div style="text-align:center;padding:30px;color:var(--txt3)">Nenhuma anotacao para este colaborador.</div>':'')
-      +(semanas.map(function(wk){
-        var notasWk=porSemana[wk];
-        return '<div style="margin-bottom:16px">'
-          +'<div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">'
-            +'<span>Semana '+formatWeek(wk)+' ('+notasWk.length+')</span>'
-          +'</div>'
-          +notasWk.map(notaCard).join('')
-        +'</div>';
-      }).join(''))
-      +'<div style="margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border);display:flex;gap:8px">'
-        +'<button class="btn btn-primary btn-sm" onclick="closeModal();go(\'notas\')">Ir para Bloco de Notas</button>'
+      // Criar nota
+      +'<div style="background:var(--bg2);border-radius:10px;padding:12px;margin-bottom:14px">'
+        +'<textarea id="perfil-nota-texto" placeholder="Escreva uma anotação sobre '+c.nome.split(' ')[0]+'..." style="width:100%;min-height:60px;font-size:12px;border:1px solid var(--border);border-radius:6px;padding:8px;resize:vertical;font-family:inherit"></textarea>'
+        +'<div style="display:flex;gap:6px;margin-top:6px;align-items:center">'
+          +'<select id="perfil-nota-sent" style="font-size:11px;padding:3px 6px;border-radius:4px;border:1px solid var(--border)">'
+            +'<option value="neutro">🟡 Neutro</option><option value="positivo">🟢 Positivo</option><option value="negativo">🔴 Negativo</option><option value="alerta">🟠 Alerta</option>'
+          +'</select>'
+          +'<select id="perfil-nota-cat" style="font-size:11px;padding:3px 6px;border-radius:4px;border:1px solid var(--border)">'
+            +'<option value="Observação">Observação</option><option value="Desempenho">Desempenho</option><option value="Comportamento">Comportamento</option><option value="Feedback">Feedback</option><option value="1:1">1:1</option>'
+          +'</select>'
+          +'<div style="flex:1"></div>'
+          +'<button class="btn btn-primary btn-xs" onclick="_salvarNotaPerfil(\''+id+'\')">💾 Salvar nota</button>'
+        +'</div>'
+      +'</div>'
+      +(notasCol.length===0?'<div style="text-align:center;padding:20px;color:var(--txt3)">Nenhuma anotação.</div>':'')
+      +'<div style="max-height:300px;overflow-y:auto">'+notasCol.map(notaCard).join('')+'</div>'
+      +'<div style="display:flex;gap:8px;padding-top:12px;border-top:0.5px solid var(--border);margin-top:12px">'
+        +'<button class="btn btn-purple btn-sm" onclick="quickAsk(\'Faça um resumo das anotações de '+c.nome.split(' ')[0]+'\');closeModal();go(\'agente\')">🤖 Resumo IA</button>'
+        +(p.email&&notasCol.length?'<button class="btn btn-sm" onclick="enviarPerfilEmail(\''+id+'\',\'notas\')">📧 Enviar por email</button>':'')
+      +'</div>';
+  }
+
+  // ── ABA OKR ────────────────────────────────────────────────────
+  else if(aba==='okr_col'){
+    var okrsArea=metas.filter(function(m){return m.tipo==='okr'&&m.area===c.area;});
+    var totalOkrs=okrsArea.length;
+    var totalKrs=okrsArea.reduce(function(a,o){return a+(o.keyResults||[]).length;},0);
+    function okrPctCalc(okr){var krs=okr.keyResults||[];if(!krs.length)return 0;return Math.round(krs.reduce(function(a,kr){var al=parseFloat(kr.alvo)||1;var at=parseFloat(kr.atual)||0;return a+Math.min(100,Math.round(at/al*100));},0)/krs.length);}
+    var pctMed=totalOkrs?Math.round(okrsArea.reduce(function(a,o){return a+okrPctCalc(o);},0)/totalOkrs):0;
+
+    function miniOkrCard(o){
+      var krs=o.keyResults||[];var pct=okrPctCalc(o);
+      var cor=pct>=80?'var(--green)':pct>=50?'#854F0B':'#A32D2D';
+      return '<div style="background:var(--bg2);border-radius:9px;padding:12px;margin-bottom:8px;border-left:3px solid '+cor+'">'
+        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+          +'<span style="font-size:14px">🎯</span>'
+          +'<div style="flex:1"><div style="font-size:12px;font-weight:700;color:var(--txt)">'+o.objetivo+'</div>'
+          +'<div style="font-size:10px;color:var(--txt3)">'+krs.length+' KRs'+(o.periodo?' · '+o.periodo:'')+'</div></div>'
+          +'<span style="font-size:14px;font-weight:800;color:'+cor+'">'+pct+'%</span>'
+        +'</div>'
+        +'<div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:6px"><div style="height:100%;width:'+pct+'%;background:'+cor+'"></div></div>'
+        +krs.map(function(kr,i){var ka=parseFloat(kr.alvo)||1;var kc=parseFloat(kr.atual)||0;var kp=Math.min(100,Math.round(kc/ka*100));var done=kp>=100;
+          return '<div style="display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:2px"><span style="color:'+(done?'var(--green)':'var(--txt3)')+'">'+( done?'✅':'⭕')+'</span><span style="flex:1;color:var(--txt)">'+kr.titulo+'</span><span style="color:var(--txt2)">'+kc+'/'+ka+'</span></div>';
+        }).join('')
+        +'<div style="display:flex;gap:4px;margin-top:6px">'
+          +'<button class="btn btn-xs" onclick="closeModal();setTimeout(function(){openOKRForm(\''+o.id+'\')},150)" style="font-size:10px">✏️ Editar</button>'
+          +'<button class="btn btn-xs btn-primary" onclick="closeModal();setTimeout(function(){editarKRs(\''+o.id+'\')},150)" style="font-size:10px">📊 KRs</button>'
+        +'</div>'
+      +'</div>';
+    }
+
+    var c2=AREA_COLORS[c.area]||{cor:'#888',bg:'#eee'};
+    conteudo=
+      '<div style="background:'+c2.bg+';border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px">'
+        +'<span style="font-size:16px;font-weight:800;color:'+c2.cor+'">'+( c.area||'Sem área')+'</span>'
+        +'<span style="font-size:11px;color:var(--txt2)">OKRs da área de '+c.nome.split(' ')[0]+'</span>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">'
+        +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--blue)">'+totalOkrs+'</div><div style="font-size:10px;color:var(--txt2)">OKRs</div></div>'
+        +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800">'+totalKrs+'</div><div style="font-size:10px;color:var(--txt2)">Key Results</div></div>'
+        +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:'+(pctMed>=70?'var(--green)':'#854F0B')+'">'+pctMed+'%</div><div style="font-size:10px;color:var(--txt2)">Progresso</div></div>'
+      +'</div>'
+      +(okrsArea.length?'<div style="max-height:300px;overflow-y:auto">'+okrsArea.map(miniOkrCard).join('')+'</div>'
+        :'<div style="text-align:center;padding:30px;color:var(--txt3)">Nenhum OKR definido para a área '+(c.area||'')+'.</div>')
+      +'<div style="display:flex;gap:8px;padding-top:12px;border-top:0.5px solid var(--border);margin-top:12px">'
+        +'<button class="btn btn-primary btn-sm" onclick="closeModal();setTimeout(function(){openOKRFormArea(\''+(c.area||'')+'\')},150)">🎯 + Novo OKR</button>'
       +'</div>';
   }
 
@@ -844,5 +857,107 @@ function verColCapacidade(colId){
   document.getElementById('modal-box').classList.add('modal-lg');
   renderPerfilAba(colId,'funcoes_col');
   document.getElementById('modal').style.display='flex';
+}
+
+// ── Salvar nota direto do perfil ──────────────────────────────
+function _salvarNotaPerfil(colId){
+  var txt=document.getElementById('perfil-nota-texto');
+  if(!txt||!txt.value.trim()){alert('Escreva algo.');return;}
+  var sent=document.getElementById('perfil-nota-sent');
+  var cat=document.getElementById('perfil-nota-cat');
+  var col=colaboradores.find(function(c){return c.id===colId;});
+  var nota={
+    id:uid(),colId:colId,colaborador:col?col.nome:'',
+    texto:txt.value.trim(),
+    sentimento:sent?sent.value:'neutro',
+    categoria:cat?cat.value:'Observação',
+    data:new Date().toISOString().slice(0,10),
+    dataExib:new Date().toLocaleDateString('pt-BR'),
+    dataHora:new Date().toISOString()
+  };
+  notas.push(nota);
+  saveAll();
+  toast('Nota salva! 📝');
+  renderPerfilAba(colId,'notas_col');
+}
+
+// ── Enviar resumo de aba por email via SendGrid ───────────────
+async function enviarPerfilEmail(colId, aba){
+  var col=colaboradores.find(function(c){return c.id===colId;});
+  if(!col||!col.perfil||!col.perfil.email){alert('Colaborador sem email cadastrado.');return;}
+  var email=col.perfil.email;
+  var nome=col.nome;
+  var assunto='', corpo='';
+
+  if(aba==='metas'){
+    var smartCol=metas.filter(function(m){return m.tipo==='smart'&&m.colId===colId;});
+    assunto='Suas Metas — '+nome;
+    corpo='<h2 style="color:#0F6E56">✅ Suas Metas</h2><p>Olá '+nome.split(' ')[0]+', aqui está o resumo das suas metas:</p>';
+    smartCol.forEach(function(m){
+      var p=m.progresso||0;
+      corpo+='<div style="background:#f9f9f9;border-left:3px solid '+(p>=100?'#0F6E56':'#185FA5')+';padding:10px;margin:8px 0;border-radius:6px">'
+        +'<strong>'+m.titulo+'</strong><br>'
+        +'<span style="font-size:13px;color:#666">Progresso: '+p+'% · Status: '+(m.status||'Pendente')+(m.prazo?' · Prazo: '+m.prazo:'')+'</span></div>';
+    });
+  } else if(aba==='avaliacoes'){
+    var avsCol=avaliacoes.filter(function(a){return a.colaboradorId===colId||a.colaborador===nome;});
+    assunto='Avaliações — '+nome;
+    corpo='<h2 style="color:#0F6E56">📊 Suas Avaliações</h2><p>Olá '+nome.split(' ')[0]+', aqui está o resumo das suas avaliações:</p>';
+    avsCol.reverse().forEach(function(a){
+      corpo+='<div style="background:#f9f9f9;padding:10px;margin:8px 0;border-radius:6px">'
+        +'<strong>'+a.data+'</strong> — Média: <strong>'+a.mediaGeral+'</strong>'
+        +(a.avaliador?' (por '+a.avaliador+')':'')+'</div>';
+    });
+  } else if(aba==='funcoes'){
+    var funcoesV4=ls('funcoes_v8',null)||[];
+    var minhasFuncs=funcoesV4.filter(function(f){return(f.responsaveis||[]).some(function(r){return r.nome===nome;});});
+    assunto='Funções atribuídas — '+nome;
+    corpo='<h2 style="color:#0F6E56">📌 Suas Funções</h2><p>Olá '+nome.split(' ')[0]+', aqui estão as funções sob sua responsabilidade:</p>';
+    minhasFuncs.forEach(function(f){
+      var resp=(f.responsaveis||[]).find(function(r){return r.nome===nome;});
+      corpo+='<div style="background:#f9f9f9;padding:10px;margin:8px 0;border-radius:6px">'
+        +'<strong>'+f.nome+'</strong><br>'
+        +'<span style="font-size:13px;color:#666">Área: '+f.area+' · Dedicação: '+(resp?resp.pct:100)+'%</span></div>';
+    });
+  } else if(aba==='notas'){
+    var notasCol=notas.filter(function(n){return n.colId===colId;});
+    assunto='Anotações — '+nome;
+    corpo='<h2 style="color:#0F6E56">📝 Resumo de Anotações</h2><p>Olá '+nome.split(' ')[0]+', aqui está o resumo das anotações:</p>';
+    notasCol.slice(-10).forEach(function(n){
+      var icons={positivo:'🟢',neutro:'🟡',negativo:'🔴',alerta:'🟠'};
+      corpo+='<div style="background:#f9f9f9;padding:10px;margin:8px 0;border-radius:6px">'
+        +(icons[n.sentimento]||'⚪')+' '+n.texto
+        +'<br><span style="font-size:12px;color:#888">'+(n.categoria||'')+' · '+(n.dataExib||n.data||'')+'</span></div>';
+    });
+  } else if(aba==='movimentacoes'){
+    var hist=(col.historico||[]).slice().reverse();
+    assunto='Movimentações — '+nome;
+    corpo='<h2 style="color:#0F6E56">🕐 Histórico de Movimentações</h2><p>Olá '+nome.split(' ')[0]+', aqui está seu histórico:</p>';
+    hist.forEach(function(h){
+      corpo+='<div style="background:#f9f9f9;padding:10px;margin:8px 0;border-radius:6px">'
+        +'<strong>'+h.tipo+'</strong> — '+h.data
+        +'<br><span style="font-size:13px;color:#666">'+h.descricao+'</span></div>';
+    });
+  }
+
+  corpo+='<hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">'
+    +'<p style="color:#aaa;font-size:11px">Squado · Gestão de Equipes · <a href="https://squado.com.br" style="color:#1D9E75">squado.com.br</a></p>';
+
+  var htmlFinal='<div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #e5e7eb;border-radius:12px">'+corpo+'</div>';
+
+  try{
+    var user=squadoGetUser();
+    var token=squadoGetToken();
+    var r=await fetch('https://squado-api-936751823867.us-central1.run.app/api/cron/send-email',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+      body:JSON.stringify({to:email,subject:assunto,html:htmlFinal})
+    });
+    if(r.ok){toast('📧 Email enviado para '+email+'!');}
+    else{alert('Erro ao enviar email. Tente novamente.');}
+  }catch(e){
+    console.error('Erro envio email:',e);
+    alert('Erro ao enviar email.');
+  }
 }
 
