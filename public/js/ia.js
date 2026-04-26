@@ -1,3 +1,7 @@
+// ── Constantes de IA ───────────────────────────────────────────
+var DEFAULT_OLLAMA_URL = 'http://localhost:11434';
+var DEFAULT_OLLAMA_MODEL = 'gemma3:4b';
+
 function getIAConfig(){
   const raw = localStorage.getItem('gp8_iaconfig');
   if(raw){ 
