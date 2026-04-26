@@ -800,7 +800,8 @@ input[type=number]{
     <div class="nav-section">Avaliação</div>
     <div class="nav-item" onclick="go('avaliacao_hub')"><svg class="nav-svg" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Avaliação</div>
     <div class="nav-section">Desenvolvimento</div>
-    <div class="nav-item" onclick="go('metas')"><svg class="nav-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>Metas</div>
+    <div class="nav-item" onclick="go('okr')"><svg class="nav-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>OKR</div>
+    <div class="nav-item" onclick="go('metas')"><svg class="nav-svg" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Metas</div>
     <div class="nav-item" onclick="go('pdi')"><svg class="nav-svg" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>PDI</div>
     <div class="nav-item" onclick="go('valores')"><svg class="nav-svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Valores</div>
     <div class="nav-item" onclick="go('ninebox')"><svg class="nav-svg" viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="5"/><rect x="9.5" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/><rect x="3" y="9.5" width="5" height="5"/><rect x="9.5" y="9.5" width="5" height="5"/><rect x="16" y="9.5" width="5" height="5"/><rect x="3" y="16" width="5" height="5"/><rect x="9.5" y="16" width="5" height="5"/><rect x="16" y="16" width="5" height="5"/></svg>Nine-Box</div>
@@ -1627,7 +1628,8 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
         avaliacao:{title:'Nova Avaliação',sub:'Formulário 1-10',btn:null},
     historico_aval:{title:'Histórico de Avaliações',sub:'Resultados e evolução',btn:null},
     perguntas:{title:'Configurar Perguntas',sub:'Edite por nível de cargo',btn:null},
-    metas:{title:'Metas e Objetivos',sub:'Acompanhamento',btn:null},
+    metas:{title:'Metas Individuais',sub:'Metas SMART por colaborador',btn:null},
+    okr:{title:'OKR — Objectives & Key Results',sub:'Objetivos estratégicos da equipe',btn:null},
     pdi:{title:'PDI — Plano de Desenvolvimento Individual',sub:'Acompanhamento de crescimento e desenvolvimento',btn:null},
     valores:{title:'Valores e Cultura',sub:'Valores PUCRS · Valores LABELO · Pilares · Não Negociamos',btn:null},
     ninebox:{title:'Nine-Box · Matriz de Talentos',sub:'Potencial × Desempenho',btn:null},
@@ -1650,6 +1652,7 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
   else if(page==='organograma'){c.innerHTML=renderOrganograma();}
   // avaliacao/historico_aval/perguntas → tratados pelo hub abaixo
   else if(page==='metas')c.innerHTML=renderMetas(search);
+  else if(page==='okr')c.innerHTML=renderOKR(search);
   else if(page==='pdi')c.innerHTML=renderPDI(search);
   else if(page==='valores')c.innerHTML=renderValores();
   else if(page==='ninebox')c.innerHTML=renderNineBox();
@@ -1677,6 +1680,7 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
 <script src="js/perfil.js"></script>
 <script src="js/notas-particulares.js"></script>
 <script src="js/metas.js"></script>
+<script src="js/okr.js"></script>
 <script src="js/ia.js"></script>
 <script src="js/notas.js"></script>
 <script src="js/capacidade.js"></script>
