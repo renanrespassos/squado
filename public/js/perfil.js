@@ -25,6 +25,7 @@ function renderPerfilAba(id, aba){
     {id:'notas_col',  icon:'📝', label:'Notas'},
     {id:'historico',  icon:'🕐', label:'Movimentações'},
     {id:'pessoal',    icon:'📋', label:'Dados Pessoais'},
+    {id:'compartilhar',icon:'📧', label:'Compartilhar'},
   ];
 
   const tabsHtml=abas.map(a=>
@@ -185,8 +186,7 @@ function renderPerfilAba(id, aba){
             +'</div>';
           }).join('')
         +'</div>'
-      )
-      +(p.email&&hist.length?'<div style="margin-top:10px"><button class="btn btn-sm" onclick="enviarPerfilEmail(\''+id+'\',\'movimentacoes\')">📧 Enviar por email</button></div>':'');
+      );
   }
 
   // ── ABA FUNÇÕES ──────────────────────────────────────────────
@@ -285,7 +285,7 @@ function renderPerfilAba(id, aba){
         +'<div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px">➕ Atribuir nova função</div>'
         +addSelect
       +'</div>'
-      +(p.email&&minhasFuncs.length?'<div style="border-top:0.5px solid var(--border);padding-top:10px;margin-top:10px"><button class="btn btn-sm" onclick="enviarPerfilEmail(\''+id+'\',\'funcoes\')">📧 Enviar funções por email</button></div>':'');
+      ;
   }
 
 
@@ -359,7 +359,6 @@ function renderPerfilAba(id, aba){
       )
       +'<div style="margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border);display:flex;gap:8px">'
         +'<button class="btn btn-primary btn-sm" onclick="iniciarAvaliacaoPara(\''+id+'\');closeModal()">📋 Nova avaliação</button>'
-        +(p.email&&avsC.length?'<button class="btn btn-sm" onclick="enviarPerfilEmail(\''+id+'\',\'avaliacoes\')">📧 Enviar por email</button>':'')
       +'</div>';
   }
 
@@ -398,7 +397,6 @@ function renderPerfilAba(id, aba){
         :'<div style="text-align:center;padding:30px;color:var(--txt3)">Nenhuma meta atribuída.</div>')
       +'<div style="display:flex;gap:8px;padding-top:12px;border-top:0.5px solid var(--border)">'
         +'<button class="btn btn-purple btn-sm" onclick="closeModal();setTimeout(function(){openMetaFormCol(\''+id+'\')},150)">✅ + Nova Meta</button>'
-        +(p.email&&smartCol.length?'<button class="btn btn-sm" onclick="enviarPerfilEmail(\''+id+'\',\'metas\')">📧 Enviar por email</button>':'')
       +'</div>';
   }
 
@@ -448,7 +446,6 @@ function renderPerfilAba(id, aba){
       +'<div style="max-height:300px;overflow-y:auto">'+notasCol.map(notaCard).join('')+'</div>'
       +'<div style="display:flex;gap:8px;padding-top:12px;border-top:0.5px solid var(--border);margin-top:12px">'
         +'<button class="btn btn-purple btn-sm" onclick="quickAsk(\'Faça um resumo das anotações de '+c.nome.split(' ')[0]+'\');closeModal();go(\'agente\')">🤖 Resumo IA</button>'
-        +(p.email&&notasCol.length?'<button class="btn btn-sm" onclick="enviarPerfilEmail(\''+id+'\',\'notas\')">📧 Enviar por email</button>':'')
       +'</div>';
   }
 
@@ -496,6 +493,73 @@ function renderPerfilAba(id, aba){
         :'<div style="text-align:center;padding:30px;color:var(--txt3)">Nenhum OKR definido para a área '+(c.area||'')+'.</div>')
       +'<div style="display:flex;gap:8px;padding-top:12px;border-top:0.5px solid var(--border);margin-top:12px">'
         +'<button class="btn btn-primary btn-sm" onclick="closeModal();setTimeout(function(){openOKRFormArea(\''+(c.area||'')+'\')},150)">🎯 + Novo OKR</button>'
+      +'</div>';
+  }
+
+  // ── ABA COMPARTILHAR ───────────────────────────────────────────
+  else if(aba==='compartilhar'){
+    var emailCol = p.email || '';
+    var smartCount = metas.filter(function(m){return m.tipo==='smart'&&m.colId===id;}).length;
+    var okrCount = metas.filter(function(m){return m.tipo==='okr'&&m.area===c.area;}).length;
+    var pdisCount = (typeof getPDIs==='function'?getPDIs():[]).filter(function(pd){return pd.colId===id;}).length;
+    var notasCount = notas.filter(function(n){return n.colId===id;}).length;
+    var histCount = (c.historico||[]).length;
+    var funcsCount = (ls('funcoes_v8',null)||[]).filter(function(f){return(f.responsaveis||[]).some(function(r){return r.nome===c.nome;});}).length;
+
+    function chkItem(chkId, icon, label, count, extra){
+      var disabled = count === 0;
+      return '<label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg2);border-radius:8px;cursor:'+(disabled?'not-allowed':'pointer')+';opacity:'+(disabled?'0.5':'1')+'">'
+        +'<input type="checkbox" id="share-'+chkId+'" '+(disabled?'disabled':'')+' style="width:16px;height:16px;accent-color:#1D9E75;cursor:pointer"/>'
+        +'<span style="font-size:16px">'+icon+'</span>'
+        +'<div style="flex:1">'
+          +'<div style="font-size:13px;font-weight:600;color:var(--txt)">'+label+'</div>'
+          +'<div style="font-size:10px;color:var(--txt3)">'+count+' registro'+(count!==1?'s':'')+'</div>'
+        +'</div>'
+        +(extra||'')
+      +'</label>';
+    }
+
+    // Notas com seletor de período
+    var notasExtra = '<select id="share-notas-periodo" style="font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid var(--border);color:var(--txt2)">'
+      +'<option value="semanal">Semanal</option>'
+      +'<option value="mensal">Mensal</option>'
+      +'<option value="trimestral">Trimestral</option>'
+      +'<option value="semestral">Semestral</option>'
+    +'</select>';
+
+    conteudo =
+      '<div style="text-align:center;margin-bottom:16px">'
+        +'<div style="font-size:16px;font-weight:700;color:var(--txt)">📧 Compartilhar informações com '+c.nome.split(' ')[0]+'</div>'
+        +'<div style="font-size:12px;color:var(--txt3);margin-top:4px">Selecione o que deseja enviar por email</div>'
+      +'</div>'
+      // Email destino
+      +'<div style="background:var(--bg2);border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px">'
+        +'<span style="font-size:14px">✉️</span>'
+        +'<div style="flex:1">'
+          +'<div style="font-size:11px;color:var(--txt3)">Enviar para</div>'
+          +'<input id="share-email" value="'+emailCol+'" placeholder="email@exemplo.com" style="font-size:13px;font-weight:600;border:none;background:transparent;width:100%;color:var(--txt);outline:none"/>'
+        +'</div>'
+      +'</div>'
+      // Checkboxes
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">'
+        +chkItem('funcoes','📌','Funções',funcsCount)
+        +chkItem('avaliacoes','📊','Avaliações',avsC.length)
+        +chkItem('metas','✅','Metas SMART',smartCount)
+        +chkItem('pdi','🚀','PDI',pdisCount)
+        +chkItem('okr','🎯','OKR da área',okrCount)
+        +chkItem('notas','📝','Notas',notasCount,notasExtra)
+        +chkItem('movimentacoes','🕐','Movimentações',histCount)
+      +'</div>'
+      // Selecionar tudo
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">'
+        +'<label style="font-size:11px;color:var(--txt2);cursor:pointer;display:flex;align-items:center;gap:4px">'
+          +'<input type="checkbox" id="share-all" onchange="document.querySelectorAll(\'[id^=share-]:not(#share-all):not(#share-email):not(#share-notas-periodo)\').forEach(function(c){if(!c.disabled)c.checked=this.checked}.bind(this))" style="accent-color:#1D9E75"/> Selecionar tudo'
+        +'</label>'
+      +'</div>'
+      // Botão enviar
+      +'<div style="display:flex;gap:8px;justify-content:flex-end;padding-top:14px;border-top:0.5px solid var(--border)">'
+        +'<button class="btn btn-sm" onclick="renderPerfilAba(\''+id+'\',\'resumo\')">Voltar</button>'
+        +'<button class="btn btn-primary" onclick="enviarCompartilhar(\''+id+'\')" style="padding:8px 24px">📧 Enviar email</button>'
       +'</div>';
   }
 
@@ -881,72 +945,129 @@ function _salvarNotaPerfil(colId){
   renderPerfilAba(colId,'notas_col');
 }
 
-// ── Enviar resumo de aba por email via SendGrid ───────────────
-async function enviarPerfilEmail(colId, aba){
+// ── Enviar compartilhamento por email via SendGrid ────────────
+async function enviarCompartilhar(colId){
   var col=colaboradores.find(function(c){return c.id===colId;});
-  if(!col||!col.perfil||!col.perfil.email){alert('Colaborador sem email cadastrado.');return;}
-  var email=col.perfil.email;
+  if(!col)return;
   var nome=col.nome;
-  var assunto='', corpo='';
+  var emailTo=document.getElementById('share-email');
+  if(!emailTo||!emailTo.value.trim()){alert('Informe o email de destino.');return;}
+  var email=emailTo.value.trim();
 
-  if(aba==='metas'){
-    var smartCol=metas.filter(function(m){return m.tipo==='smart'&&m.colId===colId;});
-    assunto='Suas Metas — '+nome;
-    corpo='<h2 style="color:#0F6E56">✅ Suas Metas</h2><p>Olá '+nome.split(' ')[0]+', aqui está o resumo das suas metas:</p>';
-    smartCol.forEach(function(m){
-      var p=m.progresso||0;
-      corpo+='<div style="background:#f9f9f9;border-left:3px solid '+(p>=100?'#0F6E56':'#185FA5')+';padding:10px;margin:8px 0;border-radius:6px">'
-        +'<strong>'+m.titulo+'</strong><br>'
-        +'<span style="font-size:13px;color:#666">Progresso: '+p+'% · Status: '+(m.status||'Pendente')+(m.prazo?' · Prazo: '+m.prazo:'')+'</span></div>';
-    });
-  } else if(aba==='avaliacoes'){
-    var avsCol=avaliacoes.filter(function(a){return a.colaboradorId===colId||a.colaborador===nome;});
-    assunto='Avaliações — '+nome;
-    corpo='<h2 style="color:#0F6E56">📊 Suas Avaliações</h2><p>Olá '+nome.split(' ')[0]+', aqui está o resumo das suas avaliações:</p>';
-    avsCol.reverse().forEach(function(a){
-      corpo+='<div style="background:#f9f9f9;padding:10px;margin:8px 0;border-radius:6px">'
-        +'<strong>'+a.data+'</strong> — Média: <strong>'+a.mediaGeral+'</strong>'
-        +(a.avaliador?' (por '+a.avaliador+')':'')+'</div>';
-    });
-  } else if(aba==='funcoes'){
+  // Verificar quais checkboxes estão marcados
+  var secs=[];
+  ['funcoes','avaliacoes','metas','pdi','okr','notas','movimentacoes'].forEach(function(s){
+    var chk=document.getElementById('share-'+s);
+    if(chk&&chk.checked) secs.push(s);
+  });
+  if(!secs.length){alert('Selecione pelo menos um item para compartilhar.');return;}
+
+  var corpo='<h2 style="color:#0F6E56;margin:0 0 6px">Squado · Gestão de Equipes</h2>'
+    +'<p style="color:#444;margin:0 0 20px">Olá '+nome.split(' ')[0]+', aqui estão as informações compartilhadas pelo seu líder:</p>';
+
+  // ── Funções ──
+  if(secs.indexOf('funcoes')>=0){
     var funcoesV4=ls('funcoes_v8',null)||[];
     var minhasFuncs=funcoesV4.filter(function(f){return(f.responsaveis||[]).some(function(r){return r.nome===nome;});});
-    assunto='Funções atribuídas — '+nome;
-    corpo='<h2 style="color:#0F6E56">📌 Suas Funções</h2><p>Olá '+nome.split(' ')[0]+', aqui estão as funções sob sua responsabilidade:</p>';
+    corpo+='<h3 style="color:#0F6E56;border-bottom:1px solid #e5e7eb;padding-bottom:6px">📌 Funções</h3>';
     minhasFuncs.forEach(function(f){
       var resp=(f.responsaveis||[]).find(function(r){return r.nome===nome;});
-      corpo+='<div style="background:#f9f9f9;padding:10px;margin:8px 0;border-radius:6px">'
-        +'<strong>'+f.nome+'</strong><br>'
-        +'<span style="font-size:13px;color:#666">Área: '+f.area+' · Dedicação: '+(resp?resp.pct:100)+'%</span></div>';
+      corpo+='<div style="background:#f9f9f9;padding:10px;margin:6px 0;border-radius:6px"><strong>'+f.nome+'</strong><br><span style="font-size:13px;color:#666">Área: '+f.area+' · Dedicação: '+(resp?resp.pct:100)+'%</span></div>';
     });
-  } else if(aba==='notas'){
-    var notasCol=notas.filter(function(n){return n.colId===colId;});
-    assunto='Anotações — '+nome;
-    corpo='<h2 style="color:#0F6E56">📝 Resumo de Anotações</h2><p>Olá '+nome.split(' ')[0]+', aqui está o resumo das anotações:</p>';
-    notasCol.slice(-10).forEach(function(n){
-      var icons={positivo:'🟢',neutro:'🟡',negativo:'🔴',alerta:'🟠'};
-      corpo+='<div style="background:#f9f9f9;padding:10px;margin:8px 0;border-radius:6px">'
-        +(icons[n.sentimento]||'⚪')+' '+n.texto
-        +'<br><span style="font-size:12px;color:#888">'+(n.categoria||'')+' · '+(n.dataExib||n.data||'')+'</span></div>';
+  }
+
+  // ── Avaliações ──
+  if(secs.indexOf('avaliacoes')>=0){
+    var avsCol=avaliacoes.filter(function(a){return a.colaboradorId===colId||a.colaborador===nome;});
+    corpo+='<h3 style="color:#0F6E56;border-bottom:1px solid #e5e7eb;padding-bottom:6px">📊 Avaliações</h3>';
+    avsCol.slice().reverse().forEach(function(a){
+      corpo+='<div style="background:#f9f9f9;padding:10px;margin:6px 0;border-radius:6px"><strong>'+a.data+'</strong> — Média: <strong>'+a.mediaGeral+'</strong>'+(a.avaliador?' (por '+a.avaliador+')':'')+'</div>';
     });
-  } else if(aba==='movimentacoes'){
+    if(!avsCol.length) corpo+='<p style="color:#888;font-size:13px">Nenhuma avaliação registrada.</p>';
+  }
+
+  // ── Metas SMART ──
+  if(secs.indexOf('metas')>=0){
+    var smartCol=metas.filter(function(m){return m.tipo==='smart'&&m.colId===colId;});
+    corpo+='<h3 style="color:#0F6E56;border-bottom:1px solid #e5e7eb;padding-bottom:6px">✅ Metas</h3>';
+    smartCol.forEach(function(m){
+      var p=m.progresso||0;
+      corpo+='<div style="background:#f9f9f9;border-left:3px solid '+(p>=100?'#0F6E56':'#185FA5')+';padding:10px;margin:6px 0;border-radius:6px"><strong>'+m.titulo+'</strong><br><span style="font-size:13px;color:#666">Progresso: '+p+'% · Status: '+(m.status||'Pendente')+(m.prazo?' · Prazo: '+m.prazo:'')+'</span></div>';
+    });
+    if(!smartCol.length) corpo+='<p style="color:#888;font-size:13px">Nenhuma meta atribuída.</p>';
+  }
+
+  // ── PDI ──
+  if(secs.indexOf('pdi')>=0){
+    var pdisCol=(typeof getPDIs==='function'?getPDIs():[]).filter(function(pd){return pd.colId===colId;});
+    corpo+='<h3 style="color:#0F6E56;border-bottom:1px solid #e5e7eb;padding-bottom:6px">🚀 PDI</h3>';
+    pdisCol.forEach(function(pd){
+      var acoes=pd.acoes||[];
+      var pct=acoes.length?Math.round(acoes.reduce(function(a,ac){return a+(ac.progresso||0);},0)/acoes.length):0;
+      corpo+='<div style="background:#f9f9f9;padding:10px;margin:6px 0;border-radius:6px"><strong>'+(pd.titulo||'PDI')+'</strong> — '+pct+'% concluído<br>';
+      acoes.forEach(function(ac){
+        corpo+='<span style="font-size:12px;color:#666">• '+ac.titulo+' ('+(ac.progresso||0)+'%)</span><br>';
+      });
+      corpo+='</div>';
+    });
+    if(!pdisCol.length) corpo+='<p style="color:#888;font-size:13px">Nenhum PDI criado.</p>';
+  }
+
+  // ── OKR ──
+  if(secs.indexOf('okr')>=0){
+    var okrsArea=metas.filter(function(m){return m.tipo==='okr'&&m.area===col.area;});
+    corpo+='<h3 style="color:#0F6E56;border-bottom:1px solid #e5e7eb;padding-bottom:6px">🎯 OKR — '+(col.area||'Equipe')+'</h3>';
+    okrsArea.forEach(function(o){
+      var krs=o.keyResults||[];
+      var pct=krs.length?Math.round(krs.reduce(function(a,kr){var al=parseFloat(kr.alvo)||1;var at=parseFloat(kr.atual)||0;return a+Math.min(100,Math.round(at/al*100));},0)/krs.length):0;
+      corpo+='<div style="background:#f9f9f9;padding:10px;margin:6px 0;border-radius:6px"><strong>'+o.objetivo+'</strong> — '+pct+'%<br>';
+      krs.forEach(function(kr){
+        var at=parseFloat(kr.atual)||0;var al=parseFloat(kr.alvo)||1;
+        corpo+='<span style="font-size:12px;color:#666">• '+kr.titulo+' ('+at+'/'+al+')</span><br>';
+      });
+      corpo+='</div>';
+    });
+    if(!okrsArea.length) corpo+='<p style="color:#888;font-size:13px">Nenhum OKR para esta área.</p>';
+  }
+
+  // ── Notas (com período) ──
+  if(secs.indexOf('notas')>=0){
+    var periodo=document.getElementById('share-notas-periodo');
+    var periodoVal=periodo?periodo.value:'mensal';
+    var diasMap={semanal:7,mensal:30,trimestral:90,semestral:180};
+    var diasFiltro=diasMap[periodoVal]||30;
+    var agora=new Date();
+    var notasCol=notas.filter(function(n){
+      if(n.colId!==colId)return false;
+      var d=new Date(n.dataHora||n.data);
+      return(agora-d)/(1000*60*60*24)<=diasFiltro;
+    }).sort(function(a,b){return(b.dataHora||b.data||'').localeCompare(a.dataHora||a.data||'');});
+    var periodoLabel={semanal:'Última semana',mensal:'Último mês',trimestral:'Último trimestre',semestral:'Último semestre'}[periodoVal];
+    var icons={positivo:'🟢',neutro:'🟡',negativo:'🔴',alerta:'🟠'};
+    corpo+='<h3 style="color:#0F6E56;border-bottom:1px solid #e5e7eb;padding-bottom:6px">📝 Notas — '+periodoLabel+'</h3>';
+    notasCol.forEach(function(n){
+      corpo+='<div style="background:#f9f9f9;padding:10px;margin:6px 0;border-radius:6px">'+(icons[n.sentimento]||'⚪')+' '+n.texto+'<br><span style="font-size:12px;color:#888">'+(n.categoria||'')+' · '+(n.dataExib||n.data||'')+'</span></div>';
+    });
+    if(!notasCol.length) corpo+='<p style="color:#888;font-size:13px">Nenhuma nota no período selecionado.</p>';
+  }
+
+  // ── Movimentações ──
+  if(secs.indexOf('movimentacoes')>=0){
     var hist=(col.historico||[]).slice().reverse();
-    assunto='Movimentações — '+nome;
-    corpo='<h2 style="color:#0F6E56">🕐 Histórico de Movimentações</h2><p>Olá '+nome.split(' ')[0]+', aqui está seu histórico:</p>';
+    corpo+='<h3 style="color:#0F6E56;border-bottom:1px solid #e5e7eb;padding-bottom:6px">🕐 Movimentações</h3>';
     hist.forEach(function(h){
-      corpo+='<div style="background:#f9f9f9;padding:10px;margin:8px 0;border-radius:6px">'
-        +'<strong>'+h.tipo+'</strong> — '+h.data
-        +'<br><span style="font-size:13px;color:#666">'+h.descricao+'</span></div>';
+      corpo+='<div style="background:#f9f9f9;padding:10px;margin:6px 0;border-radius:6px"><strong>'+h.tipo+'</strong> — '+h.data+'<br><span style="font-size:13px;color:#666">'+h.descricao+'</span></div>';
     });
+    if(!hist.length) corpo+='<p style="color:#888;font-size:13px">Nenhuma movimentação registrada.</p>';
   }
 
   corpo+='<hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">'
     +'<p style="color:#aaa;font-size:11px">Squado · Gestão de Equipes · <a href="https://squado.com.br" style="color:#1D9E75">squado.com.br</a></p>';
 
+  var assunto='Squado — Informações de '+nome+' ('+secs.join(', ')+')';
   var htmlFinal='<div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #e5e7eb;border-radius:12px">'+corpo+'</div>';
 
   try{
-    var user=squadoGetUser();
     var token=squadoGetToken();
     var r=await fetch('https://squado-api-936751823867.us-central1.run.app/api/cron/send-email',{
       method:'POST',
@@ -954,9 +1075,9 @@ async function enviarPerfilEmail(colId, aba){
       body:JSON.stringify({to:email,subject:assunto,html:htmlFinal})
     });
     if(r.ok){toast('📧 Email enviado para '+email+'!');}
-    else{alert('Erro ao enviar email. Tente novamente.');}
+    else{var b=await r.text();alert('Erro: '+b);}
   }catch(e){
-    console.error('Erro envio email:',e);
+    console.error('Erro envio:',e);
     alert('Erro ao enviar email.');
   }
 }
