@@ -847,7 +847,6 @@ input[type=number]{
     <button class="btn btn-sm" onclick="showApiKeyModal()" style="display:none;font-size:11px;padding:5px 10px;background:#F5F6F4;border:1px solid #E0E2E0;color:#3A4240;border-radius:5px;cursor:pointer;width:100%;text-align:left;font-family:'Inter',sans-serif">⚙️ Configurar IA</button>
     <div style="font-size:9px;color:#9BA09E;text-align:center;margin-top:4px;letter-spacing:.05em">Squado v6.0 · 2025</div>
     <div id="sq-sync-ind" style="font-size:9px;color:#9BA09E;text-align:center;min-height:12px;transition:color .3s"></div>
-    <button class="btn btn-sm" onclick="forcarSync();closeMobSidebar()" id="btn-sync-sidebar" style="font-size:11px;padding:8px 10px;background:#E6EFEB;border:1px solid #9FE1CB;color:#0F6E56;border-radius:5px;cursor:pointer;width:100%;text-align:center;font-family:'Inter',sans-serif;font-weight:600">🔄 Forçar Sincronização</button>
     <button class="btn btn-sm" onclick="squadoLogout()" id="btn-sair-sidebar" style="font-size:11px;padding:8px 10px;background:transparent;border:1px solid #E0E2E0;color:#6B7370;border-radius:5px;cursor:pointer;width:100%;text-align:center;font-family:'Inter',sans-serif">🚪 Sair</button>
   </div>
 </aside>
@@ -911,29 +910,87 @@ input[type=number]{
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobSidebar()"></div>
 
 <!-- Auth overlay (login/registro) -->
-<div id="squado-auth-overlay" style="display:none;position:fixed;inset:0;background:#FCFCFA;z-index:99998;flex-direction:column;align-items:center;justify-content:center;padding:20px">
-  <div style="max-width:400px;width:100%;text-align:center">
-    <div style="margin-bottom:24px"><span style="font-size:32px;font-weight:900;font-family:'Archivo',sans-serif;color:#0E0E0E">SQUADO</span></div>
-    <div style="display:flex;gap:0;margin-bottom:20px;border-radius:8px;overflow:hidden;border:1px solid #E0E2E0">
-      <button id="tab-login" onclick="squadoShowTab('login')" style="flex:1;padding:10px;border:none;cursor:pointer;font-weight:600;font-size:13px;background:#0F6E56;color:#fff">Entrar</button>
-      <button id="tab-registro" onclick="squadoShowTab('registro')" style="flex:1;padding:10px;border:none;cursor:pointer;font-weight:600;font-size:13px;background:#f9fafb;color:#6b7280">Criar conta</button>
+<!-- TELA DE LOGIN / REGISTRO SQUADO -->
+<div id="squado-auth-overlay" style="display:none;position:fixed;inset:0;z-index:99999;background:#FCFCFA;font-family:'Archivo',sans-serif;overflow-y:auto;flex-direction:column">
+<div class="sq-login-ticker">
+  <div class="sq-login-ticker-inner">
+    CICLO Q2 ABERTO &nbsp;·&nbsp; UPTIME 99.97% &nbsp;·&nbsp; RS · BRASIL &nbsp;·&nbsp; > NOVA RELEASE · V6.0 &nbsp;·&nbsp; GESTÃO DE EQUIPES &nbsp;·&nbsp;
+    CICLO Q2 ABERTO &nbsp;·&nbsp; UPTIME 99.97% &nbsp;·&nbsp; RS · BRASIL &nbsp;·&nbsp; > NOVA RELEASE · V6.0 &nbsp;·&nbsp; GESTÃO DE EQUIPES &nbsp;·&nbsp;
+  </div>
+</div>
+<div class="sq-login-grid">
+  <div class="sq-col-premissa">
+    <div>
+      <div class="sq-label"><div class="sq-label-dot"></div>001 / PREMISSA</div>
+      <div class="sq-headline">GENTE<br><em>NÃO É</em><br><span class="dim">PLANILHA.</span></div>
+      <div class="sq-desc">Squado é o sistema operacional para empresas que tratam talento como ativo estratégico — com método, evidência e ritmo.</div>
+    </div>
+    <div class="sq-metrics">
+      <div class="sq-metric"><div class="sq-metric-label">Companhias</div><div class="sq-metric-val">240+</div></div>
+      <div class="sq-metric"><div class="sq-metric-label">Avaliações/mês</div><div class="sq-metric-val">12k</div></div>
+    </div>
+  </div>
+  <div class="sq-col-identidade">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:rgba(255,255,255,.35);margin-bottom:32px;align-self:flex-start">002 / IDENTIDADE</div>
+    <svg width="180" height="180" viewBox="0 0 200 200" fill="none" style="margin-bottom:32px">
+      <rect x="30" y="30" width="140" height="30" fill="#0F6E56"/>
+      <rect x="30" y="30" width="30" height="80" fill="#0F6E56"/>
+      <rect x="30" y="90" width="140" height="30" fill="#0F6E56"/>
+      <rect x="140" y="90" width="30" height="80" fill="#0F6E56"/>
+      <rect x="30" y="140" width="140" height="30" fill="#0F6E56"/>
+      <circle cx="160" cy="45" r="12" fill="#FCFCFA"/>
+    </svg>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;width:100%">
+      <div style="background:#0F6E56;padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;letter-spacing:.06em">0F6E56</div>
+      <div style="background:#FCFCFA;padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#0E0E0E;letter-spacing:.06em">FCFCFA</div>
+    </div>
+  </div>
+  <div class="sq-col-acesso">
+    <div class="sq-label"><div class="sq-label-dot"></div>003 / ACESSO</div>
+    <div class="sq-login-title">ENTRAR.</div>
+    <div class="sq-login-sub">Acesse o sistema com sua conta corporativa.</div>
+    <div class="sq-tabs">
+      <button class="sq-tab active" id="tab-login" onclick="squadoShowTab('login')">Entrar</button>
+      <button class="sq-tab" id="tab-registro" onclick="squadoShowTab('registro')">Criar conta</button>
     </div>
     <div id="form-login">
-      <input id="sq-login-email" type="email" placeholder="Email" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #E0E2E0;border-radius:8px;font-size:14px;box-sizing:border-box"/>
-      <input id="sq-login-senha" type="password" placeholder="Senha" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #E0E2E0;border-radius:8px;font-size:14px;box-sizing:border-box"/>
-      <div id="sq-login-erro" style="display:none;color:#A32D2D;font-size:12px;margin-bottom:10px;text-align:left"></div>
-      <button id="sq-login-btn" onclick="squadoLogin()" style="width:100%;padding:14px;background:#0F6E56;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer">Entrar</button>
+      <div class="sq-field">
+        <div class="sq-field-header"><span class="sq-field-label">E-mail</span><span class="sq-field-label" style="opacity:.5">OBRIGATÓRIO</span></div>
+        <input id="sq-login-email" type="email" class="sq-input" placeholder="voce@empresa.com" autocomplete="email"/>
+      </div>
+      <div class="sq-field">
+        <div class="sq-field-header"><span class="sq-field-label">Senha</span></div>
+        <input id="sq-login-senha" type="password" class="sq-input" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <div id="sq-login-erro" style="display:none;color:#A6311F;font-size:12px;padding:4px 0;font-family:'Inter',sans-serif"></div>
+      <button class="sq-btn-login" id="sq-login-btn" onclick="squadoLogin()">ENTRAR NA PLATAFORMA <span>↗</span></button>
+      <div class="sq-login-footer-txt">Sem conta? <a onclick="squadoShowTab('registro')">Solicitar acesso</a></div>
     </div>
     <div id="form-registro" style="display:none">
-      <input id="sq-reg-nome" placeholder="Seu nome" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #E0E2E0;border-radius:8px;font-size:14px;box-sizing:border-box"/>
-      <input id="sq-reg-email" type="email" placeholder="Email" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #E0E2E0;border-radius:8px;font-size:14px;box-sizing:border-box"/>
-      <input id="sq-reg-empresa" placeholder="Nome da empresa (opcional)" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #E0E2E0;border-radius:8px;font-size:14px;box-sizing:border-box"/>
-      <input id="sq-reg-senha" type="password" placeholder="Senha (mín. 6 caracteres)" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #E0E2E0;border-radius:8px;font-size:14px;box-sizing:border-box"/>
-      <div id="sq-reg-erro" style="display:none;color:#A32D2D;font-size:12px;margin-bottom:10px;text-align:left"></div>
-      <button id="sq-reg-btn" onclick="squadoRegistro()" style="width:100%;padding:14px;background:#0F6E56;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer">Criar conta</button>
+      <div class="sq-field">
+        <div class="sq-field-header"><span class="sq-field-label">Nome completo</span></div>
+        <input id="sq-reg-nome" type="text" class="sq-input" placeholder="Seu nome"/>
+      </div>
+      <div class="sq-field">
+        <div class="sq-field-header"><span class="sq-field-label">E-mail corporativo</span></div>
+        <input id="sq-reg-email" type="email" class="sq-input" placeholder="voce@empresa.com"/>
+      </div>
+      <div class="sq-field">
+        <div class="sq-field-header"><span class="sq-field-label">Empresa (opcional)</span></div>
+        <input id="sq-reg-empresa" type="text" class="sq-input" placeholder="Nome da empresa"/>
+      </div>
+      <div class="sq-field">
+        <div class="sq-field-header"><span class="sq-field-label">Senha</span></div>
+        <input id="sq-reg-senha" type="password" class="sq-input" placeholder="Mínimo 6 caracteres"/>
+      </div>
+      <div id="sq-reg-erro" style="display:none;color:#A6311F;font-size:12px;padding:4px 0;font-family:'Inter',sans-serif"></div>
+      <button class="sq-btn-login" id="sq-reg-btn" onclick="squadoRegistro()">CRIAR CONTA <span>↗</span></button>
+      <div class="sq-login-footer-txt" style="margin-top:12px">Já tem conta? <a onclick="squadoShowTab('login')">Entrar</a></div>
     </div>
   </div>
 </div>
+</div>
+<div id="squado-sair-mobile" style="display:none"></div>
 
 <div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
   <div class="modal" id="modal-box">
