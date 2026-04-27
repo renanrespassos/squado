@@ -1073,17 +1073,20 @@ function enviarCompartilhar(colId){
   corpo+='\n—\nSquado · Gestão de Equipes\nhttps://squado.com.br';
 
   var assunto='Squado — Informações de '+nome;
-  var mailtoUrl='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(assunto)+'&body='+encodeURIComponent(corpo);
 
-  // mailto: tem limite de ~2000 chars na URL. Se exceder, copiar pro clipboard
-  if(mailtoUrl.length > 2000){
-    // Copiar corpo pro clipboard e abrir mailto só com subject
-    var ta=document.createElement('textarea');ta.value=corpo;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
-    toast('📋 Conteúdo copiado pra área de transferência! Cole no corpo do email.');
-    location.href='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(assunto);
-  } else {
-    location.href=mailtoUrl;
+  // Copiar corpo pro clipboard sempre
+  var ta=document.createElement('textarea');ta.value=corpo;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+
+  // Abrir Gmail compose (funciona melhor que mailto pra body)
+  var gmailUrl='https://mail.google.com/mail/?view=cm&to='+encodeURIComponent(email)+'&su='+encodeURIComponent(assunto)+'&body='+encodeURIComponent(corpo);
+  
+  // Se URL muito longa, abrir só com subject e avisar do clipboard
+  if(gmailUrl.length > 8000){
+    gmailUrl='https://mail.google.com/mail/?view=cm&to='+encodeURIComponent(email)+'&su='+encodeURIComponent(assunto);
+    toast('📋 Conteúdo copiado! Cole no corpo do email com Ctrl+V');
   }
-  toast('📧 Email aberto para edição!');
+
+  window.open(gmailUrl,'_blank');
+  toast('📧 Email aberto no Gmail! (conteúdo também copiado)');
 }
 
