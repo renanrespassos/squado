@@ -127,7 +127,6 @@ function renderPerfilAba(id, aba){
         +fg('Email', '<input id="p-email" value="'+(p.email||'')+'" placeholder="email@empresa.com" type="email"/>')
         +fg('Celular / WhatsApp', '<input id="p-celular" value="'+(p.celular||'')+'" placeholder="(51) 99999-9999"/>')
         +fg('Data de Nascimento', '<input id="p-nasc" type="date" value="'+(p.nascimento||'')+'"/>')
-        +fg('CPF (opcional)', '<input id="p-cpf" value="'+(p.cpf||'')+'" placeholder="000.000.000-00"/>')
         +'<div class="field-group" style="grid-column:1/-1">'+flabel('Endereço completo')+'<input id="p-end" value="'+(p.endereco||'')+'" placeholder="Rua, número, bairro, cidade, CEP"/></div>'
         +'<div class="field-group" style="grid-column:1/-1">'+flabel('Formação Acadêmica')+'<textarea id="p-form" style="min-height:60px" placeholder="Ex: Técnico em Eletrônica – SENAI 2018&#10;Graduação em Engenharia Elétrica – PUCRS 2023">'+(p.formacao||'')+'</textarea></div>'
         +'<div class="field-group" style="grid-column:1/-1">'+flabel('Conhecimentos / Certificações Extras')+'<textarea id="p-conhec" style="min-height:80px" placeholder="Ex: Habilitado para ensaios de imunidade conduzida&#10;Curso de metrologia – INMETRO&#10;Inglês intermediário&#10;Python básico">'+(p.conhecimentos||'')+'</textarea></div>'
@@ -143,9 +142,19 @@ function renderPerfilAba(id, aba){
   else if(aba==='historico'){
     const hist=(c.historico||[]).slice().reverse();
     const tiposMovim=['Promoção','Treinamento','Advertência','Elogio','Aumento','Transferência de Área','Mudança de Cargo','Licença','Outro'];
+    var dataAdm = c.dataAdmissao || (c.perfil && c.perfil.dataAdmissao) || '';
     conteudo=
+      // Data de início (admissão)
+      '<div style="background:var(--green-bg);border:1px solid #9FE1CB;border-radius:10px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">'
+        +'<span style="font-size:16px">📅</span>'
+        +'<div style="flex:1">'
+          +'<div style="font-size:11px;font-weight:600;color:#0F6E56">Data de início na empresa</div>'
+          +'<input type="date" id="mov-admissao" value="'+dataAdm+'" onchange="salvarDataAdmissao(\''+id+'\',this.value)" style="font-size:13px;font-weight:600;border:none;background:transparent;color:#0F6E56;outline:none"/>'
+        +'</div>'
+        +(dataAdm?'<span style="font-size:11px;color:#0F6E56">'+Math.floor((new Date()-new Date(dataAdm))/(1000*60*60*24*365.25))+' anos</span>':'')
+      +'</div>'
       // Formulário para nova movimentação
-      '<div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:16px">'
+      +'<div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:16px">'
         +'<div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:10px">➕ Registrar nova movimentação</div>'
         +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">'
           +fg('Tipo', '<select id="mov-tipo">'
@@ -322,8 +331,7 @@ function renderPerfilAba(id, aba){
         +'</div>'
         :'<div style="text-align:center;padding:20px;color:var(--txt3)">Nenhum PDI ativo.</div>')
       +'<div style="display:flex;gap:8px">'
-        +'<button class="btn btn-primary btn-sm" data-col="'+id+'" onclick="abrirPDI(this.dataset.col)" style="flex:1">🚀 '+(ativo?'Abrir PDI':'Criar PDI')+'</button>'
-        +(ativo?'<button class="btn btn-sm" style="border-color:#0F6E56;color:#0F6E56" data-col="'+id+'" onclick="emailAndamentoPDI(this.dataset.col)">📧 Email</button>':'')
+        +'<button class="btn btn-primary btn-sm" data-col="'+id+'" onclick="abrirPDI(this.dataset.col)">🚀 '+(ativo?'Abrir PDI':'Criar PDI')+'</button>'
         +(pdisCol.length>1?'<button class="btn btn-sm" data-col="'+id+'" onclick="verHistoricoPDI(this.dataset.col)">📂 Histórico</button>':'')
       +'</div>';
   }
@@ -343,8 +351,7 @@ function renderPerfilAba(id, aba){
                 +nivelBadge(a.nivel)+'</div>'
                 +'<div style="font-size:28px;font-weight:900;color:'+sc(a.mediaGeral)+'">'+a.mediaGeral+'</div>'
                 +'<div style="display:flex;gap:6px">'
-                  +'<button class="btn btn-xs" onclick="verAvaliacao(\''+a.id+'\')">Ver</button>'
-                  +'<button class="btn btn-xs" onclick="gerarPDFAvaliacao(\''+a.id+'\')">📄</button>'
+                  +'<button class="btn btn-xs" onclick="gerarPDFAvaliacao(\''+a.id+'\')">📄 PDF</button>'
                 +'</div>'
               +'</div>'
               +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'
@@ -445,7 +452,6 @@ function renderPerfilAba(id, aba){
       +(notasCol.length===0?'<div style="text-align:center;padding:20px;color:var(--txt3)">Nenhuma anotação.</div>':'')
       +'<div style="max-height:300px;overflow-y:auto">'+notasCol.map(notaCard).join('')+'</div>'
       +'<div style="display:flex;gap:8px;padding-top:12px;border-top:0.5px solid var(--border);margin-top:12px">'
-        +'<button class="btn btn-purple btn-sm" onclick="quickAsk(\'Faça um resumo das anotações de '+c.nome.split(' ')[0]+'\');closeModal();go(\'agente\')">🤖 Resumo IA</button>'
       +'</div>';
   }
 
@@ -559,7 +565,7 @@ function renderPerfilAba(id, aba){
       // Botão enviar
       +'<div style="display:flex;gap:8px;justify-content:flex-end;padding-top:14px;border-top:0.5px solid var(--border)">'
         +'<button class="btn btn-sm" onclick="renderPerfilAba(\''+id+'\',\'resumo\')">Voltar</button>'
-        +'<button class="btn btn-primary" onclick="enviarCompartilhar(\''+id+'\')" style="padding:8px 24px">📧 Enviar email</button>'
+        +'<button class="btn btn-primary" onclick="enviarCompartilhar(\''+id+'\')" style="padding:8px 24px">📧 Abrir no email</button>'
       +'</div>';
   }
 
@@ -606,7 +612,6 @@ function salvarDadosPessoais(id){
     email:    ((document.getElementById('p-email')||{}).value||'').trim()||'',
     celular:  ((document.getElementById('p-celular')||{}).value||'').trim()||'',
     nascimento:(document.getElementById('p-nasc')||{}).value||'',
-    cpf:      ((document.getElementById('p-cpf')||{}).value||'').trim()||'',
     endereco: ((document.getElementById('p-end')||{}).value||'').trim()||'',
     formacao: ((document.getElementById('p-form')||{}).value||'').trim()||'',
     conhecimentos:((document.getElementById('p-conhec')||{}).value||'').trim()||'',
@@ -945,7 +950,18 @@ function _salvarNotaPerfil(colId){
   renderPerfilAba(colId,'notas_col');
 }
 
-// ── Enviar compartilhamento por email via SendGrid ────────────
+// ── Salvar data de admissão ────────────────────────────────────
+function salvarDataAdmissao(colId, val){
+  var i=colaboradores.findIndex(function(c){return c.id===colId;});
+  if(i<0) return;
+  colaboradores[i].dataAdmissao = val;
+  if(!colaboradores[i].perfil) colaboradores[i].perfil = {};
+  colaboradores[i].perfil.dataAdmissao = val;
+  saveAll();
+  toast('Data de início salva! ✅');
+}
+
+// ── Compartilhar por email (mailto:) ──────────────────────────
 async function enviarCompartilhar(colId){
   var col=colaboradores.find(function(c){return c.id===colId;});
   if(!col)return;
@@ -954,7 +970,6 @@ async function enviarCompartilhar(colId){
   if(!emailTo||!emailTo.value.trim()){alert('Informe o email de destino.');return;}
   var email=emailTo.value.trim();
 
-  // Verificar quais checkboxes estão marcados
   var secs=[];
   ['funcoes','avaliacoes','metas','pdi','okr','notas','movimentacoes'].forEach(function(s){
     var chk=document.getElementById('share-'+s);
@@ -962,75 +977,70 @@ async function enviarCompartilhar(colId){
   });
   if(!secs.length){alert('Selecione pelo menos um item para compartilhar.');return;}
 
-  var corpo='<h2 style="color:#0F6E56;margin:0 0 6px">Squado · Gestão de Equipes</h2>'
-    +'<p style="color:#444;margin:0 0 20px">Olá '+nome.split(' ')[0]+', aqui estão as informações compartilhadas pelo seu líder:</p>';
+  var corpo='Olá '+nome.split(' ')[0]+',\n\nSegue abaixo as informações compartilhadas:\n';
 
   // ── Funções ──
   if(secs.indexOf('funcoes')>=0){
     var funcoesV4=ls('funcoes_v8',null)||[];
     var minhasFuncs=funcoesV4.filter(function(f){return(f.responsaveis||[]).some(function(r){return r.nome===nome;});});
-    corpo+='<h3 style="color:#0F6E56;border-bottom:1px solid #e5e7eb;padding-bottom:6px">📌 Funções</h3>';
+    corpo+='\n━━━ 📌 FUNÇÕES ━━━\n';
     minhasFuncs.forEach(function(f){
       var resp=(f.responsaveis||[]).find(function(r){return r.nome===nome;});
-      corpo+='<div style="background:#f9f9f9;padding:10px;margin:6px 0;border-radius:6px"><strong>'+f.nome+'</strong><br><span style="font-size:13px;color:#666">Área: '+f.area+' · Dedicação: '+(resp?resp.pct:100)+'%</span></div>';
+      corpo+='• '+f.nome+' ('+f.area+') — Dedicação: '+(resp?resp.pct:100)+'%\n';
     });
   }
 
   // ── Avaliações ──
   if(secs.indexOf('avaliacoes')>=0){
     var avsCol=avaliacoes.filter(function(a){return a.colaboradorId===colId||a.colaborador===nome;});
-    corpo+='<h3 style="color:#0F6E56;border-bottom:1px solid #e5e7eb;padding-bottom:6px">📊 Avaliações</h3>';
+    corpo+='\n━━━ 📊 AVALIAÇÕES ━━━\n';
     avsCol.slice().reverse().forEach(function(a){
-      corpo+='<div style="background:#f9f9f9;padding:10px;margin:6px 0;border-radius:6px"><strong>'+a.data+'</strong> — Média: <strong>'+a.mediaGeral+'</strong>'+(a.avaliador?' (por '+a.avaliador+')':'')+'</div>';
+      corpo+='• '+a.data+' — Média: '+a.mediaGeral+(a.avaliador?' (por '+a.avaliador+')':'')+'\n';
     });
-    if(!avsCol.length) corpo+='<p style="color:#888;font-size:13px">Nenhuma avaliação registrada.</p>';
+    if(avsCol.length){
+      corpo+='(PDF da avaliação em anexo — faça o download pelo botão abaixo)\n';
+      // Gerar PDF automaticamente
+      try{ gerarPDFAvaliacao(avsCol[avsCol.length-1].id); } catch(e){}
+    }
   }
 
   // ── Metas SMART ──
   if(secs.indexOf('metas')>=0){
     var smartCol=metas.filter(function(m){return m.tipo==='smart'&&m.colId===colId;});
-    corpo+='<h3 style="color:#0F6E56;border-bottom:1px solid #e5e7eb;padding-bottom:6px">✅ Metas</h3>';
+    corpo+='\n━━━ ✅ METAS ━━━\n';
     smartCol.forEach(function(m){
-      var p=m.progresso||0;
-      corpo+='<div style="background:#f9f9f9;border-left:3px solid '+(p>=100?'#0F6E56':'#185FA5')+';padding:10px;margin:6px 0;border-radius:6px"><strong>'+m.titulo+'</strong><br><span style="font-size:13px;color:#666">Progresso: '+p+'% · Status: '+(m.status||'Pendente')+(m.prazo?' · Prazo: '+m.prazo:'')+'</span></div>';
+      corpo+='• '+m.titulo+' — '+(m.progresso||0)+'% ('+(m.status||'Pendente')+')'+(m.prazo?' Prazo: '+m.prazo:'')+'\n';
     });
-    if(!smartCol.length) corpo+='<p style="color:#888;font-size:13px">Nenhuma meta atribuída.</p>';
+    if(!smartCol.length) corpo+='Nenhuma meta atribuída.\n';
   }
 
   // ── PDI ──
   if(secs.indexOf('pdi')>=0){
     var pdisCol=(typeof getPDIs==='function'?getPDIs():[]).filter(function(pd){return pd.colId===colId;});
-    corpo+='<h3 style="color:#0F6E56;border-bottom:1px solid #e5e7eb;padding-bottom:6px">🚀 PDI</h3>';
+    corpo+='\n━━━ 🚀 PDI ━━━\n';
     pdisCol.forEach(function(pd){
       var acoes=pd.acoes||[];
       var pct=acoes.length?Math.round(acoes.reduce(function(a,ac){return a+(ac.progresso||0);},0)/acoes.length):0;
-      corpo+='<div style="background:#f9f9f9;padding:10px;margin:6px 0;border-radius:6px"><strong>'+(pd.titulo||'PDI')+'</strong> — '+pct+'% concluído<br>';
-      acoes.forEach(function(ac){
-        corpo+='<span style="font-size:12px;color:#666">• '+ac.titulo+' ('+(ac.progresso||0)+'%)</span><br>';
-      });
-      corpo+='</div>';
+      corpo+='• '+(pd.titulo||'PDI')+' — '+pct+'% concluído\n';
+      acoes.forEach(function(ac){ corpo+='  ○ '+ac.titulo+' ('+( ac.progresso||0)+'%)\n'; });
     });
-    if(!pdisCol.length) corpo+='<p style="color:#888;font-size:13px">Nenhum PDI criado.</p>';
+    if(!pdisCol.length) corpo+='Nenhum PDI criado.\n';
   }
 
   // ── OKR ──
   if(secs.indexOf('okr')>=0){
     var okrsArea=metas.filter(function(m){return m.tipo==='okr'&&m.area===col.area;});
-    corpo+='<h3 style="color:#0F6E56;border-bottom:1px solid #e5e7eb;padding-bottom:6px">🎯 OKR — '+(col.area||'Equipe')+'</h3>';
+    corpo+='\n━━━ 🎯 OKR — '+(col.area||'Equipe')+' ━━━\n';
     okrsArea.forEach(function(o){
       var krs=o.keyResults||[];
       var pct=krs.length?Math.round(krs.reduce(function(a,kr){var al=parseFloat(kr.alvo)||1;var at=parseFloat(kr.atual)||0;return a+Math.min(100,Math.round(at/al*100));},0)/krs.length):0;
-      corpo+='<div style="background:#f9f9f9;padding:10px;margin:6px 0;border-radius:6px"><strong>'+o.objetivo+'</strong> — '+pct+'%<br>';
-      krs.forEach(function(kr){
-        var at=parseFloat(kr.atual)||0;var al=parseFloat(kr.alvo)||1;
-        corpo+='<span style="font-size:12px;color:#666">• '+kr.titulo+' ('+at+'/'+al+')</span><br>';
-      });
-      corpo+='</div>';
+      corpo+='• '+o.objetivo+' — '+pct+'%\n';
+      krs.forEach(function(kr){ corpo+='  ○ '+kr.titulo+' ('+( parseFloat(kr.atual)||0)+'/'+( parseFloat(kr.alvo)||1)+')\n'; });
     });
-    if(!okrsArea.length) corpo+='<p style="color:#888;font-size:13px">Nenhum OKR para esta área.</p>';
+    if(!okrsArea.length) corpo+='Nenhum OKR para esta área.\n';
   }
 
-  // ── Notas (com período) ──
+  // ── Notas ──
   if(secs.indexOf('notas')>=0){
     var periodo=document.getElementById('share-notas-periodo');
     var periodoVal=periodo?periodo.value:'mensal';
@@ -1041,44 +1051,44 @@ async function enviarCompartilhar(colId){
       if(n.colId!==colId)return false;
       var d=new Date(n.dataHora||n.data);
       return(agora-d)/(1000*60*60*24)<=diasFiltro;
-    }).sort(function(a,b){return(b.dataHora||b.data||'').localeCompare(a.dataHora||a.data||'');});
-    var periodoLabel={semanal:'Última semana',mensal:'Último mês',trimestral:'Último trimestre',semestral:'Último semestre'}[periodoVal];
-    var icons={positivo:'🟢',neutro:'🟡',negativo:'🔴',alerta:'🟠'};
-    corpo+='<h3 style="color:#0F6E56;border-bottom:1px solid #e5e7eb;padding-bottom:6px">📝 Notas — '+periodoLabel+'</h3>';
-    notasCol.forEach(function(n){
-      corpo+='<div style="background:#f9f9f9;padding:10px;margin:6px 0;border-radius:6px">'+(icons[n.sentimento]||'⚪')+' '+n.texto+'<br><span style="font-size:12px;color:#888">'+(n.categoria||'')+' · '+(n.dataExib||n.data||'')+'</span></div>';
     });
-    if(!notasCol.length) corpo+='<p style="color:#888;font-size:13px">Nenhuma nota no período selecionado.</p>';
+    var periodoLabel={semanal:'Última semana',mensal:'Último mês',trimestral:'Último trimestre',semestral:'Último semestre'}[periodoVal];
+    var sentLabels={positivo:'(+)',neutro:'(~)',negativo:'(-)',alerta:'(!)'}; 
+    corpo+='\n━━━ 📝 NOTAS — '+periodoLabel+' ━━━\n';
+    notasCol.forEach(function(n){
+      corpo+='• '+(sentLabels[n.sentimento]||'')+' '+n.texto+' ['+(n.dataExib||n.data||'')+']\n';
+    });
+    if(!notasCol.length) corpo+='Nenhuma nota no período.\n';
   }
 
   // ── Movimentações ──
   if(secs.indexOf('movimentacoes')>=0){
     var hist=(col.historico||[]).slice().reverse();
-    corpo+='<h3 style="color:#0F6E56;border-bottom:1px solid #e5e7eb;padding-bottom:6px">🕐 Movimentações</h3>';
+    corpo+='\n━━━ 🕐 MOVIMENTAÇÕES ━━━\n';
     hist.forEach(function(h){
-      corpo+='<div style="background:#f9f9f9;padding:10px;margin:6px 0;border-radius:6px"><strong>'+h.tipo+'</strong> — '+h.data+'<br><span style="font-size:13px;color:#666">'+h.descricao+'</span></div>';
+      corpo+='• '+h.tipo+' — '+h.data+': '+h.descricao+'\n';
     });
-    if(!hist.length) corpo+='<p style="color:#888;font-size:13px">Nenhuma movimentação registrada.</p>';
+    if(!hist.length) corpo+='Nenhuma movimentação registrada.\n';
   }
 
-  corpo+='<hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">'
-    +'<p style="color:#aaa;font-size:11px">Squado · Gestão de Equipes · <a href="https://squado.com.br" style="color:#1D9E75">squado.com.br</a></p>';
+  corpo+='\n—\nSquado · Gestão de Equipes\nhttps://squado.com.br';
 
-  var assunto='Squado — Informações de '+nome+' ('+secs.join(', ')+')';
-  var htmlFinal='<div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #e5e7eb;border-radius:12px">'+corpo+'</div>';
+  var assunto='Squado — Informações de '+nome;
+  var mailtoUrl='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(assunto)+'&body='+encodeURIComponent(corpo);
 
-  try{
-    var token=squadoGetToken();
-    var r=await fetch('https://squado-api-936751823867.us-central1.run.app/api/cron/send-email',{
-      method:'POST',
-      headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
-      body:JSON.stringify({to:email,subject:assunto,html:htmlFinal})
-    });
-    if(r.ok){toast('📧 Email enviado para '+email+'!');}
-    else{var b=await r.text();alert('Erro: '+b);}
-  }catch(e){
-    console.error('Erro envio:',e);
-    alert('Erro ao enviar email.');
+  // mailto: tem limite de ~2000 chars na URL. Se exceder, copiar pro clipboard
+  if(mailtoUrl.length > 2000){
+    try{
+      await navigator.clipboard.writeText(corpo);
+      toast('📋 Conteúdo copiado! Cole no corpo do email.');
+      window.open('mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(assunto),'_blank');
+    }catch(e){
+      // Fallback: abrir mailto simples
+      window.open(mailtoUrl,'_blank');
+    }
+  } else {
+    window.open(mailtoUrl,'_blank');
   }
+  toast('📧 Email aberto para edição!');
 }
 
