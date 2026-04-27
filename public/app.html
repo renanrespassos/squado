@@ -466,6 +466,25 @@ select:focus{border-bottom-color:#0F6E56;outline:none}
 
   /* ── Formulário de avaliação ── */
   .eval-section{padding:12px}
+
+  /* ── Grids inline — forçar 2 colunas no mobile ── */
+  [style*="grid-template-columns:repeat(3"]{grid-template-columns:1fr 1fr!important}
+  [style*="grid-template-columns:repeat(4"]{grid-template-columns:1fr 1fr!important}
+
+  /* ── Topbar — compacto ── */
+  .topbar{min-height:48px}
+  #squado-user-badge > div:nth-child(2){display:none}
+
+  /* ── Compartilhar checkboxes — 1 col no mobile ── */
+  [style*="grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px"]{grid-template-columns:1fr!important}
+
+  /* ── Touch targets maiores ── */
+  .btn{min-height:36px}
+  .btn-xs{min-height:28px}
+  .nav-item{min-height:40px;-webkit-tap-highlight-color:rgba(0,0,0,.05)}
+
+  /* ── Fechar sidebar ao clicar num item ── */
+  .sidebar .nav-item{cursor:pointer}
 }
 
 @media(max-width:480px){
@@ -874,7 +893,16 @@ input[type=number]{
 </div>
 </div>
 
-<div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+<!-- Nav inferior mobile -->
+<div class="mob-nav" id="mob-nav">
+  <div class="mob-nav-item" onclick="go('dashboard')" data-page="dashboard"><span class="mob-nav-icon">🏠</span>Início</div>
+  <div class="mob-nav-item" onclick="go('colaboradores')" data-page="colaboradores"><span class="mob-nav-icon">👥</span>Equipe</div>
+  <div class="mob-nav-item" onclick="go('avaliacao')" data-page="avaliacao"><span class="mob-nav-icon">📊</span>Avaliação</div>
+  <div class="mob-nav-item" onclick="go('notas')" data-page="notas"><span class="mob-nav-icon">📝</span>Notas</div>
+  <div class="mob-nav-item" onclick="toggleMobSidebar()" data-page="menu"><span class="mob-nav-icon">☰</span>Menu</div>
+</div>
+<!-- Overlay da sidebar no mobile -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobSidebar()"></div>
   <div class="modal" id="modal-box">
     <div class="modal-header"><div class="modal-title" id="modal-title"></div><button class="modal-close" onclick="closeModal()">×</button></div>
     <div id="modal-body"></div>
@@ -1677,7 +1705,7 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
 <script src="js/ninebox.js?v=1777228631"></script>
 <script src="js/competencias.js?v=1777228631"></script>
 <script src="js/config.js?v=1777228631"></script>
-<script src="js/perfil.js?v=1777281133"></script>
+<script src="js/perfil.js?v=1777282090"></script>
 <script src="js/notas-particulares.js?v=1777228631"></script>
 <script src="js/metas.js?v=1777228631"></script>
 <script src="js/okr.js?v=1777228631"></script>
@@ -1857,16 +1885,9 @@ function closeMobSidebar(){
 function updateMobNav(page){
   closeMobSidebar();
   document.querySelectorAll('.mob-nav-item').forEach(function(el){
-    el.classList.toggle('active', el.id==='mobnav-'+page);
+    var p = el.getAttribute('data-page')||'';
+    el.classList.toggle('active', p===page || (p==='avaliacao' && ['avaliacao','historico_aval','perguntas'].indexOf(page)>=0));
   });
-  const activeItem=document.getElementById('mobnav-'+page);
-  if(activeItem){
-    const nav=document.getElementById('mob-nav');
-    if(nav){
-      const left=activeItem.offsetLeft - nav.offsetWidth/2 + activeItem.offsetWidth/2;
-      nav.scrollTo({left:Math.max(0,left),behavior:'smooth'});
-    }
-  }
 }
 
 // Touch swipe para fechar sidebar
