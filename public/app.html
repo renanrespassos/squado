@@ -909,6 +909,33 @@ input[type=number]{
 </div>
 <!-- Overlay da sidebar no mobile -->
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobSidebar()"></div>
+
+<!-- Auth overlay (login/registro) -->
+<div id="squado-auth-overlay" style="display:none;position:fixed;inset:0;background:#FCFCFA;z-index:99998;flex-direction:column;align-items:center;justify-content:center;padding:20px">
+  <div style="max-width:400px;width:100%;text-align:center">
+    <div style="margin-bottom:24px"><span style="font-size:32px;font-weight:900;font-family:'Archivo',sans-serif;color:#0E0E0E">SQUADO</span></div>
+    <div style="display:flex;gap:0;margin-bottom:20px;border-radius:8px;overflow:hidden;border:1px solid #E0E2E0">
+      <button id="tab-login" onclick="squadoShowTab('login')" style="flex:1;padding:10px;border:none;cursor:pointer;font-weight:600;font-size:13px;background:#0F6E56;color:#fff">Entrar</button>
+      <button id="tab-registro" onclick="squadoShowTab('registro')" style="flex:1;padding:10px;border:none;cursor:pointer;font-weight:600;font-size:13px;background:#f9fafb;color:#6b7280">Criar conta</button>
+    </div>
+    <div id="form-login">
+      <input id="sq-login-email" type="email" placeholder="Email" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #E0E2E0;border-radius:8px;font-size:14px;box-sizing:border-box"/>
+      <input id="sq-login-senha" type="password" placeholder="Senha" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #E0E2E0;border-radius:8px;font-size:14px;box-sizing:border-box"/>
+      <div id="sq-login-erro" style="display:none;color:#A32D2D;font-size:12px;margin-bottom:10px;text-align:left"></div>
+      <button id="sq-login-btn" onclick="squadoLogin()" style="width:100%;padding:14px;background:#0F6E56;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer">Entrar</button>
+    </div>
+    <div id="form-registro" style="display:none">
+      <input id="sq-reg-nome" placeholder="Seu nome" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #E0E2E0;border-radius:8px;font-size:14px;box-sizing:border-box"/>
+      <input id="sq-reg-email" type="email" placeholder="Email" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #E0E2E0;border-radius:8px;font-size:14px;box-sizing:border-box"/>
+      <input id="sq-reg-empresa" placeholder="Nome da empresa (opcional)" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #E0E2E0;border-radius:8px;font-size:14px;box-sizing:border-box"/>
+      <input id="sq-reg-senha" type="password" placeholder="Senha (mín. 6 caracteres)" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #E0E2E0;border-radius:8px;font-size:14px;box-sizing:border-box"/>
+      <div id="sq-reg-erro" style="display:none;color:#A32D2D;font-size:12px;margin-bottom:10px;text-align:left"></div>
+      <button id="sq-reg-btn" onclick="squadoRegistro()" style="width:100%;padding:14px;background:#0F6E56;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer">Criar conta</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
   <div class="modal" id="modal-box">
     <div class="modal-header"><div class="modal-title" id="modal-title"></div><button class="modal-close" onclick="closeModal()">×</button></div>
     <div id="modal-body"></div>
@@ -2545,7 +2572,7 @@ function squadoLogout() {
   if (menu)  menu.style.display  = 'none';
   if (mob)   mob.style.display   = 'none';
   // Sempre recarregar a página pro estado ficar limpo
-  location.reload();
+  window.location.href = '/app';
 }
 
 // Inicializar ao carregar
