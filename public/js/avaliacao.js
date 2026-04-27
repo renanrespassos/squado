@@ -36,7 +36,7 @@ function renderAvaliacao(){
     <div class="field-group"><div class="field-label">Nível detectado</div><div style="padding:7px 10px;border:0.5px solid var(--border);border-radius:7px;font-size:12px;min-height:35px;display:flex;align-items:center" id="av-nivel-show">${avalState.nivel?nivelBadge(avalState.nivel):'<span style="color:var(--txt3)">Selecione o colaborador</span>'}</div></div>
   </div>
   <div class="flex gap-6 flex-wrap mb-4">
-    ${[['1','Não atende','#FCEBEB','#A32D2D'],['2','Atende parcialmente','#FAEEDA','#854F0B'],['3','Atende','#C0DD97','#27500A'],['4','Supera','#1D9E75','#fff']].map(([n,l,bg,c])=>`<div class="score-pill" style="background:${bg};color:${c};border-color:${c}30"><strong>${n}</strong> ${l}</div>`).join('')}
+    ${[['1-2','Nunca','#FCEBEB','#A32D2D'],['3-4','Raramente','#FAEEDA','#854F0B'],['5-6','Às vezes','#E6F1FB','#185FA5'],['7-8','Frequentemente','#E1F5EE','#0F6E56'],['9-10','Sempre','#C0DD97','#27500A']].map(([n,l,bg,c])=>`<div class="score-pill" style="background:${bg};color:${c};border-color:${c}30"><strong>${n}</strong> ${l}</div>`).join('')}
   </div></div>
   <div id="av-perguntas-wrap">${avalState.nivel?renderPerguntasForm():'<div class="card"><div class="empty-state">Selecione um colaborador para carregar as perguntas.</div></div>'}</div>
   ${avalState.nivel?`<div class="card mt-12"><div class="form-grid">
@@ -67,8 +67,8 @@ function renderPerguntasForm(){
       ||perguntas['Estagiário']||{};
   })();
   return Object.entries(p).map(([secao,qs])=>`<div class="eval-section"><div class="eval-section-title"><span>${secao}</span></div>
-    ${qs.map((q,qi)=>{const key=`${secao}__${qi}`;const val=avalState.respostas[key]||2;const sid='sv_'+key.replace(/[^a-z0-9]/gi,'_');
-      return`<div style="margin-bottom:11px"><div class="eval-q-text">${q}</div><div class="slider-wrap"><span style="font-size:10px;color:var(--txt3)">1</span><input type="range" min="1" max="4" value="${val}" oninput="setResp('${key}',this.value);document.getElementById('${sid}').textContent=['','Não atende','Atende parcialmente','Atende','Supera'][this.value]" style="accent-color:${val>=4?'#1D9E75':val>=3?'#27500A':val>=2?'#854F0B':'#A32D2D'}"/><span style="font-size:10px;color:var(--txt3)">4</span><span class="slider-val" id="${sid}" style="min-width:100px;text-align:center;font-size:11px">${['','Não atende','Atende parcialmente','Atende','Supera'][val]||val}</span></div></div>`;}).join('')}
+    ${qs.map((q,qi)=>{const key=`${secao}__${qi}`;const val=avalState.respostas[key]||5;const sid='sv_'+key.replace(/[^a-z0-9]/gi,'_');
+      return`<div style="margin-bottom:11px"><div class="eval-q-text">${q}</div><div class="slider-wrap"><span style="font-size:10px;color:var(--txt3)">1</span><input type="range" min="1" max="10" value="${val}" oninput="setResp('${key}',this.value);document.getElementById('${sid}').textContent=this.value"/><span style="font-size:10px;color:var(--txt3)">10</span><span class="slider-val" id="${sid}">${val}</span></div></div>`;}).join('')}
     <div class="field-group"><div class="field-label">Obs. sobre ${secao} (opcional)</div><textarea style="min-height:44px" oninput="avalState.obs['${secao}']=this.value">${avalState.obs[secao]||''}</textarea></div>
   </div>`).join('');
 }
@@ -81,8 +81,8 @@ function salvarAvaliacao(){
   const _niv=avalState.nivel;
   const p=perguntas[_niv]||perguntas['Assistente I']||{};
   const secaoMedias={};let total=0,count=0;
-  Object.entries(p).forEach(([secao,qs])=>{let sm=0;qs.forEach((_,qi)=>{const k=`${secao}__${qi}`;const v=avalState.respostas[k]||2;sm+=v;total+=v;count++;});secaoMedias[secao]=Math.round(sm/qs.length*10)/10;});
-  const mediaGeral=count?Math.round(total/count*10)/10:2;
+  Object.entries(p).forEach(([secao,qs])=>{let sm=0;qs.forEach((_,qi)=>{const k=`${secao}__${qi}`;const v=avalState.respostas[k]||5;sm+=v;total+=v;count++;});secaoMedias[secao]=Math.round(sm/qs.length*10)/10;});
+  const mediaGeral=count?Math.round(total/count*10)/10:5;
   const obj={id:uid(),colaboradorId:c.id,colaborador:c.nome,nivel:avalState.nivel,data:(document.getElementById('av-data')||{}).value||new Date().toISOString().slice(0,10),avaliador:(document.getElementById('av-avaliador')||{}).value||'',mediaGeral,secaoMedias,respostas:{...avalState.respostas},obs:{...avalState.obs},pontosPos:(document.getElementById('av-pontos')||{}).value||'',oportunidades:(document.getElementById('av-opor')||{}).value||''};
   avaliacoes.push(obj);saveAll();limparRascunhoAval();avalState={colId:'',nivel:'',respostas:{},obs:{},pontosPos:'',oportunidades:''};toast('Avaliação salva! 🎉');go('historico_aval');
 }
@@ -92,7 +92,7 @@ function salvarAvaliacao(){
 // ══════════════════════════════════════════
 function renderHistoricoAval(search=''){
   let list=[...avaliacoes].reverse();if(search)list=list.filter(a=>a.colaborador.toLowerCase().includes(search.toLowerCase()));
-  function sc(v){return v>=4?'score-hi':v>=3?'score-mid':'score-lo'}
+  function sc(v){return v>=8?'score-hi':v>=5?'score-mid':'score-lo'}
   return `<div class="card" style="padding:0;overflow:hidden">
     ${list.length===0?`<div class="empty-state">Nenhuma avaliação.<br><button class="btn btn-primary btn-sm mt-8" onclick="go('avaliacao')">Fazer primeira</button></div>`:`
     <div class="table-wrap"><table class="tbl">
@@ -100,7 +100,7 @@ function renderHistoricoAval(search=''){
       <tbody>${list.map(a=>`<tr>
         <td><div class="flex items-center gap-8" style="white-space:nowrap">${av(a.colaborador)}<span style="font-weight:600">${a.colaborador}</span></div></td>
         <td>${nivelBadge(a.nivel)}</td><td style="color:var(--txt2);white-space:nowrap">${a.data}</td>
-        ${Object.entries(a.secaoMedias||{}).slice(0,6).map(([s,v])=>`<td class="${sc(v||2)}">${v||'—'}</td>`).join('')}
+        ${Object.entries(a.secaoMedias||{}).slice(0,6).map(([s,v])=>`<td class="${sc(v||5)}">${v||'—'}</td>`).join('')}
         <td><span class="badge badge-green" style="font-size:12px">${a.mediaGeral}</span></td>
         <td><div style="display:flex;gap:4px">
           <button class="btn btn-sm" onclick="verAvaliacao('${a.id}')">Ver</button>
@@ -117,23 +117,23 @@ function verAvaliacao(id){
   var respostas=a.respostas||(typeof window.respostas!=='undefined'?window.respostas:{});
   var pergNivel=a.perguntasSnapshot||a.perguntas||(typeof perguntas!=='undefined'&&perguntas[a.nivel]?perguntas[a.nivel]:(typeof window.pergNivel!=='undefined'?window.pergNivel:{}));
   var radarImg=a.radarImg||'';
-  function scoreColor(v){return v>=4?'#1D9E75':v>=3?'#27500A':v>=2?'#854F0B':'#A32D2D';}
-  function scoreBg(v){return v>=4?'#E1F5EE':v>=3?'#C0DD97':v>=2?'#FAEEDA':'#FCEBEB';}
-  function scoreLabel(v){return v>=4?'Supera':v>=3?'Atende':v>=2?'Atende parcialmente':'Não atende';}
-  function barHtml(v,w){w=w||'100px';return '<div style="display:inline-block;width:'+w+';height:8px;background:#eee;border-radius:4px;overflow:hidden;vertical-align:middle"><div style="width:'+(v*25)+'%;height:100%;background:'+scoreColor(v)+'"></div></div>';}
+  function scoreColor(v){return v>=8?'#1D9E75':v>=5?'#D97706':'#DC2626';}
+  function scoreBg(v){return v>=8?'#E1F5EE':v>=5?'#FEF3C7':'#FEE2E2';}
+  function scoreLabel(v){return v>=8?'Excelente':v>=5?'Em desenvolvimento':'Crítico';}
+  function barHtml(v,w){w=w||'100px';return '<div style="display:inline-block;width:'+w+';height:8px;background:#eee;border-radius:4px;overflow:hidden;vertical-align:middle"><div style="width:'+(v*10)+'%;height:100%;background:'+scoreColor(v)+'"></div></div>';}
   if(typeof window.gerarPDFAvaliacao!=='function'){window.gerarPDFAvaliacao=function(avalId){
     var a=avaliacoes.find(function(x){return x.id===avalId;});if(!a){verAvaliacao(avalId);return;}
     var col=colaboradores.find(function(c){return c.nome===a.colaborador;})||{nome:a.colaborador,area:'',nivel:a.nivel};
     var dataHoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
-    function sc(v){return v>=4?'#1D9E75':v>=3?'#27500A':v>=2?'#854F0B':'#A32D2D';}
-    function sb(v){return v>=4?'#E1F5EE':v>=3?'#C0DD97':v>=2?'#FAEEDA':'#FCEBEB';}
-    function sl(v){return v>=4?'Supera':v>=3?'Atende':v>=2?'Atende parcialmente':'Não atende';}
+    function sc(v){return v>=8?'#1D9E75':v>=5?'#D97706':'#DC2626';}
+    function sb(v){return v>=8?'#E1F5EE':v>=5?'#FEF3C7':'#FEE2E2';}
+    function sl(v){return v>=8?'Excelente':v>=5?'Em desenvolvimento':'Crítico';}
     var secoes=Object.entries(a.secaoMedias||{});
     var secoesRows=secoes.map(function(sv){
       var s=sv[0],v=sv[1];
       return '<tr><td style="padding:8px 12px;font-size:12px;font-weight:600">'+s+'</td>'
         +'<td style="padding:8px 12px"><div style="display:flex;align-items:center;gap:8px">'
-        +'<div style="flex:1;height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden"><div style="height:100%;width:'+(v*25)+'%;background:'+sc(v)+'"></div></div>'
+        +'<div style="flex:1;height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden"><div style="height:100%;width:'+(v*10)+'%;background:'+sc(v)+'"></div></div>'
         +'<span style="font-size:12px;font-weight:700;color:'+sc(v)+'">'+v+'</span></div></td>'
         +'<td style="padding:8px 12px;text-align:center"><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:'+sb(v)+';color:'+sc(v)+'">'+sl(v)+'</span></td></tr>';
     }).join('');
@@ -218,13 +218,13 @@ function verAvaliacao(id){
   };}
   if(typeof window.editarAvaliacao!=='function'){window.editarAvaliacao=function(x){alert('Edição em construção');};}
   var secoes=Object.entries(a.secaoMedias||{});
-  function sc(v){return v>=4?'score-hi':v>=3?'score-mid':'score-lo';}
+  function sc(v){return v>=8?'score-hi':v>=5?'score-mid':'score-lo';}
   var secoesGrid=secoes.map(function(sv){
     var s=sv[0],v=sv[1];
     return '<div style="background:var(--bg2);border-radius:8px;padding:10px 13px">'
       +'<div style="font-size:10px;color:var(--txt2);margin-bottom:3px">'+s+'</div>'
       +'<div class="flex items-center gap-8"><div class="progress-bar" style="flex:1">'
-        +'<div class="progress-fill" style="width:'+(v*25)+'%;background:var(--green)"></div>'
+        +'<div class="progress-fill" style="width:'+(v*10)+'%;background:var(--green)"></div>'
       +'</div><span class="'+sc(v)+'" style="font-size:14px">'+v+'</span></div>'
       +((a.obs&&a.obs[s])?'<div style="font-size:10px;color:var(--txt3);margin-top:3px">'+a.obs[s]+'</div>':'')
     +'</div>';
@@ -348,7 +348,7 @@ function verAvaliacao(id){
     // Linhas de perguntas
     var qRows=qs.map(function(pergunta, qi){
       var key=secao+'__'+qi;
-      var nota=parseFloat(respostas[key])||2;
+      var nota=parseFloat(respostas[key])||5;
       return '<tr>'
         +'<td style="padding:7px 12px;font-size:11.5px;color:#374151;border-bottom:1px solid #f5f5f5;line-height:1.5">'+pergunta+'</td>'
         +'<td style="padding:7px 12px;width:110px;border-bottom:1px solid #f5f5f5">'+barHtml(nota,'90px')+'</td>'
