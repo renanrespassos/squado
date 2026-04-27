@@ -879,6 +879,9 @@ input[type=number]{
         <button onclick="showApiKeyModal();toggleUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:none;background:transparent;cursor:pointer;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;color:#3A4240;text-align:left" onmouseover="this.style.background='#F5F6F4'" onmouseout="this.style.background='transparent'">
           🔑 Configurar IA
         </button>
+        <button onclick="forcarSync();toggleUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:none;background:transparent;cursor:pointer;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;color:#3A4240;text-align:left" onmouseover="this.style.background='#F5F6F4'" onmouseout="this.style.background='transparent'">
+          🔄 Forçar Sincronização
+        </button>
         <div style="height:1px;background:#F0F1EF;margin:4px 0"></div>
         <button onclick="squadoLogout()" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:none;background:transparent;cursor:pointer;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;color:#A6311F;text-align:left" onmouseover="this.style.background='#FEF2F0'" onmouseout="this.style.background='transparent'">
           🚪 Sair
@@ -2487,6 +2490,34 @@ function squadoToggleUserMenu(e) {
 
 // Manter compatibilidade
 function squadoShowUserMenu() { squadoToggleUserMenu(); }
+
+// ── Forçar sincronização (limpa cache local e recarrega da nuvem) ──
+async function forcarSync(){
+  if(!squadoGetToken()){alert('Faça login primeiro.');return;}
+  toast('🔄 Forçando sincronização...');
+  // Limpar TODOS os dados locais (mantém auth)
+  var authKeys=['squado_token','squado_user','squado_session'];
+  var savedAuth={};
+  authKeys.forEach(function(k){savedAuth[k]=localStorage.getItem(k);});
+  // Limpar tudo
+  var keysToRemove=[];
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i);
+    if(authKeys.indexOf(k)<0) keysToRemove.push(k);
+  }
+  keysToRemove.forEach(function(k){localStorage.removeItem(k);});
+  // Resetar variáveis em memória
+  colaboradores=[];avaliacoes=[];metas=[];notas=[];
+  // Recarregar da nuvem
+  try{
+    await squadoCarregarDaNuvem();
+    toast('✅ Sincronizado! '+colaboradores.length+' colaboradores carregados.');
+    render(currentPage||'dashboard');
+  }catch(e){
+    console.error('Erro forcarSync:',e);
+    toast('❌ Erro ao sincronizar. Tente novamente.');
+  }
+}
 
 function squadoLogout() {
   _squadoSessionToken++; // invalida fetches em andamento
