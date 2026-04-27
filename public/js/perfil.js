@@ -313,7 +313,7 @@ function renderPerfilAba(id, aba){
       +(ativo
         ?'<div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:12px">'
           +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
-            +'<div style="font-size:13px;font-weight:700">'+ativo.ciclo+'</div>'
+            +'<div style="font-size:13px;font-weight:700">'+(ativo.ciclo||ativo.objetivo||'PDI Ativo')+'</div>'
             +'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--green-bg);color:var(--green2)">'+ativo.status+'</span>'
           +'</div>'
           +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
@@ -351,7 +351,7 @@ function renderPerfilAba(id, aba){
                 +nivelBadge(a.nivel)+'</div>'
                 +'<div style="font-size:28px;font-weight:900;color:'+sc(a.mediaGeral)+'">'+a.mediaGeral+'</div>'
                 +'<div style="display:flex;gap:6px">'
-                  +'<button class="btn btn-xs" onclick="gerarPDFAvaliacao(\''+a.id+'\')">📄 PDF</button>'
+                  +'<button class="btn btn-xs" onclick="closeModal();setTimeout(function(){verAvaliacao(\''+a.id+'\')},150)">📄 PDF</button>'
                 +'</div>'
               +'</div>'
               +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'
@@ -1021,8 +1021,8 @@ async function enviarCompartilhar(colId){
     pdisCol.forEach(function(pd){
       var acoes=pd.acoes||[];
       var pct=acoes.length?Math.round(acoes.reduce(function(a,ac){return a+(ac.progresso||0);},0)/acoes.length):0;
-      corpo+='• '+(pd.titulo||'PDI')+' — '+pct+'% concluído\n';
-      acoes.forEach(function(ac){ corpo+='  ○ '+ac.titulo+' ('+( ac.progresso||0)+'%)\n'; });
+      corpo+='• '+(pd.ciclo||pd.objetivo||'PDI')+' — '+pct+'% concluído\n';
+      acoes.forEach(function(ac){ corpo+='  ○ '+(ac.descricao||'Ação')+' ('+(ac.progresso||0)+'%)\n'; });
     });
     if(!pdisCol.length) corpo+='Nenhum PDI criado.\n';
   }
