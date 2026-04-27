@@ -2498,15 +2498,15 @@ function squadoShowUserMenu() { squadoToggleUserMenu(); }
 async function forcarSync(){
   if(!squadoGetToken()){alert('Faça login primeiro.');return;}
   toast('🔄 Forçando sincronização...');
-  // Limpar TODOS os dados locais (mantém auth)
-  var authKeys=['squado_token','squado_user','squado_session'];
-  var savedAuth={};
-  authKeys.forEach(function(k){savedAuth[k]=localStorage.getItem(k);});
-  // Limpar tudo
+  // Chaves de auth que NÃO devem ser apagadas
+  var protectedKeys=['squado_jwt_token','squado_user_data'];
+  // Limpar apenas dados do app (manter auth e qualquer squado_*)
   var keysToRemove=[];
   for(var i=0;i<localStorage.length;i++){
     var k=localStorage.key(i);
-    if(authKeys.indexOf(k)<0) keysToRemove.push(k);
+    if(protectedKeys.indexOf(k)>=0) continue; // manter auth
+    if(k.indexOf('squado_jwt')===0 || k.indexOf('squado_user')===0) continue; // manter auth
+    keysToRemove.push(k);
   }
   keysToRemove.forEach(function(k){localStorage.removeItem(k);});
   // Resetar variáveis em memória
