@@ -505,6 +505,46 @@ function addSecao(nivel){const s=prompt('Nome da nova seção:');if(s&&!pergunta
 function addNivelPerguntas(){const n=prompt('Nome do nível:');if(n&&!perguntas[n]){perguntas[n]={...perguntas['Estagiário']};saveAll();render('perguntas')}}
 function salvarPerguntas(){saveAll();toast('Perguntas salvas!')}
 
+function excluirNivel(nome){
+  if(!confirm('Excluir o nível "'+nome+'" e todas as suas perguntas?'))return;
+  delete perguntas[nome];
+  window._pergNivelAtivo=null;
+  saveAll();
+  render('perguntas');
+  toast('Nível excluído!');
+}
+
+function renomearNivel(nomeAtual){
+  var novo=prompt('Novo nome para o nível "'+nomeAtual+'":',nomeAtual);
+  if(!novo||novo===nomeAtual)return;
+  if(perguntas[novo]){alert('Já existe um nível com esse nome.');return;}
+  perguntas[novo]=perguntas[nomeAtual];
+  delete perguntas[nomeAtual];
+  window._pergNivelAtivo=novo;
+  saveAll();
+  render('perguntas');
+  toast('Nível renomeado!');
+}
+
+function excluirSecao(nivel,secao){
+  if(!confirm('Excluir a seção "'+secao+'" e todas as perguntas?'))return;
+  delete perguntas[nivel][secao];
+  saveAll();
+  render('perguntas');
+  toast('Seção excluída!');
+}
+
+function renomearSecao(nivel,secaoAtual){
+  var novo=prompt('Novo nome para a seção "'+secaoAtual+'":',secaoAtual);
+  if(!novo||novo===secaoAtual)return;
+  if(perguntas[nivel][novo]){alert('Já existe uma seção com esse nome.');return;}
+  perguntas[nivel][novo]=perguntas[nivel][secaoAtual];
+  delete perguntas[nivel][secaoAtual];
+  saveAll();
+  render('perguntas');
+  toast('Seção renomeada!');
+}
+
 // ══════════════════════════════════════════
 // NÍVEIS
 // ══════════════════════════════════════════
