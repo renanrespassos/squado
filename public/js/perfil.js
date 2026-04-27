@@ -963,7 +963,7 @@ function salvarDataAdmissao(colId, val){
 }
 
 // ── Compartilhar por email (mailto:) ──────────────────────────
-async function enviarCompartilhar(colId){
+function enviarCompartilhar(colId){
   var col=colaboradores.find(function(c){return c.id===colId;});
   if(!col)return;
   var nome=col.nome;
@@ -1077,16 +1077,12 @@ async function enviarCompartilhar(colId){
 
   // mailto: tem limite de ~2000 chars na URL. Se exceder, copiar pro clipboard
   if(mailtoUrl.length > 2000){
-    try{
-      await navigator.clipboard.writeText(corpo);
-      toast('📋 Conteúdo copiado! Cole no corpo do email.');
-      window.open('mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(assunto),'_blank');
-    }catch(e){
-      // Fallback: abrir mailto simples
-      window.open(mailtoUrl,'_blank');
-    }
+    // Copiar corpo pro clipboard e abrir mailto só com subject
+    var ta=document.createElement('textarea');ta.value=corpo;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+    toast('📋 Conteúdo copiado pra área de transferência! Cole no corpo do email.');
+    location.href='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(assunto);
   } else {
-    window.open(mailtoUrl,'_blank');
+    location.href=mailtoUrl;
   }
   toast('📧 Email aberto para edição!');
 }
