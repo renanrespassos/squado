@@ -332,7 +332,8 @@ function renderPerfilAba(id, aba){
         :'<div style="text-align:center;padding:20px;color:var(--txt3)">Nenhum PDI ativo.</div>')
       +'<div style="display:flex;gap:8px">'
         +'<button class="btn btn-primary btn-sm" data-col="'+id+'" onclick="abrirPDI(this.dataset.col)">🚀 '+(ativo?'Abrir PDI':'Criar PDI')+'</button>'
-        +(pdisCol.length>1?'<button class="btn btn-sm" data-col="'+id+'" onclick="verHistoricoPDI(this.dataset.col)">📂 Histórico</button>':'')
+        +(ativo?'<button class="btn btn-xs" data-col="'+id+'" onclick="abrirPDI(this.dataset.col)">✏️ Editar</button>':'')
+        +(ativo?'<button class="btn btn-xs btn-danger" onclick="if(confirm(\'Excluir este PDI?\')){var pdis=getPDIs();var idx=pdis.findIndex(function(p){return p.colId===\''+id+'\'&&p.status===\'Em andamento\'});if(idx>=0){pdis.splice(idx,1);lss(\'pdis_v3\',pdis);saveAll();renderPerfilAba(\''+id+'\',\'pdi_col\');toast(\'PDI excluído!\')}}">×</button>':'')
       +'</div>';
   }
 
@@ -998,9 +999,7 @@ async function enviarCompartilhar(colId){
       corpo+='• '+a.data+' — Média: '+a.mediaGeral+(a.avaliador?' (por '+a.avaliador+')':'')+'\n';
     });
     if(avsCol.length){
-      corpo+='(PDF da avaliação em anexo — faça o download pelo botão abaixo)\n';
-      // Gerar PDF automaticamente
-      try{ gerarPDFAvaliacao(avsCol[avsCol.length-1].id); } catch(e){}
+      corpo+='(Para gerar o PDF da avaliação, acesse a aba Avaliações no perfil do colaborador)\n';
     }
   }
 

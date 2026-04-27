@@ -83,8 +83,55 @@ function salvarAvaliacao(){
   const secaoMedias={};let total=0,count=0;
   Object.entries(p).forEach(([secao,qs])=>{let sm=0;qs.forEach((_,qi)=>{const k=`${secao}__${qi}`;const v=avalState.respostas[k]||5;sm+=v;total+=v;count++;});secaoMedias[secao]=Math.round(sm/qs.length*10)/10;});
   const mediaGeral=count?Math.round(total/count*10)/10:5;
-  const obj={id:uid(),colaboradorId:c.id,colaborador:c.nome,nivel:avalState.nivel,data:(document.getElementById('av-data')||{}).value||new Date().toISOString().slice(0,10),avaliador:(document.getElementById('av-avaliador')||{}).value||'',mediaGeral,secaoMedias,respostas:{...avalState.respostas},obs:{...avalState.obs},pontosPos:(document.getElementById('av-pontos')||{}).value||'',oportunidades:(document.getElementById('av-opor')||{}).value||''};
-  avaliacoes.push(obj);saveAll();limparRascunhoAval();avalState={colId:'',nivel:'',respostas:{},obs:{},pontosPos:'',oportunidades:''};toast('Avaliação salva! 🎉');go('historico_aval');
+  const obj={id:avalState.editId||uid(),colaboradorId:c.id,colaborador:c.nome,nivel:avalState.nivel,data:(document.getElementById('av-data')||{}).value||new Date().toISOString().slice(0,10),avaliador:(document.getElementById('av-avaliador')||{}).value||'',mediaGeral,secaoMedias,respostas:{...avalState.respostas},obs:{...avalState.obs},pontosPos:(document.getElementById('av-pontos')||{}).value||'',oportunidades:(document.getElementById('av-opor')||{}).value||''};
+  if(avalState.editId){var idx=avaliacoes.findIndex(function(x){return x.id===avalState.editId;});if(idx>=0)avaliacoes[idx]=obj;else avaliacoes.push(obj);toast('Avaliação atualizada! ✅');}
+  else{avaliacoes.push(obj);toast('Avaliação salva! 🎉');}
+  saveAll();limparRascunhoAval();avalState={colId:'',nivel:'',respostas:{},obs:{},pontosPos:'',oportunidades:''};go('historico_aval');
+}
+
+// Editar avaliação existente
+function editarAvaliacao(avalId){
+  var a=avaliacoes.find(function(x){return x.id===avalId;});
+  if(!a){alert('Avaliação não encontrada.');return;}
+  // Carregar dados no avalState
+  avalState={
+    colId:a.colaboradorId||'',
+    nivel:a.nivel||'',
+    respostas:Object.assign({},a.respostas||{}),
+    obs:Object.assign({},a.obs||{}),
+    pontosPos:a.pontosPos||'',
+    oportunidades:a.oportunidades||'',
+    editId:a.id // flag de edição
+  };
+  closeModal();
+  go('avaliacao');
+  setTimeout(function(){
+    var sel=document.getElementById('av-col');
+    if(sel){sel.value=a.colaboradorId;onColChange(a.colaboradorId);}
+    setTimeout(function(){
+      var dataEl=document.getElementById('av-data');
+      var avalEl=document.getElementById('av-avaliador');
+      var pontosEl=document.getElementById('av-pontos');
+      var oporEl=document.getElementById('av-opor');
+      if(dataEl) dataEl.value=a.data||'';
+      if(avalEl) avalEl.value=a.avaliador||'';
+      if(pontosEl) pontosEl.value=a.pontosPos||'';
+      if(oporEl) oporEl.value=a.oportunidades||'';
+      // Restaurar respostas nos sliders
+      Object.entries(a.respostas||{}).forEach(function(entry){
+        var key=entry[0],val=entry[1];
+        var sid='sv_'+key.replace(/[^a-z0-9]/gi,'_');
+        var slider=document.querySelector('input[type=range][oninput*="'+key+'"]');
+        if(slider){slider.value=val;slider.dispatchEvent(new Event('input'));}
+      });
+      // Restaurar observações
+      Object.entries(a.obs||{}).forEach(function(entry){
+        var secao=entry[0],txt=entry[1];
+        var textareas=document.querySelectorAll('textarea[oninput*="'+secao+'"]');
+        textareas.forEach(function(ta){ta.value=txt;});
+      });
+    },300);
+  },100);
 }
 
 // ══════════════════════════════════════════
@@ -104,6 +151,7 @@ function renderHistoricoAval(search=''){
         <td><span class="badge badge-green" style="font-size:12px">${a.mediaGeral}</span></td>
         <td><div style="display:flex;gap:4px">
           <button class="btn btn-sm" onclick="verAvaliacao('${a.id}')">Ver</button>
+          <button class="btn btn-sm" onclick="editarAvaliacao('${a.id}')">✏️</button>
           <button class="btn btn-sm btn-danger" onclick="if(confirm('Excluir esta avaliação?')){avaliacoes=avaliacoes.filter(x=>x.id!=='${a.id}');saveAll();render('historico_aval');toast('Avaliação excluída!')}" title="Excluir">🗑</button>
         </div></td>
       </tr>`).join('')}</tbody>
@@ -260,10 +308,6 @@ function verAvaliacao(id){
       +'<div style="display:flex;gap:8px">'
         +'<button class="btn btn-sm" onclick="editarAvaliacao(\''+id+'\')">✏️ Editar</button>'
         +'<button class="btn btn-sm" onclick="gerarPDFAvaliacao(\''+id+'\')" style="border-color:#185FA5;color:#185FA5">📄 PDF</button>'
-        +'<button class="btn btn-sm" onclick="emailAvaliacao(\''+id+'\')" style="border-color:#0F6E56;color:#0F6E56">📧 Email</button>'
-        +'<button class="btn btn-primary btn-sm" onclick="iniciarAvaliacaoPara(\''+id+'\');closeModal()">📋 Avaliar</button>'
-        +'<button class="btn btn-sm" onclick="verLineaTempo(\''+c.nome+'\')" >⏰ Linha do Tempo</button>'
-        +'<button class="btn btn-purple btn-sm" onclick="quickAsk(\'Analise o perfil de '+c.nome.split(' ')[0]+' e sugira ações\');closeModal();go(\'agente\')">🤖 Analisar com IA</button>'
       +'</div>'
     +'</div>';
 
