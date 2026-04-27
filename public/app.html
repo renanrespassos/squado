@@ -394,7 +394,7 @@ select:focus{border-bottom-color:#0F6E56;outline:none}
   /* ── Main ── */
   .main{margin-left:0!important}
   /* Padding bottom = altura nav (64px) + safe area + folga */
-  .content{padding:12px 12px calc(72px + env(safe-area-inset-bottom,0px))}
+  .content{padding:12px 12px calc(80px + env(safe-area-inset-bottom,0px))}
   .content-inner{min-width:0!important}
 
   /* ── Topbar — sem deslocamento pelo hambúrguer ── */
@@ -473,7 +473,9 @@ select:focus{border-bottom-color:#0F6E56;outline:none}
 
   /* ── Topbar — compacto ── */
   .topbar{min-height:48px}
-  #squado-user-badge > div:nth-child(2){display:none}
+
+  /* ── Sidebar — padding extra no bottom pra nav bar não cobrir ── */
+  .sidebar{padding-bottom:80px!important}
 
   /* ── Compartilhar checkboxes — 1 col no mobile ── */
   [style*="grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px"]{grid-template-columns:1fr!important}
@@ -845,7 +847,8 @@ input[type=number]{
     <button class="btn btn-sm" onclick="showApiKeyModal()" style="display:none;font-size:11px;padding:5px 10px;background:#F5F6F4;border:1px solid #E0E2E0;color:#3A4240;border-radius:5px;cursor:pointer;width:100%;text-align:left;font-family:'Inter',sans-serif">⚙️ Configurar IA</button>
     <div style="font-size:9px;color:#9BA09E;text-align:center;margin-top:4px;letter-spacing:.05em">Squado v6.0 · 2025</div>
     <div id="sq-sync-ind" style="font-size:9px;color:#9BA09E;text-align:center;min-height:12px;transition:color .3s"></div>
-    <button style="display:none" class="btn btn-sm" onclick="squadoLogout()" id="btn-sair-sidebar" style="font-size:11px;padding:5px 10px;background:transparent;border:1px solid #E0E2E0;color:#6B7370;border-radius:5px;cursor:pointer;width:100%;text-align:left;font-family:'Inter',sans-serif">🚪 Sair</button>
+    <button class="btn btn-sm" onclick="forcarSync();closeMobSidebar()" id="btn-sync-sidebar" style="font-size:11px;padding:8px 10px;background:#E6EFEB;border:1px solid #9FE1CB;color:#0F6E56;border-radius:5px;cursor:pointer;width:100%;text-align:center;font-family:'Inter',sans-serif;font-weight:600">🔄 Forçar Sincronização</button>
+    <button class="btn btn-sm" onclick="squadoLogout()" id="btn-sair-sidebar" style="font-size:11px;padding:8px 10px;background:transparent;border:1px solid #E0E2E0;color:#6B7370;border-radius:5px;cursor:pointer;width:100%;text-align:center;font-family:'Inter',sans-serif">🚪 Sair</button>
   </div>
 </aside>
 
