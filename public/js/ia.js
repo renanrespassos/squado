@@ -400,7 +400,13 @@ function renderAgente(){
       var side=m.role==='user'?'user-msg':'';
       var bubble=m.role==='user'?'user':'bot';
       var avatar=m.role!=='user'?'<div class="ai-bot-avatar">\u{1F916}</div>':'';
-      var txt=(m.content||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').split('\n').join('<br>');
+      var txt=(m.content||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      // Markdown básico
+      txt=txt.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+      txt=txt.replace(/\*(.*?)\*/g,'<em>$1</em>');
+      txt=txt.replace(/^• /gm,'<span style="color:var(--green)">●</span> ');
+      txt=txt.replace(/^- /gm,'<span style="color:var(--green)">●</span> ');
+      txt=txt.split('\n').join('<br>');
       msgsHtml+='<div class="ai-msg '+side+'">'+avatar+'<div class="ai-bubble '+bubble+'">'+txt+'</div></div>';
     });
   }
