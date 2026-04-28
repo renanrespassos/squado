@@ -7,8 +7,8 @@ function renderDashboard(){
   const user = squadoGetUser();
   const diasTrial = user && user.trialExpira ? Math.max(0, Math.ceil((new Date(user.trialExpira) - new Date()) / 86400000)) : null;
   const trialCard = diasTrial !== null
-    ? `<div class="stat-card" style="background:#E1F5EE;border-color:#9FE1CB"><div class="stat-label" style="color:#085041">Trial Squado</div><div class="stat-val" style="color:#0F6E56">${diasTrial}d</div><div class="stat-sub" style="color:#1D9E75">${diasTrial > 0 ? 'restantes' : 'expirado'}</div></div>`
-    : `<div class="stat-card"><div class="stat-label">Plano</div><div class="stat-val" style="color:var(--green2)">Pro</div><div class="stat-sub">Ativo</div></div>`;
+    ? `<div class="stat-card" style="background:#E1F5EE;border-color:#9FE1CB;cursor:pointer" onclick="go('planos')"><div class="stat-label" style="color:#085041">TRIAL SQUADO</div><div class="stat-val" style="color:#0F6E56">${diasTrial}d</div><div class="stat-sub" style="color:#1D9E75">${diasTrial > 0 ? 'restantes' : 'expirado — clique pra assinar'}</div></div>`
+    : `<div class="stat-card" style="cursor:pointer" onclick="go('planos')"><div class="stat-label">PLANO</div><div class="stat-val" style="color:var(--green2)">${(user&&user.plano||'Pro').charAt(0).toUpperCase()+(user&&user.plano||'pro').slice(1)}</div><div class="stat-sub">Ativo</div></div>`;
 
   // ── Aniversariantes do mês ──
   const hoje = new Date();
