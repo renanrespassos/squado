@@ -89,6 +89,21 @@ function renderDashboard(){
     <div class="stat-card"><div class="stat-label">Notas IA</div><div class="stat-val">${notas.length}</div><div class="stat-sub">Anotações</div></div>
     ${trialCard}
   </div>
+  ${(() => {
+    // Tarefas pendentes
+    var semAval = colaboradores.filter(c => c.status==='Ativo' && !avaliacoes.find(a => a.colaboradorId===c.id)).length;
+    var semPDI = colaboradores.filter(c => c.status==='Ativo' && !pdis.find(p => p.colId===c.id)).length;
+    var pdiAtrasados = pdis.filter(p => p.status==='Em andamento' && p.dataProxRevisao && new Date(p.dataProxRevisao) < new Date()).length;
+    var tarefas = [];
+    if(semAval > 0) tarefas.push({icon:'📊',txt:semAval+' colaborador'+(semAval>1?'es':'')+' sem avaliação',action:"go('avaliacao')",cor:'#185FA5'});
+    if(semPDI > 5) tarefas.push({icon:'📈',txt:semPDI+' colaborador'+(semPDI>1?'es':'')+' sem PDI',action:"go('pdi')",cor:'#854F0B'});
+    if(pdiAtrasados > 0) tarefas.push({icon:'⚠️',txt:pdiAtrasados+' PDI'+(pdiAtrasados>1?'s':'')+' com revisão atrasada',action:"go('pdi')",cor:'#A32D2D'});
+    if(tarefas.length === 0) return '';
+    return '<div class="card" style="margin-bottom:12px;padding:12px 16px"><div class="section-title mb-8">📌 Pendências</div>'
+      +tarefas.map(t => '<div onclick="'+t.action+'" style="display:flex;align-items:center;gap:8px;padding:8px 0;cursor:pointer;border-bottom:0.5px solid var(--border)">'
+        +'<span>'+t.icon+'</span><span style="flex:1;font-size:12px;color:'+t.cor+'">'+t.txt+'</span><span style="font-size:10px;color:var(--txt3)">→</span></div>').join('')
+    +'</div>';
+  })()}
   <div class="flex gap-12 mb-12" style="align-items:flex-start">
     <div class="card" style="flex:1;min-width:0">
       <div class="section-title mb-12">Distribuição por Nível</div>

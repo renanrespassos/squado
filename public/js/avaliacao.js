@@ -155,10 +155,39 @@ function editarAvaliacao(avalId){
 // HISTÓRICO
 // ══════════════════════════════════════════
 function renderHistoricoAval(search=''){
-  let list=[...avaliacoes].reverse();if(search)list=list.filter(a=>a.colaborador.toLowerCase().includes(search.toLowerCase()));
+  let list=[...avaliacoes].reverse();
+  
+  // Filtros
+  var filtroCol = window._histFiltroCol || '';
+  var filtroPeriodo = window._histFiltroPeriodo || '';
+  
+  if(search) list=list.filter(a=>a.colaborador.toLowerCase().includes(search.toLowerCase()));
+  if(filtroCol) list=list.filter(a=>a.colaborador===filtroCol);
+  if(filtroPeriodo){
+    var hoje=new Date();
+    var limite=new Date();
+    if(filtroPeriodo==='30d') limite.setDate(hoje.getDate()-30);
+    else if(filtroPeriodo==='90d') limite.setDate(hoje.getDate()-90);
+    else if(filtroPeriodo==='6m') limite.setMonth(hoje.getMonth()-6);
+    else if(filtroPeriodo==='1a') limite.setFullYear(hoje.getFullYear()-1);
+    list=list.filter(a=>new Date(a.data)>=limite);
+  }
+  
+  var colsAvaliados=[...new Set(avaliacoes.map(a=>a.colaborador))].sort();
+  
   function sc(v){return v>=8?'score-hi':v>=5?'score-mid':'score-lo'}
+  
+  var filtrosHtml='<div style="display:flex;gap:8px;padding:12px 16px;border-bottom:1px solid #E0E2E0;flex-wrap:wrap;align-items:center">'
+    +'<select onchange="window._histFiltroCol=this.value;render(\'historico_aval\')" style="padding:5px 10px;border:1px solid #E0E2E0;border-radius:5px;font-size:12px;background:#fff"><option value="">Todos os colaboradores</option>'+colsAvaliados.map(function(c){return '<option value="'+c+'"'+(filtroCol===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select>'
+    +'<select onchange="window._histFiltroPeriodo=this.value;render(\'historico_aval\')" style="padding:5px 10px;border:1px solid #E0E2E0;border-radius:5px;font-size:12px;background:#fff"><option value="">Todo o período</option><option value="30d"'+(filtroPeriodo==='30d'?' selected':'')+'>Últimos 30 dias</option><option value="90d"'+(filtroPeriodo==='90d'?' selected':'')+'>Últimos 90 dias</option><option value="6m"'+(filtroPeriodo==='6m'?' selected':'')+'>Últimos 6 meses</option><option value="1a"'+(filtroPeriodo==='1a'?' selected':'')+'>Último ano</option></select>'
+    +(filtroCol||filtroPeriodo?'<button onclick="window._histFiltroCol=\'\';window._histFiltroPeriodo=\'\';render(\'historico_aval\')" style="padding:4px 10px;border:1px solid #E0E2E0;border-radius:5px;font-size:11px;color:#6B7370;background:#fff;cursor:pointer">✕ Limpar</button>':'')
+    +'<span style="flex:1"></span>'
+    +'<span style="font-size:11px;color:#9BA09E">'+list.length+' avaliações</span>'
+  +'</div>';
+
   return `<div class="card" style="padding:0;overflow:hidden">
-    ${list.length===0?`<div class="empty-state">Nenhuma avaliação.<br><button class="btn btn-primary btn-sm mt-8" onclick="go('avaliacao')">Fazer primeira</button></div>`:`
+    ${filtrosHtml}
+    ${list.length===0?`<div class="empty-state" style="padding:40px">Nenhuma avaliação encontrada.<br><button class="btn btn-primary btn-sm mt-8" onclick="go('avaliacao')">Fazer primeira</button></div>`:`
     <div class="table-wrap"><table class="tbl">
       <thead><tr><th>Colaborador</th><th>Nível</th><th>Data</th><th>Versatil.</th><th>Equipe</th><th>Resp.</th><th>Result.</th><th>17025</th><th>Técnica</th><th>Média</th><th></th></tr></thead>
       <tbody>${list.map(a=>`<tr>

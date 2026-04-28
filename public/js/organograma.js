@@ -212,6 +212,7 @@ function renderOrganograma(){
     <div style="font-size:11px;color:var(--txt3)">
       Por área · níveis do maior para o menor
     </div>
+    <button class="btn btn-sm" onclick="exportarOrganograma()" style="font-size:11px">📸 Exportar</button>
   </div>
   <div style="display:flex;gap:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;
               padding-bottom:16px;align-items:flex-start">
@@ -602,6 +603,23 @@ setTimeout(()=>{if(currentPage==='organograma'){centerOrg();}},100);
 // FUNÇÕES
 // ══════════════════════════════════════════
 
+function exportarOrganograma(){
+  toast('📸 Preparando exportação...');
+  var content = document.getElementById('page-content');
+  if(!content){toast('Erro ao exportar');return;}
+  // Usar html2canvas se disponível, senão copiar como texto
+  var text = 'ORGANOGRAMA SQUADO\n\n';
+  var areas = [...new Set(colaboradores.filter(c=>c.area&&c.status==='Ativo').map(c=>c.area))];
+  areas.forEach(function(area){
+    var cols = colaboradores.filter(c=>c.area===area&&c.status==='Ativo').sort(function(a,b){return(a.nivel||'').localeCompare(b.nivel||'');});
+    text += '═══ '+area+' ('+cols.length+' pessoas) ═══\n';
+    cols.forEach(function(c){text += '  '+c.nivel+' — '+c.nome+(c.gestor?' (gestor: '+c.gestor+')':'')+'\n';});
+    text += '\n';
+  });
+  navigator.clipboard.writeText(text).then(function(){
+    toast('📋 Organograma copiado! Cole no Word ou Google Docs.');
+  }).catch(function(){toast('Erro ao copiar');});
+}
 
 // Drag-to-scroll para a área de funções
 
