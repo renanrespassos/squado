@@ -1753,7 +1753,7 @@ function handleTopAction(){
 // ── Tela de Planos e Preços ───────────────────────────────────────
 // ── Paywall / Feature gating ─────────────────────────────────────
 var _planoStatus = null;
-var STANDARD_PAGES = ['dashboard','colaboradores','organograma','config','avaliacao','historico_aval','perguntas','planos','admin','perfil'];
+var STARTER_PAGES = ['dashboard','colaboradores','organograma','config','avaliacao','historico_aval','perguntas','planos','admin','perfil'];
 var PRO_ONLY_PAGES = ['okr','metas','pdi','valores','ninebox','competencias','capacidade','agente','notas','notas-particulares'];
 
 async function verificarPlano(){
@@ -1771,7 +1771,7 @@ function aplicarBloqueio(){
   // Se acesso liberado (trial ativo ou assinatura ativa), não bloquear
   if(_planoStatus.acessoLiberado) {
     // Mas se plano=standard, mostrar cadeado nos itens Pro
-    if(_planoStatus.plano === 'standard'){
+    if(_planoStatus.plano === 'starter'){
       document.querySelectorAll('.nav-item').forEach(function(el){
         var page = (el.getAttribute('onclick')||'').match(/go\('([^']+)'\)/);
         if(page && PRO_ONLY_PAGES.indexOf(page[1]) >= 0){
@@ -1809,9 +1809,9 @@ function podeAcessar(page){
   if(!_planoStatus) return true; // sem info, liberar
   if(_planoStatus.acessoLiberado){
     // Trial ou Pro = tudo liberado
-    if(_planoStatus.plano === 'trial' || _planoStatus.plano === 'pro') return true;
-    // Standard = apenas páginas standard
-    if(STANDARD_PAGES.indexOf(page) >= 0) return true;
+    if(_planoStatus.plano === 'trial' || _planoStatus.plano === 'pro' || _planoStatus.plano === 'business') return true;
+    // Starter = apenas páginas starter
+    if(STARTER_PAGES.indexOf(page) >= 0) return true;
     return false;
   }
   // Sem acesso = só planos
@@ -1824,11 +1824,12 @@ function renderPlanos(){
   var diasTrial = user.trialExpira ? Math.max(0, Math.ceil((new Date(user.trialExpira) - new Date()) / 86400000)) : 0;
 
   var planos = [
-    { id:'standard', nome:'Standard', preco:'99', desc:'Gestão essencial', recursos:['Colaboradores ilimitados','Organograma','Níveis e Áreas','Dashboard completo','Avaliações de desempenho','Email de aniversário','Suporte por email'], cor:'#185FA5', destaque:false },
-    { id:'pro', nome:'Pro', preco:'149', desc:'Gestão completa', recursos:['Tudo do Standard','OKR por área','Metas SMART','PDI completo','Nine-Box','Competências','Capacidade','IA integrada','Bloco de Notas','Notas Particulares','Suporte prioritário'], cor:'#0F6E56', destaque:true }
+    { id:'starter', nome:'Starter', preco:'79', desc:'Pra equipes pequenas', max:'10', recursos:['Até 10 colaboradores','Dashboard completo','Avaliações de desempenho','Organograma','Níveis e Áreas','Email de aniversário','Suporte por email'], cor:'#185FA5', destaque:false },
+    { id:'pro', nome:'Pro', preco:'149', desc:'Gestão completa', max:'30', recursos:['Até 30 colaboradores','Tudo do Starter','OKR por área','Metas SMART','PDI completo','Nine-Box','Competências','Capacidade','IA integrada (tokens limitados)','Bloco de Notas','Suporte prioritário'], cor:'#0F6E56', destaque:true },
+    { id:'business', nome:'Business', preco:'299', desc:'Pra grandes operações', max:'∞', recursos:['Colaboradores ilimitados','Tudo do Pro','IA com tokens ilimitados','Uso diário estendido','Suporte dedicado','Onboarding personalizado'], cor:'#0E0E0E', destaque:false }
   ];
 
-  var html = '<div style="max-width:760px;margin:0 auto;padding:20px 0">';
+  var html = '<div style="max-width:960px;margin:0 auto;padding:20px 0">';
 
   // Banner trial ou expirado
   if(planoAtual === 'trial' && diasTrial > 0){
@@ -1849,27 +1850,27 @@ function renderPlanos(){
   }
 
   // Cards de planos
-  html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px">';
+  html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">';
   planos.forEach(function(p){
     var isAtual = planoAtual === p.id;
-    html += '<div style="background:#fff;border-radius:14px;border:2px solid '+(p.destaque?p.cor:'#E0E2E0')+';padding:28px;position:relative;'+(p.destaque?'box-shadow:0 8px 24px rgba(15,110,86,.15)':'')+'">';
+    html += '<div style="background:#fff;border-radius:14px;border:2px solid '+(p.destaque?p.cor:'#E0E2E0')+';padding:24px;position:relative;'+(p.destaque?'box-shadow:0 8px 24px rgba(15,110,86,.15)':'')+'">';
     
     if(p.destaque) html += '<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:'+p.cor+';color:#fff;font-size:10px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:.08em;text-transform:uppercase">RECOMENDADO</div>';
     
-    html += '<div style="font-size:15px;font-weight:700;color:'+p.cor+';margin-bottom:4px">'+p.nome+'</div>'
-      +'<div style="font-size:12px;color:#9BA09E;margin-bottom:20px">'+p.desc+'</div>'
-      +'<div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px"><span style="font-size:40px;font-weight:800;color:#0E0E0E">R$ '+p.preco+'</span><span style="font-size:13px;color:#9BA09E">/mês</span></div>'
-      +'<div style="font-size:11px;color:#9BA09E;margin-bottom:20px">Colaboradores ilimitados · Cartão de crédito</div>';
+    html += '<div style="font-size:14px;font-weight:700;color:'+p.cor+';margin-bottom:4px">'+p.nome+'</div>'
+      +'<div style="font-size:11px;color:#9BA09E;margin-bottom:16px">'+p.desc+'</div>'
+      +'<div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px"><span style="font-size:36px;font-weight:800;color:#0E0E0E">R$ '+p.preco+'</span><span style="font-size:13px;color:#9BA09E">/mês</span></div>'
+      +'<div style="font-size:11px;color:#9BA09E;margin-bottom:18px">Até '+p.max+' colaboradores</div>';
     
     if(isAtual){
-      html += '<button disabled style="width:100%;padding:14px;background:#F5F6F4;color:#6B7370;border:1px solid #E0E2E0;border-radius:8px;font-weight:700;font-size:13px;cursor:default;margin-bottom:18px">✓ Plano atual</button>';
+      html += '<button disabled style="width:100%;padding:12px;background:#F5F6F4;color:#6B7370;border:1px solid #E0E2E0;border-radius:8px;font-weight:700;font-size:13px;cursor:default;margin-bottom:16px">✓ Plano atual</button>';
     } else {
-      html += '<button onclick="iniciarCheckout(\''+p.id+'\')" style="width:100%;padding:14px;background:'+p.cor+';color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:18px;transition:opacity .2s" onmouseover="this.style.opacity=0.9" onmouseout="this.style.opacity=1">Assinar '+p.nome+'</button>';
+      html += '<button onclick="iniciarCheckout(\''+p.id+'\')" style="width:100%;padding:12px;background:'+p.cor+';color:#fff;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:16px;transition:opacity .2s" onmouseover="this.style.opacity=0.9" onmouseout="this.style.opacity=1">Assinar '+p.nome+'</button>';
     }
     
-    html += '<div style="border-top:1px solid #F0F1EF;padding-top:16px">';
+    html += '<div style="border-top:1px solid #F0F1EF;padding-top:14px">';
     p.recursos.forEach(function(r){
-      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:13px;color:#3A4240"><span style="color:'+p.cor+';font-size:14px">✓</span>'+r+'</div>';
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;color:#3A4240"><span style="color:'+p.cor+';font-size:13px">✓</span>'+r+'</div>';
     });
     html += '</div></div>';
   });
@@ -1981,22 +1982,22 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
 </script>
 
 <!-- Módulos JS extraídos -->
-<script src="js/admin.js?v=1777366454"></script>
-<script src="js/dashboard.js?v=1777366454"></script>
-<script src="js/colaboradores.js?v=1777366454"></script>
-<script src="js/organograma.js?v=1777366454"></script>
-<script src="js/avaliacao.js?v=1777366454"></script>
-<script src="js/pdi.js?v=1777366454"></script>
-<script src="js/ninebox.js?v=1777366454"></script>
-<script src="js/competencias.js?v=1777366454"></script>
-<script src="js/config.js?v=1777366454"></script>
-<script src="js/perfil.js?v=1777366454"></script>
-<script src="js/notas-particulares.js?v=1777366454"></script>
-<script src="js/metas.js?v=1777366454"></script>
-<script src="js/okr.js?v=1777366454"></script>
-<script src="js/ia.js?v=1777366454"></script>
-<script src="js/notas.js?v=1777366454"></script>
-<script src="js/capacidade.js?v=1777366454"></script>
+<script src="js/admin.js?v=1777367636"></script>
+<script src="js/dashboard.js?v=1777367636"></script>
+<script src="js/colaboradores.js?v=1777367636"></script>
+<script src="js/organograma.js?v=1777367636"></script>
+<script src="js/avaliacao.js?v=1777367636"></script>
+<script src="js/pdi.js?v=1777367636"></script>
+<script src="js/ninebox.js?v=1777367636"></script>
+<script src="js/competencias.js?v=1777367636"></script>
+<script src="js/config.js?v=1777367636"></script>
+<script src="js/perfil.js?v=1777367636"></script>
+<script src="js/notas-particulares.js?v=1777367636"></script>
+<script src="js/metas.js?v=1777367636"></script>
+<script src="js/okr.js?v=1777367636"></script>
+<script src="js/ia.js?v=1777367636"></script>
+<script src="js/notas.js?v=1777367636"></script>
+<script src="js/capacidade.js?v=1777367636"></script>
 
 <script>
 // ══════════════════════════════════════════
