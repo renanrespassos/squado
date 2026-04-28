@@ -91,9 +91,10 @@ function renderDashboard(){
   </div>
   ${(() => {
     // Tarefas pendentes
+    var _pdis = typeof getPDIs==='function' ? getPDIs() : [];
     var semAval = colaboradores.filter(c => c.status==='Ativo' && !avaliacoes.find(a => a.colaboradorId===c.id)).length;
-    var semPDI = colaboradores.filter(c => c.status==='Ativo' && !pdis.find(p => p.colId===c.id)).length;
-    var pdiAtrasados = pdis.filter(p => p.status==='Em andamento' && p.dataProxRevisao && new Date(p.dataProxRevisao) < new Date()).length;
+    var semPDI = colaboradores.filter(c => c.status==='Ativo' && !_pdis.find(p => p.colId===c.id)).length;
+    var pdiAtrasados = _pdis.filter(p => p.status==='Em andamento' && p.dataProxRevisao && new Date(p.dataProxRevisao) < new Date()).length;
     var tarefas = [];
     if(semAval > 0) tarefas.push({icon:'📊',txt:semAval+' colaborador'+(semAval>1?'es':'')+' sem avaliação',action:"go('avaliacao')",cor:'#185FA5'});
     if(semPDI > 5) tarefas.push({icon:'📈',txt:semPDI+' colaborador'+(semPDI>1?'es':'')+' sem PDI',action:"go('pdi')",cor:'#854F0B'});

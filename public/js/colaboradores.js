@@ -38,7 +38,7 @@ function renderColaboradores(search=''){
   var niveis = [...new Set(colaboradores.filter(c=>c.nivel).map(c=>c.nivel))].sort();
 
   var sortIcon = function(col){ return sortCol===col ? (sortDir==='asc'?'↑':'↓') : '<span style="opacity:.3">↕</span>'; };
-  var sortClick = function(col){ return 'onclick="window._colSort=\''+col+'\';window._colSortDir=(window._colSort===\''+col+'\'&&window._colSortDir===\'asc\')?\'desc\':\'asc\';window._colSort=\''+col+'\';render(\'colaboradores\')"'; };
+  var sortClick = function(col){ return 'onclick="sqSort(\''+col+'\')"'; };
 
   const rows = list.map(c => {
     const avsC = avaliacoes.filter(a => a.colaboradorId === c.id);
@@ -80,7 +80,7 @@ function renderColaboradores(search=''){
     '<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">',
     '<div style="display:flex;align-items:center;gap:8px;background:#F5F6F4;border:1px solid #E0E2E0;border-radius:6px;padding:7px 12px">',
     '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9BA09E" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>',
-    '<input id="col-search-input" placeholder="Buscar colaboradores..." oninput="renderColaboradores(this.value)" style="border:none;background:transparent;outline:none;flex:1;font-size:13px;color:#1A1F1D" value="'+search+'">',
+    '<input id="col-search-input" placeholder="Buscar colaboradores..." oninput="document.getElementById(\'page-content\').innerHTML=renderColaboradores(this.value)" style="border:none;background:transparent;outline:none;flex:1;font-size:13px;color:#1A1F1D" value="'+search+'">',
     '</div>',
     '<div style="display:flex;align-items:center;justify-content:space-between">',
     '<div style="display:flex;gap:4px">',
@@ -135,6 +135,12 @@ function excluirColsSelecionados(){
   colaboradores = colaboradores.filter(c => !ids.includes(c.id));
   saveAll();
   toast('✅ '+ids.length+' colaborador(es) excluído(s)!');
+  render('colaboradores');
+}
+
+function sqSort(col){
+  if(window._colSort===col){window._colSortDir=window._colSortDir==='asc'?'desc':'asc';}
+  else{window._colSort=col;window._colSortDir='asc';}
   render('colaboradores');
 }
 

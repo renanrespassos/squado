@@ -2002,7 +2002,8 @@ function atualizarNotificacoes(){
   var semAval=colaboradores.filter(function(c){return c.status==='Ativo'&&!avaliacoes.find(function(a){return a.colaboradorId===c.id;});}).length;
   if(semAval>0) items.push({icon:'📊',txt:semAval+' colaboradores sem avaliação',action:"go('avaliacao')",cor:'#185FA5'});
   // PDIs pendentes
-  var semPDI=colaboradores.filter(function(c){return c.status==='Ativo'&&!pdis.find(function(p){return p.colId===c.id;});}).length;
+  var _pdisNotif=typeof getPDIs==='function'?getPDIs():[];
+  var semPDI=colaboradores.filter(function(c){return c.status==='Ativo'&&!_pdisNotif.find(function(p){return p.colId===c.id;});}).length;
   if(semPDI>5) items.push({icon:'📈',txt:semPDI+' colaboradores sem PDI',action:"go('pdi')",cor:'#854F0B'});
 
   var countEl=document.getElementById('sq-notif-count');
@@ -2119,23 +2120,23 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
 </script>
 
 <!-- Módulos JS extraídos -->
-<script src="js/admin.js?v=1777375811"></script>
-<script src="js/dashboard.js?v=1777375811"></script>
-<script src="js/colaboradores.js?v=1777375811"></script>
-<script src="js/organograma.js?v=1777375811"></script>
-<script src="js/avaliacao.js?v=1777375811"></script>
-<script src="js/pdi.js?v=1777375811"></script>
-<script src="js/ninebox.js?v=1777375811"></script>
-<script src="js/competencias.js?v=1777375811"></script>
-<script src="js/config.js?v=1777375811"></script>
-<script src="js/perfil.js?v=1777375811"></script>
-<script src="js/notas-particulares.js?v=1777375811"></script>
-<script src="js/suporte.js?v=1777375811"></script>
-<script src="js/metas.js?v=1777375811"></script>
-<script src="js/okr.js?v=1777375811"></script>
-<script src="js/ia.js?v=1777375811"></script>
-<script src="js/notas.js?v=1777375811"></script>
-<script src="js/capacidade.js?v=1777375811"></script>
+<script src="js/admin.js?v=1777381664"></script>
+<script src="js/dashboard.js?v=1777381664"></script>
+<script src="js/colaboradores.js?v=1777381664"></script>
+<script src="js/organograma.js?v=1777381664"></script>
+<script src="js/avaliacao.js?v=1777381664"></script>
+<script src="js/pdi.js?v=1777381664"></script>
+<script src="js/ninebox.js?v=1777381664"></script>
+<script src="js/competencias.js?v=1777381664"></script>
+<script src="js/config.js?v=1777381664"></script>
+<script src="js/perfil.js?v=1777381664"></script>
+<script src="js/notas-particulares.js?v=1777381664"></script>
+<script src="js/suporte.js?v=1777381664"></script>
+<script src="js/metas.js?v=1777381664"></script>
+<script src="js/okr.js?v=1777381664"></script>
+<script src="js/ia.js?v=1777381664"></script>
+<script src="js/notas.js?v=1777381664"></script>
+<script src="js/capacidade.js?v=1777381664"></script>
 
 <script>
 // ══════════════════════════════════════════
