@@ -26,12 +26,7 @@ function renderNotas(search=''){
 
   const cats=[...new Set(notas.map(n=>n.categoria))].filter(Boolean);
   const colNames=[...new Set(notas.map(n=>n.colNome))].filter(n=>n&&n!=='Geral');
-  const banner=hasKey?'':
-    '<div style="background:#FAEEDA;border:0.5px solid rgba(133,79,11,.3);border-radius:10px;padding:12px;margin-bottom:12px;display:flex;align-items:center;gap:12px">'
-    +'<span style="font-size:18px">\uD83D\uDD11</span>'
-    +'<div style="flex:1;font-size:12px;color:var(--txt2)">Configure o <strong style="color:var(--amber)">Ollama</strong> para que a IA organize as notas automaticamente.</div>'
-    +'<button class="btn btn-sm" onclick="showApiKeyModal()" style="border-color:var(--amber);color:var(--amber)">\u2699\uFE0F Configurar IA</button>'
-    +'</div>';
+  const banner='';
 
   // Cards de notas
   const noteCards=list.length===0

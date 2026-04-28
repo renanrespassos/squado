@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230F6E56'/%3E%3Ctext x='50%25' y='55%25' font-family='Arial' font-size='18' font-weight='900' fill='white' text-anchor='middle' dominant-baseline='middle'%3ES%3C/text%3E%3C/svg%3E"/>
 <!-- Google Sign-In -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <!-- reCAPTCHA v3 -->
@@ -489,6 +490,9 @@ select:focus{border-bottom-color:#0F6E56;outline:none}
   .btn-xs{min-height:28px}
   .nav-item{min-height:40px;-webkit-tap-highlight-color:rgba(0,0,0,.05)}
 
+  /* ── Planos grid 1 coluna no mobile ── */
+  [style*="grid-template-columns:repeat(3,1fr);gap:16px"]{grid-template-columns:1fr!important}
+
   /* ── Fechar sidebar ao clicar num item ── */
   .sidebar .nav-item{cursor:pointer}
 }
@@ -968,6 +972,7 @@ input[type=number]{
       </div>
       <div id="sq-login-erro" style="display:none;color:#A6311F;font-size:12px;padding:4px 0;font-family:'Inter',sans-serif"></div>
       <button class="sq-btn-login" id="sq-login-btn" onclick="squadoLogin()">ENTRAR NA PLATAFORMA <span>↗</span></button>
+      <div style="text-align:right;margin-bottom:12px"><a onclick="alert('Envie um email para contato@squado.com.br solicitando redefinição de senha.')" style="font-size:11px;color:#9BA09E;cursor:pointer;text-decoration:underline">Esqueci minha senha</a></div>
       <div style="display:flex;align-items:center;gap:12px;margin:16px 0"><div style="flex:1;height:1px;background:#E0E2E0"></div><span style="font-size:11px;color:#9BA09E;font-family:'JetBrains Mono',monospace;letter-spacing:.06em">OU</span><div style="flex:1;height:1px;background:#E0E2E0"></div></div>
       <div id="sq-google-btn" style="display:flex;justify-content:center;margin-bottom:12px"></div>
       <div class="sq-login-footer-txt">Sem conta? <a onclick="squadoShowTab('registro')">Solicitar acesso</a></div>
@@ -1982,22 +1987,22 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
 </script>
 
 <!-- Módulos JS extraídos -->
-<script src="js/admin.js?v=1777368035"></script>
-<script src="js/dashboard.js?v=1777368035"></script>
-<script src="js/colaboradores.js?v=1777368035"></script>
-<script src="js/organograma.js?v=1777368035"></script>
-<script src="js/avaliacao.js?v=1777368035"></script>
-<script src="js/pdi.js?v=1777368035"></script>
-<script src="js/ninebox.js?v=1777368035"></script>
-<script src="js/competencias.js?v=1777368035"></script>
-<script src="js/config.js?v=1777368035"></script>
-<script src="js/perfil.js?v=1777368035"></script>
-<script src="js/notas-particulares.js?v=1777368035"></script>
-<script src="js/metas.js?v=1777368035"></script>
-<script src="js/okr.js?v=1777368035"></script>
-<script src="js/ia.js?v=1777368035"></script>
-<script src="js/notas.js?v=1777368035"></script>
-<script src="js/capacidade.js?v=1777368035"></script>
+<script src="js/admin.js?v=1777369501"></script>
+<script src="js/dashboard.js?v=1777369501"></script>
+<script src="js/colaboradores.js?v=1777369501"></script>
+<script src="js/organograma.js?v=1777369501"></script>
+<script src="js/avaliacao.js?v=1777369501"></script>
+<script src="js/pdi.js?v=1777369501"></script>
+<script src="js/ninebox.js?v=1777369501"></script>
+<script src="js/competencias.js?v=1777369501"></script>
+<script src="js/config.js?v=1777369501"></script>
+<script src="js/perfil.js?v=1777369501"></script>
+<script src="js/notas-particulares.js?v=1777369501"></script>
+<script src="js/metas.js?v=1777369501"></script>
+<script src="js/okr.js?v=1777369501"></script>
+<script src="js/ia.js?v=1777369501"></script>
+<script src="js/notas.js?v=1777369501"></script>
+<script src="js/capacidade.js?v=1777369501"></script>
 
 <script>
 // ══════════════════════════════════════════
@@ -2219,6 +2224,19 @@ const RECAPTCHA_SITE_KEY = '6Ld2Gs0sAAAAAPWCG9OSWbRyjV-9adqFCsnV7vVN';
 
 // ── Escape XSS — usar em todo texto de usuário antes de innerHTML ──
 function esc(s){if(!s)return'';var d=document.createElement('div');d.textContent=String(s);return d.innerHTML;}
+
+// ── Empty state genérico ──
+function emptyState(icon,title,desc,btnText,btnAction){
+  return '<div style="text-align:center;padding:48px 20px;color:#9BA09E">'
+    +'<div style="font-size:48px;margin-bottom:12px;opacity:.6">'+(icon||'📋')+'</div>'
+    +'<div style="font-size:15px;font-weight:700;color:#3A4240;margin-bottom:6px">'+(title||'Nada por aqui ainda')+'</div>'
+    +'<div style="font-size:13px;margin-bottom:16px;max-width:320px;margin-left:auto;margin-right:auto">'+(desc||'')+'</div>'
+    +(btnText?'<button class="btn btn-primary btn-sm" onclick="'+btnAction+'">'+btnText+'</button>':'')
+  +'</div>';
+}
+
+// ── Cor de progresso (verde/amarelo/vermelho) ──
+function corProgresso(pct){return pct>=80?'#0F6E56':pct>=50?'#854F0B':pct>=20?'#185FA5':'#A32D2D';}
 
 // ─── API helper ───────────────────────────────────────────────
 async function apiCall(method, path, body) {

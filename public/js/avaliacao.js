@@ -32,7 +32,7 @@ function renderAvaliacao(){
   return rascunhoMsg + `<div class="card mb-12"><div class="form-grid mb-12">
     <div class="field-group"><div class="field-label">Colaborador *</div><select id="av-col" onchange="onColChange(this.value)"><option value="">Selecione...</option>${colaboradores.map(c=>`<option value="${c.id}"${avalState.colId===c.id?' selected':''}>${c.nome}</option>`).join('')}</select></div>
     <div class="field-group"><div class="field-label">Data</div><input type="date" id="av-data" value="${new Date().toISOString().slice(0,10)}"/></div>
-    <div class="field-group"><div class="field-label">Avaliador</div><input id="av-avaliador" placeholder="Nome do avaliador..."/></div>
+    <div class="field-group"><div class="field-label">Avaliador</div><input id="av-avaliador" placeholder="Nome do avaliador..." value="${(squadoGetUser()||{}).nome||''}"/></div>
     <div class="field-group"><div class="field-label">Nível detectado</div><div style="padding:7px 10px;border:0.5px solid var(--border);border-radius:7px;font-size:12px;min-height:35px;display:flex;align-items:center" id="av-nivel-show">${avalState.nivel?nivelBadge(avalState.nivel):'<span style="color:var(--txt3)">Selecione o colaborador</span>'}</div></div>
   </div>
   <div class="flex gap-6 flex-wrap mb-4">

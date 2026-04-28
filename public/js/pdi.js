@@ -42,7 +42,7 @@ function renderPDI(search){
     html+='<div style="font-size:10px;color:var(--txt3)">'+col.nivel+' · '+col.area+'</div></div>';
     if(ativo){
       html+='<div style="text-align:right"><div style="font-size:16px;font-weight:900;color:'+corP+'">'+pct+'%</div>';
-      html+='<div style="font-size:9px;color:var(--txt3)">'+ativo.ciclo+'</div></div>';
+      html+='<div style="font-size:9px;color:var(--txt3)">'+(ativo.ciclo||'PDI Ativo')+'</div></div>';
     } else {
       html+='<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:#FAEEDA;color:#854F0B">Sem PDI</span>';
     }

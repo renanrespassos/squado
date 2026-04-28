@@ -32,7 +32,7 @@ function renderColaboradores(search=''){
       '<td>'+areaBadge(c.area)+'</td>',
       '<td style="color:var(--txt2);font-size:12px">'+(c.gestor||'—')+'</td>',
       '<td>'+(lastAv ? '<span class="badge badge-green">'+lastAv.mediaGeral+'</span>' : '<span style="font-size:10px;color:var(--txt3)">—</span>')+'</td>',
-      '<td><span class="badge badge-blue">'+(c.historico||[]).length+'</span></td>',
+      '<td>'+((c.historico||[]).length?'<span class="badge badge-blue">'+(c.historico||[]).length+'</span>':'<span style="color:#9BA09E">—</span>')+'</td>',
       '<td>',
         '<span style="font-size:11px;padding:2px 8px;border-radius:20px;',
         'background:'+(c.status==='Ativo'?'var(--green-bg)':'var(--bg2)')+';',

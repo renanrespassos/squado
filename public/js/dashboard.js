@@ -29,7 +29,26 @@ function renderDashboard(){
 
   var anivHtml = '';
   if(aniversariantes.length === 0){
-    anivHtml = '<div style="text-align:center;padding:16px;color:var(--txt3);font-size:12px">Nenhum aniversariante neste mês.</div>';
+    // Mostrar próximo aniversariante se não tem neste mês
+    var todosAniv = colaboradores
+      .filter(function(c){ return c.perfil && c.perfil.nascimento && c.status !== 'Desligado'; })
+      .map(function(c){
+        var p = c.perfil.nascimento.split('-');
+        var anivEsteAno = new Date(hoje.getFullYear(), parseInt(p[1],10)-1, parseInt(p[2],10));
+        if(anivEsteAno < hoje) anivEsteAno.setFullYear(anivEsteAno.getFullYear()+1);
+        var diff = Math.ceil((anivEsteAno - hoje) / 86400000);
+        return { nome: c.nome, dias: diff, data: anivEsteAno };
+      })
+      .sort(function(a,b){ return a.dias - b.dias; })
+      .slice(0,3);
+    if(todosAniv.length){
+      anivHtml = '<div style="text-align:center;padding:12px;color:var(--txt3);font-size:11px;margin-bottom:8px">Nenhum aniversariante em '+nomesMes[mesAtual]+'</div>';
+      todosAniv.forEach(function(a){
+        anivHtml += '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px"><span style="color:var(--txt3)">🎂</span><span style="flex:1">'+a.nome+'</span><span style="font-size:10px;color:var(--txt3)">em '+a.dias+'d</span></div>';
+      });
+    } else {
+      anivHtml = '<div style="text-align:center;padding:16px;color:var(--txt3);font-size:12px">Cadastre datas de nascimento nos perfis.</div>';
+    }
   } else {
     aniversariantes.forEach(function(a){
       var isHoje = a.dia === diaHoje;
