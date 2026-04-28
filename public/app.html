@@ -1933,6 +1933,44 @@ async function gerenciarAssinatura(){
   }
 }
 
+// ── Busca global (Cmd+K) ─────────────────────────────────────────
+document.addEventListener('keydown',function(e){
+  if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();abrirBuscaGlobal();}
+  if(e.key==='Escape'){var sb=document.getElementById('sq-busca-global');if(sb)sb.remove();}
+});
+function abrirBuscaGlobal(){
+  if(document.getElementById('sq-busca-global'))return;
+  var html='<div id="sq-busca-global" style="position:fixed;inset:0;z-index:99996;background:rgba(0,0,0,.5);display:flex;align-items:flex-start;justify-content:center;padding-top:120px" onclick="if(event.target===this)this.remove()">'
+    +'<div style="background:#fff;border-radius:14px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden">'
+    +'<div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid #E0E2E0">'
+    +'<span style="color:#9BA09E;font-size:16px">🔍</span>'
+    +'<input id="sq-busca-input" autofocus placeholder="Buscar colaborador, página, função..." style="flex:1;border:none;outline:none;font-size:15px;color:#1A1F1D;font-family:Inter,sans-serif" oninput="filtrarBuscaGlobal(this.value)"/>'
+    +'<span style="font-size:10px;color:#9BA09E;background:#F5F6F4;padding:2px 6px;border-radius:4px">ESC</span>'
+    +'</div>'
+    +'<div id="sq-busca-results" style="max-height:360px;overflow-y:auto;padding:8px"></div>'
+    +'</div></div>';
+  document.body.insertAdjacentHTML('beforeend',html);
+  setTimeout(function(){var i=document.getElementById('sq-busca-input');if(i)i.focus();},50);
+  filtrarBuscaGlobal('');
+}
+function filtrarBuscaGlobal(q){
+  var el=document.getElementById('sq-busca-results');if(!el)return;
+  var items=[];
+  // Páginas
+  var pages=[{p:'dashboard',n:'Dashboard',i:'🏠'},{p:'colaboradores',n:'Colaboradores',i:'👥'},{p:'organograma',n:'Organograma',i:'🏗'},{p:'avaliacao',n:'Avaliação',i:'📊'},{p:'okr',n:'OKR',i:'🎯'},{p:'metas',n:'Metas',i:'✅'},{p:'pdi',n:'PDI',i:'📈'},{p:'ninebox',n:'Nine-Box',i:'📦'},{p:'competencias',n:'Competências',i:'📋'},{p:'notas',n:'Bloco de Notas',i:'📝'},{p:'agente',n:'Agente IA',i:'🤖'},{p:'config',n:'Níveis e Áreas',i:'⚙'},{p:'planos',n:'Planos',i:'💳'},{p:'capacidade',n:'Capacidade',i:'⏱'},{p:'valores',n:'Valores',i:'⭐'}];
+  pages.forEach(function(pg){
+    if(!q||pg.n.toLowerCase().includes(q.toLowerCase()))
+      items.push('<div onclick="document.getElementById(\'sq-busca-global\').remove();go(\''+pg.p+'\')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-radius:8px;transition:background .1s" onmouseover="this.style.background=\'#F5F6F4\'" onmouseout="this.style.background=\'transparent\'"><span>'+pg.i+'</span><div><div style="font-size:13px;font-weight:600;color:#1A1F1D">'+pg.n+'</div><div style="font-size:10px;color:#9BA09E">Página</div></div></div>');
+  });
+  // Colaboradores
+  if(typeof colaboradores!=='undefined'){
+    colaboradores.filter(function(c){return c.status!=='Desligado'&&(!q||c.nome.toLowerCase().includes(q.toLowerCase()));}).slice(0,8).forEach(function(c){
+      items.push('<div onclick="document.getElementById(\'sq-busca-global\').remove();verCol(\''+c.id+'\')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-radius:8px;transition:background .1s" onmouseover="this.style.background=\'#F5F6F4\'" onmouseout="this.style.background=\'transparent\'"><span>👤</span><div><div style="font-size:13px;font-weight:600;color:#1A1F1D">'+c.nome+'</div><div style="font-size:10px;color:#9BA09E">'+(c.nivel||'')+' · '+(c.area||'')+'</div></div></div>');
+    });
+  }
+  el.innerHTML=items.length?items.slice(0,12).join(''):'<div style="padding:20px;text-align:center;color:#9BA09E;font-size:13px">Nenhum resultado encontrado</div>';
+}
+
 function render(page,search=''){
   const cfg={
     dashboard:{title:'Dashboard',sub:'Visão geral da equipe',btn:null},
@@ -1987,22 +2025,22 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
 </script>
 
 <!-- Módulos JS extraídos -->
-<script src="js/admin.js?v=1777369501"></script>
-<script src="js/dashboard.js?v=1777369501"></script>
-<script src="js/colaboradores.js?v=1777369501"></script>
-<script src="js/organograma.js?v=1777369501"></script>
-<script src="js/avaliacao.js?v=1777369501"></script>
-<script src="js/pdi.js?v=1777369501"></script>
-<script src="js/ninebox.js?v=1777369501"></script>
-<script src="js/competencias.js?v=1777369501"></script>
-<script src="js/config.js?v=1777369501"></script>
-<script src="js/perfil.js?v=1777369501"></script>
-<script src="js/notas-particulares.js?v=1777369501"></script>
-<script src="js/metas.js?v=1777369501"></script>
-<script src="js/okr.js?v=1777369501"></script>
-<script src="js/ia.js?v=1777369501"></script>
-<script src="js/notas.js?v=1777369501"></script>
-<script src="js/capacidade.js?v=1777369501"></script>
+<script src="js/admin.js?v=1777370522"></script>
+<script src="js/dashboard.js?v=1777370522"></script>
+<script src="js/colaboradores.js?v=1777370522"></script>
+<script src="js/organograma.js?v=1777370522"></script>
+<script src="js/avaliacao.js?v=1777370522"></script>
+<script src="js/pdi.js?v=1777370522"></script>
+<script src="js/ninebox.js?v=1777370522"></script>
+<script src="js/competencias.js?v=1777370522"></script>
+<script src="js/config.js?v=1777370522"></script>
+<script src="js/perfil.js?v=1777370522"></script>
+<script src="js/notas-particulares.js?v=1777370522"></script>
+<script src="js/metas.js?v=1777370522"></script>
+<script src="js/okr.js?v=1777370522"></script>
+<script src="js/ia.js?v=1777370522"></script>
+<script src="js/notas.js?v=1777370522"></script>
+<script src="js/capacidade.js?v=1777370522"></script>
 
 <script>
 // ══════════════════════════════════════════

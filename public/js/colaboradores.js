@@ -10,8 +10,35 @@ function renderColaboradores(search=''){
     (c.nivel||'').toLowerCase().includes(search.toLowerCase())
   );
 
+  // Filtros por área e nível
+  var filtroArea = window._colFiltroArea || '';
+  var filtroNivel = window._colFiltroNivel || '';
+  if(filtroArea) list = list.filter(c => c.area === filtroArea);
+  if(filtroNivel) list = list.filter(c => c.nivel === filtroNivel);
+
+  // Ordenação
+  var sortCol = window._colSort || 'nome';
+  var sortDir = window._colSortDir || 'asc';
+  list.sort(function(a,b){
+    var va = (a[sortCol]||'').toLowerCase(), vb = (b[sortCol]||'').toLowerCase();
+    if(sortCol === 'ultimaAval'){
+      var avsA = avaliacoes.filter(x=>x.colaboradorId===a.id);
+      var avsB = avaliacoes.filter(x=>x.colaboradorId===b.id);
+      va = avsA.length ? avsA[avsA.length-1].mediaGeral : 0;
+      vb = avsB.length ? avsB[avsB.length-1].mediaGeral : 0;
+    }
+    return sortDir==='asc' ? (va>vb?1:va<vb?-1:0) : (va<vb?1:va>vb?-1:0);
+  });
+
   const totalAtivos = colaboradores.filter(c => c.status !== 'Desligado').length;
   const totalDesligados = colaboradores.filter(c => c.status === 'Desligado').length;
+
+  // Áreas e níveis únicos pra filtros
+  var areas = [...new Set(colaboradores.filter(c=>c.area).map(c=>c.area))].sort();
+  var niveis = [...new Set(colaboradores.filter(c=>c.nivel).map(c=>c.nivel))].sort();
+
+  var sortIcon = function(col){ return sortCol===col ? (sortDir==='asc'?'↑':'↓') : '<span style="opacity:.3">↕</span>'; };
+  var sortClick = function(col){ return 'onclick="window._colSort=\''+col+'\';window._colSortDir=(window._colSort===\''+col+'\'&&window._colSortDir===\'asc\')?\'desc\':\'asc\';window._colSort=\''+col+'\';render(\'colaboradores\')"'; };
 
   const rows = list.map(c => {
     const avsC = avaliacoes.filter(a => a.colaboradorId === c.id);
@@ -63,15 +90,24 @@ function renderColaboradores(search=''){
     '</div>',
     '<button class="btn btn-primary btn-sm" onclick="openColForm()">+ Novo Colaborador</button>',
     '</div>','</div>',
+    // Filtros por área e nível
+    '<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">',
+      '<select onchange="window._colFiltroArea=this.value;render(\'colaboradores\')" style="padding:5px 10px;border:1px solid #E0E2E0;border-radius:5px;font-size:12px;color:#3A4240;background:#fff;cursor:pointer"><option value="">Todas as áreas</option>'+areas.map(function(a){return '<option value="'+a+'"'+(filtroArea===a?' selected':'')+'>'+a+'</option>';}).join('')+'</select>',
+      '<select onchange="window._colFiltroNivel=this.value;render(\'colaboradores\')" style="padding:5px 10px;border:1px solid #E0E2E0;border-radius:5px;font-size:12px;color:#3A4240;background:#fff;cursor:pointer"><option value="">Todos os níveis</option>'+niveis.map(function(n){return '<option value="'+n+'"'+(filtroNivel===n?' selected':'')+'>'+n+'</option>';}).join('')+'</select>',
+      (filtroArea||filtroNivel?'<button onclick="window._colFiltroArea=\'\';window._colFiltroNivel=\'\';render(\'colaboradores\')" style="padding:4px 10px;border:1px solid #E0E2E0;border-radius:5px;font-size:11px;color:#6B7370;background:#fff;cursor:pointer">✕ Limpar filtros</button>':''),
+      '<span style="flex:1"></span>',
+      '<span style="font-size:11px;color:#9BA09E">'+list.length+' colaboradores</span>',
+      '<button onclick="exportarColaboradoresCSV()" class="btn btn-sm" style="font-size:11px;padding:4px 10px;border:1px solid #E0E2E0;color:#6B7370">📥 CSV</button>',
+    '</div>',
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">',
       '<button class="btn btn-danger btn-sm" id="btn-excluir-cols" onclick="excluirColsSelecionados()" style="display:none">🗑 Excluir selecionados</button>',
     '</div>',
     '<div class="card" style="padding:0;overflow:hidden"><div class="table-wrap"><table class="tbl">',
     '<thead><tr>',
       '<th style="width:32px"><input type="checkbox" onchange="document.querySelectorAll(\'.col-sel\').forEach(cb=>cb.checked=this.checked);atualizarBtnExcluirCols()" style="cursor:pointer"/></th>',
-      '<th>Colaborador</th>',
-      '<th>Nível</th>',
-      '<th>Área</th>',
+      '<th style="cursor:pointer" '+sortClick('nome')+'>Colaborador '+sortIcon('nome')+'</th>',
+      '<th style="cursor:pointer" '+sortClick('nivel')+'>Nível '+sortIcon('nivel')+'</th>',
+      '<th style="cursor:pointer" '+sortClick('area')+'>Área '+sortIcon('area')+'</th>',
       '<th>Gestor</th>',
       '<th>Últ. Aval.</th>',
       '<th>Movim.</th>',
@@ -100,6 +136,20 @@ function excluirColsSelecionados(){
   saveAll();
   toast('✅ '+ids.length+' colaborador(es) excluído(s)!');
   render('colaboradores');
+}
+
+function exportarColaboradoresCSV(){
+  var list = colaboradores.filter(function(c){return c.status!=='Desligado';});
+  var csv = 'Nome,Nível,Área,Gestor,Status,Movimentações\n';
+  list.forEach(function(c){
+    csv += '"'+(c.nome||'')+'",'+(c.nivel||'')+','+(c.area||'')+',"'+(c.gestor||'')+'",'+(c.status||'')+','+(c.historico||[]).length+'\n';
+  });
+  var blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'colaboradores_squado_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click(); URL.revokeObjectURL(url);
+  toast('📥 CSV exportado!');
 }
 
 
