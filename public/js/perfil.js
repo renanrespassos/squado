@@ -16,17 +16,40 @@ function renderPerfilAba(id, aba){
   const p=c.perfil||{};
 
   const abas=[
-    {id:'resumo',     icon:'👤', label:'Resumo'},
-    {id:'funcoes_col',icon:'📌', label:'Funções'},
-    {id:'avaliacoes', icon:'📊', label:'Avaliações'},
-    {id:'metas_col',  icon:'✅', label:'Metas'},
-    {id:'pdi_col',    icon:'🚀', label:'PDI'},
-    {id:'okr_col',    icon:'🎯', label:'OKR'},
-    {id:'notas_col',  icon:'📝', label:'Notas'},
-    {id:'historico',  icon:'🕐', label:'Movimentações'},
-    {id:'pessoal',    icon:'📋', label:'Dados Pessoais'},
-    {id:'compartilhar',icon:'📧', label:'Compartilhar'},
+    {id:'resumo',       label:'Resumo'},
+    {id:'desenvolvimento', label:'Desenvolvimento'},
+    {id:'avaliacoes',   label:'Avaliações'},
+    {id:'funcoes_col',  label:'Funções'},
+    {id:'historico',    label:'Histórico'},
+    {id:'pessoal',      label:'Dados'},
   ];
+
+  // Redirecionar abas antigas pra novas
+  if(aba==='pdi_col'||aba==='metas_col'||aba==='okr_col') aba='desenvolvimento';
+  if(aba==='notas_col'||aba==='compartilhar') aba='resumo';
+
+  const ultimaAvalGlobal=avsC.length?avsC[avsC.length-1]:null;
+  const _pdisCol=(typeof getPDIs==='function'?getPDIs():[]).filter(pp=>pp.colId===id);
+  const _metasCol=metas.filter(m=>m.colId===id);
+  const _pdiAtivo=_pdisCol.find(pp=>pp.status==='Em andamento');
+  const _pdiPctVal=_pdiAtivo&&typeof pdiPct==='function'?pdiPct(_pdiAtivo):-1;
+
+  // Header compacto com stats inline
+  const headerHtml='<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">'
+    +avLarge(c.nome)
+    +'<div style="flex:1;min-width:0">'
+      +'<div style="font-size:18px;font-weight:800;color:var(--txt)">'+c.nome+'</div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">'+nivelBadge(c.nivel)+areaBadge(c.area)
+        +(c.gestor?'<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:var(--bg2);color:var(--txt3)">Gestor: '+c.gestor.split(' ')[0]+'</span>':'')
+      +'</div>'
+    +'</div>'
+    +'<div style="display:flex;gap:6px;flex-shrink:0">'
+      +(ultimaAvalGlobal?'<div style="background:var(--bg2);border-radius:8px;padding:6px 10px;text-align:center"><div style="font-size:16px;font-weight:800;color:var(--green)">'+ultimaAvalGlobal.mediaGeral+'</div><div style="font-size:9px;color:var(--txt3)">nota</div></div>':'')
+      +(_metasCol.length?'<div style="background:var(--bg2);border-radius:8px;padding:6px 10px;text-align:center"><div style="font-size:16px;font-weight:800;color:var(--blue)">'+_metasCol.length+'</div><div style="font-size:9px;color:var(--txt3)">metas</div></div>':'')
+      +(_pdiPctVal>=0?'<div style="background:var(--bg2);border-radius:8px;padding:6px 10px;text-align:center"><div style="font-size:16px;font-weight:800;color:#854F0B">'+_pdiPctVal+'%</div><div style="font-size:9px;color:var(--txt3)">PDI</div></div>':'')
+    +'</div>'
+    +'<button class="btn btn-primary btn-sm" onclick="closeModal();setTimeout(()=>openColFormDirect(\''+id+'\'),100)" style="flex-shrink:0">✏️ Editar</button>'
+  +'</div>';
 
   const tabsHtml=abas.map(a=>
     '<button onclick="renderPerfilAba(\''+id+'\',\''+a.id+'\')" '
@@ -93,9 +116,15 @@ function renderPerfilAba(id, aba){
           +'</div>';
         }).join('')+'</div>'
       :'')
-      // Botões
-      +'<div style="display:flex;gap-8px;flex-wrap:wrap;gap:8px;padding-top:12px;border-top:0.5px solid var(--border)">'
-        +'<button class="btn btn-purple btn-sm" onclick="quickAsk(\'Analise o perfil de '+c.nome.split(' ')[0]+' e sugira ações\');closeModal();go(\'agente\')">🤖 Analisar com IA</button>'
+      // Ações rápidas
+      +'<div style="padding-top:12px;border-top:0.5px solid var(--border)">'
+        +'<div style="font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Ações rápidas</div>'
+        +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+          +'<button class="btn btn-sm" onclick="closeModal();setTimeout(()=>iniciarAvaliacaoPara(\''+id+'\'),100)" style="border-color:#0F6E56;color:#0F6E56">📊 Avaliar</button>'
+          +'<button class="btn btn-sm" onclick="closeModal();setTimeout(()=>{criarPDI(\''+id+'\');go(\'pdi\');},100)" style="border-color:#185FA5;color:#185FA5">📈 Criar PDI</button>'
+          +'<button class="btn btn-sm" onclick="quickAsk(\'Analise o perfil de '+c.nome.split(' ')[0]+' e sugira ações\');closeModal();go(\'agente\')" style="border-color:#534AB7;color:#534AB7">🤖 IA analisar</button>'
+          +'<button class="btn btn-sm" onclick="abrirCompartilharSeletivo(\''+id+'\')" style="border-color:#854F0B;color:#854F0B">📧 Compartilhar</button>'
+        +'</div>'
       +'</div>';
   }
 
@@ -570,12 +599,73 @@ function renderPerfilAba(id, aba){
       +'</div>';
   }
 
+  // ── ABA DESENVOLVIMENTO (PDI + Metas + OKR unificados) ────
+  else if(aba==='desenvolvimento'){
+    var _subTab=window._devSubTab||'pdi';
+    var subTabs='<div style="display:flex;gap:4px;margin-bottom:14px">'
+      +'<button onclick="window._devSubTab=\'pdi\';renderPerfilAba(\''+id+'\',\'desenvolvimento\')" class="btn btn-sm" style="'+(_subTab==='pdi'?'background:var(--green);color:#fff;border-color:var(--green)':'')+'">📈 PDI</button>'
+      +'<button onclick="window._devSubTab=\'metas\';renderPerfilAba(\''+id+'\',\'desenvolvimento\')" class="btn btn-sm" style="'+(_subTab==='metas'?'background:var(--blue);color:#fff;border-color:var(--blue)':'')+'">🎯 Metas</button>'
+      +'<button onclick="window._devSubTab=\'okr\';renderPerfilAba(\''+id+'\',\'desenvolvimento\')" class="btn btn-sm" style="'+(_subTab==='okr'?'background:#534AB7;color:#fff;border-color:#534AB7':'')+'">📊 OKR</button>'
+      +'<button onclick="window._devSubTab=\'notas\';renderPerfilAba(\''+id+'\',\'desenvolvimento\')" class="btn btn-sm" style="'+(_subTab==='notas'?'background:#854F0B;color:#fff;border-color:#854F0B':'')+'">📝 Notas</button>'
+    +'</div>';
+
+    var devContent='';
+    if(_subTab==='pdi'){
+      var pdisC=(typeof getPDIs==='function'?getPDIs():[]).filter(pp=>pp.colId===id);
+      if(pdisC.length===0){
+        devContent='<div style="text-align:center;padding:24px;color:var(--txt3)"><div style="font-size:32px;margin-bottom:8px">📈</div><div style="font-size:13px;margin-bottom:12px">Nenhum PDI criado ainda</div><button class="btn btn-primary btn-sm" onclick="closeModal();setTimeout(()=>{criarPDI(\''+id+'\');go(\'pdi\');},100)">Criar PDI</button></div>';
+      } else {
+        devContent=pdisC.map(pp=>{
+          var pct=typeof pdiPct==='function'?pdiPct(pp):0;
+          var cor=pct>=80?'var(--green)':pct>=50?'#854F0B':'var(--blue)';
+          return '<div style="background:var(--bg2);border-radius:8px;padding:12px;margin-bottom:8px">'
+            +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:13px;font-weight:700">'+(pp.ciclo||'PDI')+'</span><span style="font-size:14px;font-weight:800;color:'+cor+'">'+pct+'%</span></div>'
+            +'<div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+cor+'"></div></div>'
+            +'<div style="font-size:10px;color:var(--txt3);margin-top:4px">Status: '+(pp.status||'Em andamento')+'</div>'
+          +'</div>';
+        }).join('');
+      }
+    } else if(_subTab==='metas'){
+      var metasC=metas.filter(m=>m.colId===id);
+      if(metasC.length===0){
+        devContent='<div style="text-align:center;padding:24px;color:var(--txt3)"><div style="font-size:32px;margin-bottom:8px">🎯</div><div style="font-size:13px;margin-bottom:12px">Nenhuma meta criada</div><button class="btn btn-primary btn-sm" onclick="closeModal();openMetaFormCol(\''+id+'\')">Criar Meta</button></div>';
+      } else {
+        devContent=metasC.map(m=>{
+          var cor=(m.progresso||0)>=80?'var(--green)':(m.progresso||0)>=50?'#854F0B':'var(--blue)';
+          return '<div style="background:var(--bg2);border-radius:8px;padding:10px;margin-bottom:6px">'
+            +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:600">'+(m.titulo||m.objetivo||'Meta')+'</span><span style="font-size:12px;font-weight:700;color:'+cor+'">'+(m.progresso||0)+'%</span></div>'
+            +'<div style="font-size:10px;color:var(--txt3);margin-top:2px">'+(m.status||'Em andamento')+(m.prazo?' · Prazo: '+m.prazo:'')+'</div>'
+          +'</div>';
+        }).join('');
+      }
+    } else if(_subTab==='okr'){
+      var okrsC=okrs.filter(o=>(o.area||'')===(c.area||''));
+      devContent=okrsC.length?okrsC.map(o=>{
+        var pct=typeof okrPct==='function'?okrPct(o):0;
+        return '<div style="background:var(--bg2);border-radius:8px;padding:10px;margin-bottom:6px">'
+          +'<div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:600">'+(o.objetivo||'OKR')+'</span><span style="font-size:12px;font-weight:700;color:#534AB7">'+pct+'%</span></div>'
+        +'</div>';
+      }).join(''):'<div style="text-align:center;padding:24px;color:var(--txt3)">Nenhum OKR na área '+c.area+'</div>';
+    } else {
+      var notasC=notas.filter(n=>n.colId===id);
+      devContent=notasC.length?notasC.slice(0,10).map(n=>{
+        return '<div style="background:var(--bg2);border-radius:8px;padding:10px;margin-bottom:6px">'
+          +'<div style="font-size:12px;color:var(--txt)">'+esc(n.texto||'')+'</div>'
+          +'<div style="font-size:10px;color:var(--txt3);margin-top:4px">'+(n.categoria||'')+(n.data?' · '+n.data:'')+'</div>'
+        +'</div>';
+      }).join(''):'<div style="text-align:center;padding:24px;color:var(--txt3)">Nenhuma nota registrada</div>';
+    }
+    conteudo=subTabs+devContent;
+  }
+
   // Montar modal completo
   document.getElementById('modal-title').textContent='';
   document.getElementById('modal-box').classList.add('modal-lg');
   document.getElementById('modal-body').innerHTML=
+    // Header compacto
+    headerHtml
     // Tabs
-    '<div style="display:flex;gap:4px;padding:4px;background:#F5F6F4;border-radius:7px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch">'+tabsHtml+'</div>'
+    +'<div style="display:flex;gap:4px;padding:4px;background:#F5F6F4;border-radius:7px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch">'+tabsHtml+'</div>'
     // Conteúdo
     +conteudo;
   document.getElementById('modal').style.display='flex';
@@ -649,33 +739,235 @@ function openColFormDirect(id){const c=colaboradores.find(x=>x.id===id);if(!c)re
 function openColForm(id=null){const c=id?colaboradores.find(x=>x.id===id):{};_showColForm(id,c||{});}
 
 function _showColForm(id,c){
-  document.getElementById('modal-title').textContent=id?'Editar Colaborador':'Novo Colaborador';
-  document.getElementById('modal-box').classList.remove('modal-lg');
-  const nivelOpts=niveis.sort((a,b)=>a.ordem-b.ordem).map(n=>'<option value="'+n.nome+'"'+(c&&c.nivel===n.nome?' selected':'')+'>'+n.nome+'</option>').join('');
-  const areaOpts=Object.keys(AREA_COLORS).map(a=>'<option value="'+a+'"'+(c&&c.area===a?' selected':'')+'>'+a+'</option>').join('');
-  const statusOpts=['Ativo','Férias','Afastado','Inativo','Desligado'].map(s=>'<option value="'+s+'"'+(c&&c.status===s?' selected':'')+'>'+s+'</option>').join('');
-  const gestorOpts=colaboradores.filter(x=>!id||x.id!==id).map(x=>'<option value="'+x.nome+'"'+(c&&c.gestor===x.nome?' selected':'')+'>'+x.nome+'</option>').join('');
-  const p=c.perfil||{};
+  var isEdit = !!id;
+  window._wizardStep = 1;
+  window._wizardData = {
+    nome: c.nome||'', email: (c.perfil||{}).email||'', celular: (c.perfil||{}).celular||'',
+    nascimento: (c.perfil||{}).nascimento||'', admissao: (c.perfil||{}).admissao||'',
+    nivel: c.nivel||'', area: c.area||'', cargo: (c.perfil||{}).cargo||'',
+    status: c.status||'Ativo', gestor: c.gestor||'',
+    funcoes: [], id: id||''
+  };
+  _renderWizardStep(isEdit);
+}
 
-  document.getElementById('modal-body').innerHTML=
-    '<div style="font-size:11px;color:var(--txt3);margin-bottom:12px">Campos básicos (gestor). Use o perfil completo para dados pessoais.</div>'
-    +'<div class="form-grid">'
-      +'<div class="field-group form-full"><div class="field-label">Nome completo *</div><input id="fc-nome" value="'+(c&&c.nome||'')+'"/></div>'
-      +'<div class="field-group"><div class="field-label">Email (para enviar link)</div><input id="fc-email-quick" type="email" value="'+(p.email||'')+'" placeholder="email@empresa.com"/></div>'
-      +'<div class="field-group"><div class="field-label">Celular / WhatsApp</div><input id="fc-cel-quick" value="'+(p.celular||'')+'" placeholder="(51) 9 9999-9999"/></div>'
-      +'<div class="field-group"><div class="field-label">Nível de Cargo</div><select id="fc-nivel">'+nivelOpts+'</select></div>'
-      +'<div class="field-group"><div class="field-label">Área</div><select id="fc-area">'+areaOpts+'</select></div>'
-      +'<div class="field-group"><div class="field-label">Status</div><select id="fc-status">'+statusOpts+'</select></div>'
-      +'<div class="field-group"><div class="field-label">Gestor direto</div><select id="fc-gestor"><option value="">— Sem gestor —</option>'+gestorOpts+'</select></div>'
+function _renderWizardStep(isEdit){
+  var d = window._wizardData;
+  var step = window._wizardStep;
+  var nivelOpts=niveis.sort((a,b)=>a.ordem-b.ordem).map(n=>'<option value="'+n.nome+'"'+(d.nivel===n.nome?' selected':'')+'>'+n.nome+'</option>').join('');
+  var areaOpts=Object.keys(AREA_COLORS).map(a=>'<option value="'+a+'"'+(d.area===a?' selected':'')+'>'+a+'</option>').join('');
+  var gestorOpts=colaboradores.filter(x=>!d.id||x.id!==d.id).map(x=>'<option value="'+x.nome+'"'+(d.gestor===x.nome?' selected':'')+'>'+x.nome+'</option>').join('');
+
+  document.getElementById('modal-title').textContent=(isEdit?'Editar':'Novo')+' Colaborador';
+  document.getElementById('modal-box').classList.remove('modal-lg');
+
+  // Barra de progresso
+  var steps=['Dados básicos','Cargo e área','Funções','Revisão'];
+  var progHtml='<div style="display:flex;gap:4px;margin-bottom:18px">';
+  steps.forEach(function(s,i){
+    var active=i+1===step;var done=i+1<step;
+    progHtml+='<div style="flex:1;text-align:center">'
+      +'<div style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;margin:0 auto 4px;font-size:12px;font-weight:700;'
+        +(done?'background:#0F6E56;color:#fff':active?'background:#0F6E56;color:#fff':'background:var(--bg2);color:var(--txt3)')
+      +'">'+(done?'✓':(i+1))+'</div>'
+      +'<div style="font-size:10px;color:'+(active?'#0F6E56':'var(--txt3)')+'">'+s+'</div>'
+    +'</div>';
+  });
+  progHtml+='</div>';
+
+  var content='';
+
+  if(step===1){
+    content='<div class="form-grid">'
+      +'<div class="field-group form-full"><div class="field-label">Nome completo *</div><input id="wz-nome" value="'+esc(d.nome)+'" placeholder="Nome completo do colaborador"/></div>'
+      +'<div class="field-group"><div class="field-label">Email</div><input id="wz-email" type="email" value="'+esc(d.email)+'" placeholder="email@empresa.com"/></div>'
+      +'<div class="field-group"><div class="field-label">Celular / WhatsApp</div><input id="wz-cel" value="'+esc(d.celular)+'" placeholder="(51) 9 9999-9999"/></div>'
+      +'<div class="field-group"><div class="field-label">Data de nascimento</div><input id="wz-nasc" type="date" value="'+d.nascimento+'"/></div>'
+      +'<div class="field-group"><div class="field-label">Data de admissão</div><input id="wz-adm" type="date" value="'+d.admissao+'"/></div>'
+      +'<div class="field-group"><div class="field-label">Gestor direto</div><select id="wz-gestor"><option value="">— Sem gestor —</option>'+gestorOpts+'</select></div>'
+    +'</div>';
+  } else if(step===2){
+    content='<div class="form-grid">'
+      +'<div class="field-group"><div class="field-label">Nível de Cargo *</div><select id="wz-nivel">'+nivelOpts+'</select></div>'
+      +'<div class="field-group"><div class="field-label">Área *</div><select id="wz-area">'+areaOpts+'</select></div>'
+      +'<div class="field-group form-full"><div class="field-label">Cargo / Título (opcional)</div><input id="wz-cargo" value="'+esc(d.cargo)+'" placeholder="Ex: Técnico de Ensaios"/></div>'
+      +'<div class="field-group"><div class="field-label">Status</div><select id="wz-status">'+['Ativo','Férias','Afastado','Inativo','Desligado'].map(function(s){return '<option value="'+s+'"'+(d.status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></div>'
     +'</div>'
-    +(id
-      ?'<div style="margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">'
-        +'<button class="btn btn-sm" onclick="demitirCol(\''+id+'\')" style="border-color:#A32D2D;color:#A32D2D">🚪 Demitir</button>'
-        +'<button class="btn btn-sm" onclick="solicitouDemissaoCol(\''+id+'\')" style="border-color:#854F0B;color:#854F0B">✋ Solicitou Demissão</button>'
-        +'<button class="btn btn-danger btn-sm" onclick="delCol(\''+id+'\')">🗑 Excluir</button>'
+    +'<div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border)">'
+      +'<button class="btn btn-sm" onclick="openModal(\'Novo Nível\',\'<input id=nn-nome placeholder=Nome\\ do\\ nível style=width:100%;margin-bottom:8px><button class=btn\\ btn-primary\\ btn-sm onclick=adicionarNivelRapido()>Criar</button>\');document.getElementById(\'modal\').style.display=\'flex\'">+ Novo nível</button>'
+      +'<button class="btn btn-sm" onclick="toast(\'Vá em Níveis e Áreas pra criar novas áreas\')">+ Nova área</button>'
+    +'</div>';
+  } else if(step===3){
+    var funcoesDisp=ls('funcoes_v8',[]);
+    content='<div style="font-size:12px;color:var(--txt2);margin-bottom:10px">Selecione as funções que este colaborador executa (opcional):</div>'
+      +'<div style="max-height:200px;overflow-y:auto">';
+    if(funcoesDisp.length===0){
+      content+='<div style="text-align:center;padding:20px;color:var(--txt3);font-size:12px">Nenhuma função cadastrada no sistema de Capacidade.<br>Pule este passo ou configure funções em Capacidade.</div>';
+    } else {
+      funcoesDisp.forEach(function(f,fi){
+        var checked=d.funcoes.indexOf(f.nome)>=0?'checked':'';
+        content+='<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:0.5px solid var(--border);border-radius:8px;margin-bottom:4px;cursor:pointer">'
+          +'<input type="checkbox" class="wz-func-check" data-nome="'+esc(f.nome)+'" '+checked+' style="accent-color:#0F6E56;width:16px;height:16px">'
+          +'<div style="flex:1"><div style="font-size:12px;font-weight:600">'+f.nome+'</div><div style="font-size:10px;color:var(--txt3)">'+(f.area||'')+'</div></div>'
+        +'</label>';
+      });
+    }
+    content+='</div>';
+  } else {
+    // Passo 4: Revisão
+    content='<div style="background:var(--bg2);border-radius:10px;padding:16px;margin-bottom:12px">'
+      +'<div style="font-size:15px;font-weight:700;color:var(--txt);margin-bottom:8px">'+esc(d.nome||'Nome não informado')+'</div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">'+(d.nivel?nivelBadge(d.nivel):'')+(d.area?areaBadge(d.area):'')+'</div>'
+      +'<div style="font-size:12px;color:var(--txt2);line-height:1.8">'
+        +(d.email?'📧 '+d.email+'<br>':'')
+        +(d.celular?'📱 '+d.celular+'<br>':'')
+        +(d.gestor?'👤 Gestor: '+d.gestor+'<br>':'')
+        +(d.cargo?'💼 '+d.cargo+'<br>':'')
+        +(d.status?'🔘 Status: '+d.status:'')
       +'</div>'
-      :'')    +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">'      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'      +'<button class="btn btn-primary" onclick="saveCol(\''+( id||'')+'\')">💾 Salvar</button>'    +'</div>';
-    document.getElementById('modal').style.display='flex';
+      +(d.funcoes.length?'<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);font-size:11px;color:var(--txt2)">Funções: '+d.funcoes.join(', ')+'</div>':'')
+    +'</div>';
+  }
+
+  // Botões de navegação
+  var btns='<div style="display:flex;justify-content:space-between;margin-top:14px">';
+  if(step>1) btns+='<button class="btn btn-sm" onclick="wizardBack('+isEdit+')">← Voltar</button>';
+  else btns+='<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>';
+  if(step<4) btns+='<button class="btn btn-primary" onclick="wizardNext('+isEdit+')">Próximo →</button>';
+  else btns+='<button class="btn btn-primary" onclick="wizardSave(\''+d.id+'\')">💾 '+(isEdit?'Salvar alterações':'Cadastrar colaborador')+'</button>';
+  btns+='</div>';
+
+  document.getElementById('modal-body').innerHTML=progHtml+content+btns;
+  document.getElementById('modal').style.display='flex';
+}
+
+function wizardNext(isEdit){
+  var d=window._wizardData;var step=window._wizardStep;
+  // Salvar dados do passo atual
+  if(step===1){
+    d.nome=((document.getElementById('wz-nome')||{}).value||'').trim();
+    d.email=(document.getElementById('wz-email')||{}).value||'';
+    d.celular=(document.getElementById('wz-cel')||{}).value||'';
+    d.nascimento=(document.getElementById('wz-nasc')||{}).value||'';
+    d.admissao=(document.getElementById('wz-adm')||{}).value||'';
+    d.gestor=(document.getElementById('wz-gestor')||{}).value||'';
+    if(!d.nome){alert('Nome é obrigatório');return;}
+  } else if(step===2){
+    d.nivel=(document.getElementById('wz-nivel')||{}).value||'';
+    d.area=(document.getElementById('wz-area')||{}).value||'';
+    d.cargo=(document.getElementById('wz-cargo')||{}).value||'';
+    d.status=(document.getElementById('wz-status')||{}).value||'Ativo';
+  } else if(step===3){
+    d.funcoes=[];
+    document.querySelectorAll('.wz-func-check:checked').forEach(function(cb){d.funcoes.push(cb.dataset.nome);});
+  }
+  window._wizardStep=Math.min(4,step+1);
+  _renderWizardStep(isEdit);
+}
+
+function wizardBack(isEdit){
+  // Salvar dados do passo atual antes de voltar
+  var d=window._wizardData;var step=window._wizardStep;
+  if(step===2){
+    d.nivel=(document.getElementById('wz-nivel')||{}).value||d.nivel;
+    d.area=(document.getElementById('wz-area')||{}).value||d.area;
+    d.cargo=(document.getElementById('wz-cargo')||{}).value||d.cargo;
+    d.status=(document.getElementById('wz-status')||{}).value||d.status;
+  } else if(step===3){
+    d.funcoes=[];
+    document.querySelectorAll('.wz-func-check:checked').forEach(function(cb){d.funcoes.push(cb.dataset.nome);});
+  }
+  window._wizardStep=Math.max(1,step-1);
+  _renderWizardStep(isEdit);
+}
+
+function wizardSave(id){
+  var d=window._wizardData;
+  var existente=id?colaboradores.find(x=>x.id===id):null;
+  var perfilAtual=(existente&&existente.perfil)||{};
+  var obj={
+    id:id||uid(),nome:d.nome,nivel:d.nivel,area:d.area,status:d.status,gestor:d.gestor,
+    historico:existente?existente.historico||[]:[],
+    funcoes:existente?existente.funcoes||[]:[],
+    perfil:Object.assign(perfilAtual,{email:d.email,celular:d.celular,nascimento:d.nascimento,admissao:d.admissao,cargo:d.cargo}),
+  };
+  if(id){var i=colaboradores.findIndex(x=>x.id===id);if(i>=0)colaboradores[i]=obj;}
+  else colaboradores.push(obj);
+  saveAll();closeModal();toast(id?'Colaborador atualizado!':'✅ Colaborador cadastrado!');render(currentPage);
+}
+
+// ── Compartilhar seletivo ────────────────────────────────────
+function abrirCompartilharSeletivo(id){
+  var c=colaboradores.find(x=>x.id===id);if(!c)return;
+  var p=c.perfil||{};
+  document.getElementById('modal-title').textContent='📧 Compartilhar perfil de '+c.nome.split(' ')[0];
+  document.getElementById('modal-box').classList.remove('modal-lg');
+
+  var items=[
+    {key:'dados',label:'Dados cadastrais',desc:'Nome, nível, área, gestor, cargo',icon:'👤',checked:true},
+    {key:'avaliacao',label:'Última avaliação',desc:'Nota geral, notas por seção, observações',icon:'📊',checked:true},
+    {key:'pdi',label:'PDI ativo',desc:'Plano de desenvolvimento com ações e progresso',icon:'📈',checked:true},
+    {key:'metas',label:'Metas SMART',desc:'Metas individuais com progresso e prazos',icon:'🎯',checked:false},
+    {key:'competencias',label:'Competências esperadas',desc:'Matriz de competências do nível/cargo',icon:'📋',checked:false},
+    {key:'notas',label:'Notas do gestor',desc:'Anotações internas — nunca compartilhadas',icon:'🔒',checked:false,disabled:true},
+  ];
+
+  var checksHtml=items.map(function(it){
+    return '<label style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:0.5px solid var(--border);border-radius:8px;margin-bottom:5px;cursor:'+(it.disabled?'not-allowed':'pointer')+';opacity:'+(it.disabled?'.5':'1')+'">'
+      +'<input type="checkbox" class="share-check" data-key="'+it.key+'" '+(it.checked?'checked':'')+(it.disabled?' disabled':'')+' style="margin-top:2px;accent-color:#0F6E56;width:16px;height:16px">'
+      +'<div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--txt)">'+it.label+(it.disabled?' <span style="font-size:9px;padding:1px 6px;border-radius:8px;background:#FCEBEB;color:#A32D2D;font-weight:600">Sensível</span>':'')+'</div>'
+      +'<div style="font-size:11px;color:var(--txt3)">'+it.desc+'</div></div>'
+      +'<span style="font-size:14px">'+it.icon+'</span>'
+    +'</label>';
+  }).join('');
+
+  var envioHtml='<div style="font-size:13px;font-weight:500;margin:14px 0 8px">Como enviar</div>'
+    +'<div style="display:flex;gap:6px">'
+      +'<button onclick="enviarPerfil(\''+id+'\',\'email\')" class="btn btn-sm" style="flex:1;text-align:center;padding:10px">✉️<br><span style="font-size:11px">Email</span></button>'
+      +'<button onclick="enviarPerfil(\''+id+'\',\'whatsapp\')" class="btn btn-sm" style="flex:1;text-align:center;padding:10px">💬<br><span style="font-size:11px">WhatsApp</span></button>'
+      +'<button onclick="enviarPerfil(\''+id+'\',\'link\')" class="btn btn-sm" style="flex:1;text-align:center;padding:10px">🔗<br><span style="font-size:11px">Copiar link</span></button>'
+    +'</div>'
+    +'<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg2);border-radius:8px;margin-top:10px;font-size:11px;color:var(--txt3)">'
+      +'🔐 O link é pessoal, expira em 7 dias e só mostra os dados selecionados.'
+    +'</div>';
+
+  document.getElementById('modal-body').innerHTML=checksHtml+envioHtml;
+  document.getElementById('modal').style.display='flex';
+}
+
+function enviarPerfil(id,metodo){
+  var c=colaboradores.find(x=>x.id===id);if(!c)return;
+  var selecionados=[];
+  document.querySelectorAll('.share-check:checked').forEach(function(cb){selecionados.push(cb.dataset.key);});
+  
+  var texto='*Perfil: '+c.nome+'*\n'+c.nivel+' · '+c.area+'\n';
+  if(selecionados.indexOf('avaliacao')>=0){
+    var avs=avaliacoes.filter(a=>a.colaboradorId===id);
+    var last=avs.length?avs[avs.length-1]:null;
+    if(last) texto+='Última avaliação: '+last.mediaGeral+' ('+last.data+')\n';
+  }
+  if(selecionados.indexOf('pdi')>=0){
+    var pdis=(typeof getPDIs==='function'?getPDIs():[]).filter(p=>p.colId===id);
+    if(pdis.length) texto+='PDI: '+(pdis[0].ciclo||'Ativo')+'\n';
+  }
+  if(selecionados.indexOf('metas')>=0){
+    var ms=metas.filter(m=>m.colId===id);
+    if(ms.length) texto+='Metas: '+ms.length+' ativas\n';
+  }
+  texto+='\nSquado · squado.com.br';
+
+  if(metodo==='email'){
+    var p=(c.perfil||{});
+    var mailto='mailto:'+(p.email||'')+'?subject='+encodeURIComponent('Squado — Perfil '+c.nome)+'&body='+encodeURIComponent(texto);
+    window.open(mailto);
+  } else if(metodo==='whatsapp'){
+    var p2=(c.perfil||{});
+    var cel=(p2.celular||'').replace(/\D/g,'');
+    window.open('https://wa.me/55'+cel+'?text='+encodeURIComponent(texto));
+  } else {
+    navigator.clipboard.writeText(texto).then(function(){toast('📋 Perfil copiado!');});
+  }
+  closeModal();
 }
 
 function saveCol(id){
