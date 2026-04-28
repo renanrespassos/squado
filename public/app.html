@@ -2122,23 +2122,23 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
 </script>
 
 <!-- Módulos JS extraídos -->
-<script src="js/admin.js?v=1777384149"></script>
-<script src="js/dashboard.js?v=1777384149"></script>
-<script src="js/colaboradores.js?v=1777384149"></script>
-<script src="js/organograma.js?v=1777384149"></script>
-<script src="js/avaliacao.js?v=1777384149"></script>
-<script src="js/pdi.js?v=1777384149"></script>
-<script src="js/ninebox.js?v=1777384149"></script>
-<script src="js/competencias.js?v=1777384149"></script>
-<script src="js/config.js?v=1777384149"></script>
-<script src="js/perfil.js?v=1777384149"></script>
-<script src="js/notas-particulares.js?v=1777384149"></script>
-<script src="js/suporte.js?v=1777384149"></script>
-<script src="js/metas.js?v=1777384149"></script>
-<script src="js/okr.js?v=1777384149"></script>
-<script src="js/ia.js?v=1777384149"></script>
-<script src="js/notas.js?v=1777384149"></script>
-<script src="js/capacidade.js?v=1777384149"></script>
+<script src="js/admin.js?v=1777385931"></script>
+<script src="js/dashboard.js?v=1777385931"></script>
+<script src="js/colaboradores.js?v=1777385931"></script>
+<script src="js/organograma.js?v=1777385931"></script>
+<script src="js/avaliacao.js?v=1777385931"></script>
+<script src="js/pdi.js?v=1777385931"></script>
+<script src="js/ninebox.js?v=1777385931"></script>
+<script src="js/competencias.js?v=1777385931"></script>
+<script src="js/config.js?v=1777385931"></script>
+<script src="js/perfil.js?v=1777385931"></script>
+<script src="js/notas-particulares.js?v=1777385931"></script>
+<script src="js/suporte.js?v=1777385931"></script>
+<script src="js/metas.js?v=1777385931"></script>
+<script src="js/okr.js?v=1777385931"></script>
+<script src="js/ia.js?v=1777385931"></script>
+<script src="js/notas.js?v=1777385931"></script>
+<script src="js/capacidade.js?v=1777385931"></script>
 
 <script>
 // ══════════════════════════════════════════
@@ -2987,7 +2987,7 @@ async function forcarSync(){
   if(!squadoGetToken()){alert('Faça login primeiro.');return;}
   toast('🔄 Forçando sincronização...');
   // Chaves de auth que NÃO devem ser apagadas
-  var protectedKeys=['squado_jwt_token','squado_user_data','squado_notas_senha','squado_notas_part','squado_dark_mode','squado_onboarding_done'];
+  var protectedKeys=['squado_jwt_token','squado_user_data','squado_notas_senha','squado_notas_part','squado_dark_mode','squado_onboarding_done','squado_np_unlocked'];
   // Limpar apenas dados do app (manter auth e qualquer squado_*)
   var keysToRemove=[];
   for(var i=0;i<localStorage.length;i++){
