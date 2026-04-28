@@ -1,6 +1,11 @@
 function renderNineBox(){
   // Posições salvas: {colId: {desempenho:1-3, potencial:1-3}}
   const posNB=ls('ninebox_v1',{});
+  
+  // Filtro por área
+  var filtroAreaNB = window._nbFiltroArea || '';
+  var areasNB = [...new Set(colaboradores.filter(c=>c.area&&c.status==='Ativo').map(c=>c.area))].sort();
+  var colsAtivos = colaboradores.filter(c=>c.status==='Ativo'&&(!filtroAreaNB||c.area===filtroAreaNB));
 
   // Definições das 9 células (col=desempenho 1-3, row=potencial 3-1)
   const celulas=[
@@ -21,7 +26,7 @@ function renderNineBox(){
   celulas.forEach(c=>{ gridData[c[0]+'-'+c[1]]=[]; });
   // Sem posição → coluna "Não posicionado"
   const semPosicao=[];
-  colaboradores.filter(c=>c.status==='Ativo').forEach(col=>{
+  colsAtivos.forEach(col=>{
     const p=posNB[col.id];
     if(p&&p.desempenho&&p.potencial){
       const key=p.desempenho+'-'+p.potencial;
@@ -108,8 +113,9 @@ function renderNineBox(){
     +'</div>'
     :'';
 
-  // Botão exportar PDF
-  const exportBtn='<div style="display:flex;justify-content:flex-end;margin-bottom:16px">'
+  // Botão exportar PDF + filtro por área
+  const exportBtn='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">'
+    +'<select onchange="window._nbFiltroArea=this.value;render(\'ninebox\')" style="padding:5px 10px;border:1px solid #E0E2E0;border-radius:5px;font-size:12px;color:#3A4240;background:#fff;cursor:pointer"><option value="">Todas as áreas</option>'+areasNB.map(function(a){return '<option value="'+a+'"'+(filtroAreaNB===a?' selected':'')+'>'+a+'</option>';}).join('')+'</select>'
     +'<button class="btn btn-sm" onclick="exportarPDFNineBox()" style="border-color:#185FA5;color:#185FA5">📄 Exportar PDF</button>'
   +'</div>';
 

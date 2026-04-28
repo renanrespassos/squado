@@ -66,13 +66,30 @@ function renderPerguntasForm(){
       ||(niv==='Analista III'?perguntas['Especialista']:null)
       ||perguntas['Estagiário']||{};
   })();
-  return Object.entries(p).map(([secao,qs])=>`<div class="eval-section"><div class="eval-section-title"><span>${secao}</span></div>
+  const secEntries = Object.entries(p);
+  const totalSecs = secEntries.length;
+  const progressBar = totalSecs > 1 ? '<div style="display:flex;gap:4px;margin-bottom:16px;padding:0 4px">'+secEntries.map(([s],i)=>'<div style="flex:1;text-align:center"><div style="height:4px;background:var(--green-bg);border-radius:2px;overflow:hidden"><div id="av-prog-'+i+'" style="height:100%;width:0%;background:var(--green);transition:width .3s"></div></div><div style="font-size:9px;color:var(--txt3);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+s+'</div></div>').join('')+'</div>' : '';
+  return progressBar + secEntries.map(([secao,qs],secIdx)=>`<div class="eval-section" id="av-sec-${secIdx}"><div class="eval-section-title"><span>${secao}</span><span style="font-size:11px;color:var(--txt3);font-weight:400">Seção ${secIdx+1} de ${totalSecs}</span></div>
     ${qs.map((q,qi)=>{const key=`${secao}__${qi}`;const val=avalState.respostas[key]||5;const sid='sv_'+key.replace(/[^a-z0-9]/gi,'_');
       return`<div style="margin-bottom:11px"><div class="eval-q-text">${q}</div><div class="slider-wrap"><span style="font-size:10px;color:var(--txt3)">1</span><input type="range" min="1" max="10" value="${val}" oninput="setResp('${key}',this.value);document.getElementById('${sid}').textContent=this.value"/><span style="font-size:10px;color:var(--txt3)">10</span><span class="slider-val" id="${sid}">${val}</span></div></div>`;}).join('')}
     <div class="field-group"><div class="field-label">Obs. sobre ${secao} (opcional)</div><textarea style="min-height:44px" oninput="avalState.obs['${secao}']=this.value">${avalState.obs[secao]||''}</textarea></div>
   </div>`).join('');
 }
-function setResp(k,v){avalState.respostas[k]=parseInt(v);salvarRascunhoAval();}
+function setResp(k,v){avalState.respostas[k]=parseInt(v);salvarRascunhoAval();
+  // Atualizar barras de progresso
+  var totalResp=Object.keys(avalState.respostas).length;
+  var secCounts={};Object.keys(avalState.respostas).forEach(function(key){var s=key.split('__')[0];secCounts[s]=(secCounts[s]||0)+1;});
+  document.querySelectorAll('[id^="av-prog-"]').forEach(function(el,i){
+    var secEl=document.getElementById('av-sec-'+i);
+    if(!secEl)return;
+    var secName=secEl.querySelector('.eval-section-title span');
+    if(!secName)return;
+    var name=secName.textContent;
+    var total=secEl.querySelectorAll('input[type=range]').length;
+    var done=secCounts[name]||0;
+    el.style.width=Math.min(100,Math.round(done/Math.max(1,total)*100))+'%';
+  });
+}
 function iniciarAvaliacaoPara(colId){avalState={colId:'',nivel:'',respostas:{},obs:{},pontosPos:'',oportunidades:''};go('avaliacao');setTimeout(()=>{const sel=document.getElementById('av-col');if(sel){sel.value=colId;onColChange(colId);}},60)}
 function salvarAvaliacao(){
   if(!avalState.colId){alert('Selecione um colaborador');return}

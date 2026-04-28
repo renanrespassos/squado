@@ -167,7 +167,7 @@ function renderOrganograma(){
           <div style="display:flex;align-items:center;gap:7px">
             ${av(col.nome, false, false)}
             <div style="flex:1;min-width:0">
-              <div style="font-size:12px;font-weight:700;color:var(--txt);
+              <div title="${col.nome}" style="font-size:12px;font-weight:700;color:var(--txt);
                           overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
                 ${col.nome.split(' ').slice(0,2).join(' ')}
               </div>
