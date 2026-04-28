@@ -862,6 +862,8 @@ input[type=number]{
     <div class="nav-item" onclick="go('agente')"><svg class="nav-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>Agente IA</div>
     <div class="nav-item" onclick="go('notas')"><svg class="nav-svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Bloco de Notas</div>
     <div class="nav-item" onclick="abrirNotasParticulares()"><svg class="nav-svg" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Notas Particulares</div>
+    <div class="nav-section">Ajuda</div>
+    <div class="nav-item" onclick="go('suporte')"><span class="nav-icon">💬</span>Suporte</div>
     <div class="nav-section" id="nav-admin-section" style="display:none">Administração</div>
     <div class="nav-item" id="nav-admin-item" onclick="go('admin')" style="display:none"><svg class="nav-svg" viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>Administrador</div>
   </nav>
@@ -1792,7 +1794,7 @@ function handleTopAction(){
 // ── Tela de Planos e Preços ───────────────────────────────────────
 // ── Paywall / Feature gating ─────────────────────────────────────
 var _planoStatus = null;
-var STARTER_PAGES = ['dashboard','colaboradores','organograma','config','avaliacao','historico_aval','perguntas','planos','admin','perfil'];
+var STARTER_PAGES = ['dashboard','colaboradores','organograma','config','avaliacao','historico_aval','perguntas','planos','admin','perfil','suporte'];
 var PRO_ONLY_PAGES = ['okr','metas','pdi','valores','ninebox','competencias','capacidade','agente','notas','notas-particulares'];
 
 async function verificarPlano(){
@@ -2043,7 +2045,7 @@ function filtrarBuscaGlobal(q){
   var el=document.getElementById('sq-busca-results');if(!el)return;
   var items=[];
   // Páginas
-  var pages=[{p:'dashboard',n:'Dashboard',i:'🏠'},{p:'colaboradores',n:'Colaboradores',i:'👥'},{p:'organograma',n:'Organograma',i:'🏗'},{p:'avaliacao',n:'Avaliação',i:'📊'},{p:'okr',n:'OKR',i:'🎯'},{p:'metas',n:'Metas',i:'✅'},{p:'pdi',n:'PDI',i:'📈'},{p:'ninebox',n:'Nine-Box',i:'📦'},{p:'competencias',n:'Competências',i:'📋'},{p:'notas',n:'Bloco de Notas',i:'📝'},{p:'agente',n:'Agente IA',i:'🤖'},{p:'config',n:'Níveis e Áreas',i:'⚙'},{p:'planos',n:'Planos',i:'💳'},{p:'capacidade',n:'Capacidade',i:'⏱'},{p:'valores',n:'Valores',i:'⭐'}];
+  var pages=[{p:'dashboard',n:'Dashboard',i:'🏠'},{p:'colaboradores',n:'Colaboradores',i:'👥'},{p:'organograma',n:'Organograma',i:'🏗'},{p:'avaliacao',n:'Avaliação',i:'📊'},{p:'okr',n:'OKR',i:'🎯'},{p:'metas',n:'Metas',i:'✅'},{p:'pdi',n:'PDI',i:'📈'},{p:'ninebox',n:'Nine-Box',i:'📦'},{p:'competencias',n:'Competências',i:'📋'},{p:'notas',n:'Bloco de Notas',i:'📝'},{p:'agente',n:'Agente IA',i:'🤖'},{p:'config',n:'Níveis e Áreas',i:'⚙'},{p:'planos',n:'Planos',i:'💳'},{p:'capacidade',n:'Capacidade',i:'⏱'},{p:'valores',n:'Valores',i:'⭐'},{p:'suporte',n:'Suporte',i:'💬'}];
   pages.forEach(function(pg){
     if(!q||pg.n.toLowerCase().includes(q.toLowerCase()))
       items.push('<div onclick="document.getElementById(\'sq-busca-global\').remove();go(\''+pg.p+'\')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-radius:8px;transition:background .1s" onmouseover="this.style.background=\'#F5F6F4\'" onmouseout="this.style.background=\'transparent\'"><span>'+pg.i+'</span><div><div style="font-size:13px;font-weight:600;color:#1A1F1D">'+pg.n+'</div><div style="font-size:10px;color:#9BA09E">Página</div></div></div>');
@@ -2066,6 +2068,7 @@ function render(page,search=''){
     agente:{title:'Agente IA',sub:'Assistente inteligente de gestão de pessoas',btn:null},
     admin:{title:'Administração',sub:'Gestão de contas e planos',btn:null},
     planos:{title:'Planos',sub:'Escolha o melhor plano para sua equipe',btn:null},
+    suporte:{title:'Suporte',sub:'Ajuda e registro de problemas',btn:null},
 notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
         avaliacao:{title:'Nova Avaliação',sub:'Formulário 1-10',btn:null},
     historico_aval:{title:'Histórico de Avaliações',sub:'Resultados e evolução',btn:null},
@@ -2106,27 +2109,29 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
   else if(page==='admin')c.innerHTML=renderAdmin();
   else if(page==='notas')c.innerHTML=renderNotas(search);
   else if(page==='planos')c.innerHTML=renderPlanos();
+  else if(page==='suporte')c.innerHTML=renderSuporte();
 }
 
 </script>
 
 <!-- Módulos JS extraídos -->
-<script src="js/admin.js?v=1777372903"></script>
-<script src="js/dashboard.js?v=1777372903"></script>
-<script src="js/colaboradores.js?v=1777372903"></script>
-<script src="js/organograma.js?v=1777372903"></script>
-<script src="js/avaliacao.js?v=1777372903"></script>
-<script src="js/pdi.js?v=1777372903"></script>
-<script src="js/ninebox.js?v=1777372903"></script>
-<script src="js/competencias.js?v=1777372903"></script>
-<script src="js/config.js?v=1777372903"></script>
-<script src="js/perfil.js?v=1777372903"></script>
-<script src="js/notas-particulares.js?v=1777372903"></script>
-<script src="js/metas.js?v=1777372903"></script>
-<script src="js/okr.js?v=1777372903"></script>
-<script src="js/ia.js?v=1777372903"></script>
-<script src="js/notas.js?v=1777372903"></script>
-<script src="js/capacidade.js?v=1777372903"></script>
+<script src="js/admin.js?v=1777373533"></script>
+<script src="js/dashboard.js?v=1777373533"></script>
+<script src="js/colaboradores.js?v=1777373533"></script>
+<script src="js/organograma.js?v=1777373533"></script>
+<script src="js/avaliacao.js?v=1777373533"></script>
+<script src="js/pdi.js?v=1777373533"></script>
+<script src="js/ninebox.js?v=1777373533"></script>
+<script src="js/competencias.js?v=1777373533"></script>
+<script src="js/config.js?v=1777373533"></script>
+<script src="js/perfil.js?v=1777373533"></script>
+<script src="js/notas-particulares.js?v=1777373533"></script>
+<script src="js/suporte.js?v=1777373533"></script>
+<script src="js/metas.js?v=1777373533"></script>
+<script src="js/okr.js?v=1777373533"></script>
+<script src="js/ia.js?v=1777373533"></script>
+<script src="js/notas.js?v=1777373533"></script>
+<script src="js/capacidade.js?v=1777373533"></script>
 
 <script>
 // ══════════════════════════════════════════
