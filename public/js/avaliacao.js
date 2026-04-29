@@ -565,7 +565,11 @@ function delAvaliacao(id){if(!confirm('Excluir?'))return;avaliacoes=avaliacoes.f
 function renderPerguntas(){
   const niveisDisp=Object.keys(perguntas);
   const ativo=window._pergNivelAtivo&&perguntas[window._pergNivelAtivo]?window._pergNivelAtivo:niveisDisp[0];
-  return`<div class="card"><div style="font-size:12px;color:var(--txt2);margin-bottom:14px">Edite as perguntas por nível.</div>
+  return`<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-size:12px;color:var(--txt2)">Edite as perguntas por nível.</div>
+      <button class="btn btn-sm" onclick="abrirCriarPerguntasIA()" style="border-color:#534AB7;color:#534AB7">🤖 Criar com IA</button>
+    </div>
     <div class="tabs" id="perg-tabs">${niveisDisp.map((n,i)=>`<div class="tab${n===ativo?' active':''}" style="display:inline-flex;align-items:center;gap:4px">
         <span onclick="switchPergTab('${n}',this.parentElement)">${n}</span>
         <span onclick="renomearNivel('${n}')" title="Renomear" style="cursor:pointer;opacity:.5;font-size:10px" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.5">✏️</span>
@@ -690,4 +694,252 @@ function renderAvaliacaoHub(){
       <button id="tab-aval-conf" class="btn btn-sm" onclick="go('perguntas')">⚙️ Configurar Perguntas</button>
     </div>
     ${conteudo}`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CRIAR PERGUNTAS COM IA
+// ═══════════════════════════════════════════════════════════════
+
+var _iaPergsState = { step:1, niveisSelect:[], objetivos:'', competencias:[], geradas:null, loading:false };
+
+function abrirCriarPerguntasIA(){
+  _iaPergsState = { step:1, niveisSelect:[], objetivos:'', competencias:[], geradas:null, loading:false };
+  _renderIAPergsWizard();
+}
+
+function _renderIAPergsWizard(){
+  var s = _iaPergsState;
+  var niveisExistentes = niveis.sort(function(a,b){return a.ordem-b.ordem;}).map(function(n){return n.nome;});
+  var comps = ls('competencias_v1', null) || [];
+  var areasExistentes = Object.keys(typeof AREA_COLORS!=='undefined'?AREA_COLORS:{});
+
+  // Steps indicator
+  var steps=['Níveis','Contexto','Gerar','Revisar'];
+  var progHtml='<div style="display:flex;gap:4px;margin-bottom:18px">';
+  steps.forEach(function(st,i){
+    var active=i+1===s.step;var done=i+1<s.step;
+    progHtml+='<div style="flex:1;text-align:center">'
+      +'<div style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;margin:0 auto 4px;font-size:12px;font-weight:700;'
+        +(done?'background:#534AB7;color:#fff':active?'background:#534AB7;color:#fff':'background:var(--bg2);color:var(--txt3)')
+      +'">'+(done?'✓':(i+1))+'</div>'
+      +'<div style="font-size:10px;color:'+(active?'#534AB7':'var(--txt3)')+'">'+st+'</div>'
+    +'</div>';
+  });
+  progHtml+='</div>';
+
+  var content = '';
+
+  if(s.step===1){
+    // Passo 1: Selecionar níveis
+    content='<div style="font-size:14px;font-weight:700;margin-bottom:8px">Para quais níveis criar perguntas?</div>'
+      +'<div style="font-size:12px;color:var(--txt3);margin-bottom:14px">Selecione os níveis de cargo. A IA vai gerar perguntas específicas pra cada um.</div>';
+    if(niveisExistentes.length > 0){
+      niveisExistentes.forEach(function(n){
+        var checked = s.niveisSelect.indexOf(n)>=0?'checked':'';
+        content+='<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:0.5px solid var(--border);border-radius:8px;margin-bottom:5px;cursor:pointer">'
+          +'<input type="checkbox" class="ia-perg-nivel" data-nivel="'+n+'" '+checked+' style="accent-color:#534AB7;width:18px;height:18px">'
+          +'<div style="flex:1"><div style="font-size:13px;font-weight:500">'+n+'</div>'
+          +'<div style="font-size:10px;color:var(--txt3)">'+colaboradores.filter(function(c){return c.nivel===n&&c.status!=='Desligado';}).length+' colaboradores neste nível</div></div>'
+        +'</label>';
+      });
+    } else {
+      content+='<div style="padding:16px;text-align:center;color:var(--txt3);font-size:12px">Nenhum nível cadastrado. <a onclick="go(\'config\')" style="color:#534AB7;cursor:pointer;text-decoration:underline">Configurar níveis</a></div>';
+    }
+    content+='<div style="margin-top:10px"><input id="ia-perg-nivel-custom" placeholder="Ou digite níveis personalizados separados por vírgula..." style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;background:var(--bg);color:var(--txt)"/></div>';
+
+  } else if(s.step===2){
+    // Passo 2: Contexto — objetivos, competências, área
+    content='<div style="font-size:14px;font-weight:700;margin-bottom:8px">Contexto da avaliação</div>'
+      +'<div style="font-size:12px;color:var(--txt3);margin-bottom:14px">Quanto mais contexto, melhores as perguntas geradas.</div>';
+
+    // Competências existentes
+    if(comps.length > 0){
+      content+='<div style="font-size:12px;font-weight:600;margin-bottom:6px">Competências já cadastradas:</div>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px">';
+      comps.forEach(function(c){
+        var checked = s.competencias.indexOf(c.nome||c)>=0?'checked':'';
+        content+='<label style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border:0.5px solid var(--border);border-radius:14px;cursor:pointer;font-size:11px">'
+          +'<input type="checkbox" class="ia-perg-comp" data-comp="'+(c.nome||c)+'" '+checked+' style="accent-color:#534AB7;width:14px;height:14px">'
+          +(c.nome||c)
+        +'</label>';
+      });
+      content+='</div>';
+    }
+
+    // Áreas existentes
+    if(areasExistentes.length > 0){
+      content+='<div style="font-size:12px;font-weight:600;margin-bottom:6px">Área de atuação (opcional):</div>'
+        +'<select id="ia-perg-area" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:12px;margin-bottom:14px;background:var(--bg);color:var(--txt)">'
+        +'<option value="">Geral (todas as áreas)</option>'
+        +areasExistentes.map(function(a){return '<option value="'+a+'">'+a+'</option>';}).join('')
+        +'</select>';
+    }
+
+    content+='<div style="font-size:12px;font-weight:600;margin-bottom:6px">Objetivos e foco da avaliação: *</div>'
+      +'<textarea id="ia-perg-objetivos" placeholder="Exemplos:\n• Avaliar competências técnicas e comportamentais\n• Foco em liderança e gestão de equipe\n• Medir capacidade de inovação e resolução de problemas\n• Avaliar alinhamento com valores da empresa" style="width:100%;min-height:100px;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box;background:var(--bg);color:var(--txt)">'+(s.objetivos||'')+'</textarea>'
+
+      +'<div style="font-size:12px;font-weight:600;margin-top:14px;margin-bottom:6px">Quantas seções por nível?</div>'
+      +'<select id="ia-perg-qtd-secoes" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg);color:var(--txt)">'
+        +'<option value="3">3 seções (rápido)</option>'
+        +'<option value="5" selected>5 seções (recomendado)</option>'
+        +'<option value="7">7 seções (completo)</option>'
+      +'</select>';
+
+  } else if(s.step===3){
+    // Passo 3: Gerando...
+    if(s.loading){
+      content='<div style="text-align:center;padding:40px">'
+        +'<div style="font-size:32px;margin-bottom:12px;animation:skeleton-pulse 1.5s infinite">🤖</div>'
+        +'<div style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:6px">Gerando perguntas...</div>'
+        +'<div style="font-size:12px;color:var(--txt3)">A IA está criando perguntas personalizadas para '+s.niveisSelect.length+' nível(is).<br>Pode levar até 30 segundos.</div>'
+      +'</div>';
+    } else if(s.geradas){
+      content='<div style="text-align:center;padding:20px">'
+        +'<div style="font-size:32px;margin-bottom:8px">✅</div>'
+        +'<div style="font-size:14px;font-weight:700;color:#0F6E56;margin-bottom:6px">Perguntas geradas!</div>'
+        +'<div style="font-size:12px;color:var(--txt3);margin-bottom:14px">Revise as perguntas no próximo passo antes de salvar.</div>'
+      +'</div>';
+    }
+
+  } else if(s.step===4){
+    // Passo 4: Revisar
+    if(!s.geradas) { content='<div style="text-align:center;color:var(--txt3);padding:20px">Nenhuma pergunta gerada.</div>'; }
+    else {
+      content='<div style="font-size:14px;font-weight:700;margin-bottom:8px">Revise as perguntas geradas</div>'
+        +'<div style="font-size:11px;color:var(--txt3);margin-bottom:14px">Edite, remova ou adicione perguntas antes de salvar. As existentes serão substituídas pra cada nível.</div>';
+      Object.keys(s.geradas).forEach(function(nivel){
+        content+='<div style="font-size:13px;font-weight:700;color:#534AB7;margin-top:14px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)">'+nivel+'</div>';
+        Object.keys(s.geradas[nivel]).forEach(function(secao){
+          var qs = s.geradas[nivel][secao];
+          content+='<div style="font-size:11px;font-weight:600;color:var(--txt2);margin-bottom:4px">'+secao+' ('+qs.length+' perguntas)</div>';
+          qs.forEach(function(q,qi){
+            content+='<div style="display:flex;gap:6px;margin-bottom:3px;align-items:center">'
+              +'<span style="font-size:10px;color:var(--txt3);width:16px;text-align:right">'+(qi+1)+'.</span>'
+              +'<div style="flex:1;font-size:11px;color:var(--txt);padding:4px 8px;background:var(--bg2);border-radius:4px">'+esc(q)+'</div>'
+            +'</div>';
+          });
+        });
+      });
+    }
+  }
+
+  // Botões
+  var btns='<div style="display:flex;justify-content:space-between;margin-top:16px">';
+  if(s.step>1 && !s.loading) btns+='<button class="btn btn-sm" onclick="iaPergsBack()">← Voltar</button>';
+  else btns+='<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>';
+  if(s.step===1) btns+='<button class="btn btn-primary" onclick="iaPergsNext()">Próximo →</button>';
+  else if(s.step===2) btns+='<button class="btn btn-primary" onclick="iaPergsGerar()" style="background:#534AB7;border-color:#534AB7">🤖 Gerar perguntas</button>';
+  else if(s.step===3 && !s.loading && s.geradas) btns+='<button class="btn btn-primary" onclick="iaPergsNext()">Revisar →</button>';
+  else if(s.step===4) btns+='<button class="btn btn-primary" onclick="iaPergsAplicar()" style="background:#0F6E56">💾 Aplicar perguntas</button>';
+  btns+='</div>';
+
+  document.getElementById('modal-title').textContent='🤖 Criar Perguntas com IA';
+  document.getElementById('modal-box').classList.remove('modal-lg');
+  document.getElementById('modal-body').innerHTML=progHtml+content+btns;
+  document.getElementById('modal').style.display='flex';
+}
+
+function iaPergsNext(){
+  var s=_iaPergsState;
+  if(s.step===1){
+    // Salvar níveis selecionados
+    s.niveisSelect=[];
+    document.querySelectorAll('.ia-perg-nivel:checked').forEach(function(cb){s.niveisSelect.push(cb.dataset.nivel);});
+    var custom=((document.getElementById('ia-perg-nivel-custom')||{}).value||'').trim();
+    if(custom) custom.split(',').forEach(function(n){var t=n.trim();if(t&&s.niveisSelect.indexOf(t)<0)s.niveisSelect.push(t);});
+    if(s.niveisSelect.length===0){alert('Selecione pelo menos um nível.');return;}
+  }
+  s.step=Math.min(4,s.step+1);
+  _renderIAPergsWizard();
+}
+
+function iaPergsBack(){
+  _iaPergsState.step=Math.max(1,_iaPergsState.step-1);
+  _renderIAPergsWizard();
+}
+
+async function iaPergsGerar(){
+  var s=_iaPergsState;
+  // Salvar contexto
+  s.objetivos=((document.getElementById('ia-perg-objetivos')||{}).value||'').trim();
+  s.competencias=[];
+  document.querySelectorAll('.ia-perg-comp:checked').forEach(function(cb){s.competencias.push(cb.dataset.comp);});
+  var area=((document.getElementById('ia-perg-area')||{}).value||'');
+  var qtdSecoes=((document.getElementById('ia-perg-qtd-secoes')||{}).value||'5');
+
+  if(!s.objetivos){alert('Descreva os objetivos da avaliação.');return;}
+
+  s.step=3;s.loading=true;s.geradas=null;
+  _renderIAPergsWizard();
+
+  // Montar prompt
+  var prompt = 'Você é especialista em avaliação de desempenho e gestão de pessoas no Brasil.\n\n'
+    +'Gere perguntas de avaliação de desempenho para os seguintes NÍVEIS DE CARGO:\n'
+    +s.niveisSelect.map(function(n){return '• '+n;}).join('\n')+'\n\n'
+    +'OBJETIVOS DA AVALIAÇÃO:\n'+s.objetivos+'\n\n';
+
+  if(s.competencias.length>0){
+    prompt+='COMPETÊNCIAS DA EMPRESA (usar como base):\n'+s.competencias.map(function(c){return '• '+c;}).join('\n')+'\n\n';
+  }
+  if(area) prompt+='ÁREA DE ATUAÇÃO: '+area+'\n\n';
+
+  prompt+='REGRAS:\n'
+    +'- Gere exatamente '+qtdSecoes+' SEÇÕES por nível\n'
+    +'- Cada seção deve ter 3 a 6 perguntas\n'
+    +'- As perguntas devem ser na escala 1-10 (nunca a sempre)\n'
+    +'- Adapte a complexidade das perguntas ao nível de cargo\n'
+    +'- Use linguagem profissional em português brasileiro\n'
+    +'- Seções sugeridas: Competências Técnicas, Competências Comportamentais, Liderança, Comunicação, Resultados, Inovação, Trabalho em Equipe, Autodesenvolvimento\n\n'
+    +'FORMATO DE RESPOSTA (JSON estrito, sem markdown, sem backticks):\n'
+    +'{"NomeDonível":{"NomeDaSeção":["pergunta 1","pergunta 2"]}}\n'
+    +'Retorne APENAS o JSON, nada mais.';
+
+  try{
+    var token = squadoGetToken();
+    var r = await fetch(SQUADO_API+'/api/ai/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({
+        messages:[{role:'user',content:prompt}],
+        max_tokens:2000
+      })
+    });
+    var d = await r.json();
+    var resposta = d.content || '';
+
+    // Limpar e parsear JSON
+    resposta = resposta.replace(/```json/g,'').replace(/```/g,'').trim();
+    var jsonMatch = resposta.match(/\{[\s\S]*\}/);
+    if(jsonMatch){
+      s.geradas = JSON.parse(jsonMatch[0]);
+    } else {
+      throw new Error('Resposta não contém JSON válido');
+    }
+  } catch(e){
+    console.error('Erro IA perguntas:', e);
+    toast('❌ Erro ao gerar perguntas. Tente novamente.');
+    s.step=2;
+  }
+
+  s.loading=false;
+  _renderIAPergsWizard();
+}
+
+function iaPergsAplicar(){
+  var s=_iaPergsState;
+  if(!s.geradas){toast('Nada pra aplicar.');return;}
+
+  var qtdNiveis=0, qtdPergs=0;
+  Object.keys(s.geradas).forEach(function(nivel){
+    perguntas[nivel] = s.geradas[nivel];
+    qtdNiveis++;
+    Object.keys(s.geradas[nivel]).forEach(function(sec){
+      qtdPergs += s.geradas[nivel][sec].length;
+    });
+  });
+
+  saveAll();
+  closeModal();
+  toast('✅ '+qtdPergs+' perguntas criadas em '+qtdNiveis+' nível(is)!');
+  render('perguntas');
 }
