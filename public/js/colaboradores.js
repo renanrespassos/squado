@@ -80,7 +80,7 @@ function renderColaboradores(search=''){
     '<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">',
     '<div style="display:flex;align-items:center;gap:8px;background:#F5F6F4;border:1px solid #E0E2E0;border-radius:6px;padding:7px 12px">',
     '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9BA09E" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>',
-    '<input id="col-search-input" placeholder="Buscar colaboradores..." autocomplete="off" spellcheck="false" oninput="document.getElementById(\'page-content\').innerHTML=renderColaboradores(this.value)" style="border:none;background:transparent;outline:none;flex:1;font-size:13px;color:#1A1F1D" value="'+search+'">',
+    '<input id="col-search-input" type="search" name="sq-busca-colaborador" placeholder="Buscar colaboradores..." autocomplete="nope" spellcheck="false" oninput="document.getElementById(\'page-content\').innerHTML=renderColaboradores(this.value)" style="border:none;background:transparent;outline:none;flex:1;font-size:13px;color:#1A1F1D" value="'+search+'">',
     '</div>',
     '<div style="display:flex;align-items:center;justify-content:space-between">',
     '<div style="display:flex;gap:4px">',

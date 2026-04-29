@@ -17,8 +17,8 @@ function renderNotasParticularesPage(){
       +'<div style="font-size:48px;margin-bottom:12px">🔒</div>'
       +'<div style="font-size:18px;font-weight:700;color:var(--txt);margin-bottom:6px">Definir senha</div>'
       +'<div style="font-size:13px;color:var(--txt3);margin-bottom:20px">Crie uma senha para proteger suas notas.</div>'
-      +'<input id="np-senha1" type="password" placeholder="Nova senha (mín. 4 caracteres)" style="width:100%;padding:12px;border:1px solid var(--border2);border-radius:8px;font-size:14px;margin-bottom:8px;box-sizing:border-box;background:var(--bg);color:var(--txt)"/>'
-      +'<input id="np-senha2" type="password" placeholder="Confirmar senha" style="width:100%;padding:12px;border:1px solid var(--border2);border-radius:8px;font-size:14px;margin-bottom:16px;box-sizing:border-box;background:var(--bg);color:var(--txt)" onkeydown="if(event.key===\'Enter\')npDefinirSenha()"/>'
+      +'<input id="np-senha1" type="password" autocomplete="new-password" placeholder="Nova senha (mín. 4 caracteres)" style="width:100%;padding:12px;border:1px solid var(--border2);border-radius:8px;font-size:14px;margin-bottom:8px;box-sizing:border-box;background:var(--bg);color:var(--txt)"/>'
+      +'<input id="np-senha2" type="password" autocomplete="new-password" placeholder="Confirmar senha" style="width:100%;padding:12px;border:1px solid var(--border2);border-radius:8px;font-size:14px;margin-bottom:16px;box-sizing:border-box;background:var(--bg);color:var(--txt)" onkeydown="if(event.key===\'Enter\')npDefinirSenha()"/>'
       +'<button onclick="npDefinirSenha()" class="btn btn-primary" style="width:100%;padding:12px;font-size:14px">Definir e acessar</button>'
     +'</div>';
   }
@@ -28,7 +28,7 @@ function renderNotasParticularesPage(){
       +'<div style="font-size:48px;margin-bottom:12px">🔒</div>'
       +'<div style="font-size:18px;font-weight:700;color:var(--txt);margin-bottom:6px">Notas protegidas</div>'
       +'<div style="font-size:13px;color:var(--txt3);margin-bottom:20px">Digite sua senha para acessar.</div>'
-      +'<input id="np-senha-acesso" type="password" placeholder="Sua senha" autofocus style="width:100%;padding:12px;border:1px solid var(--border2);border-radius:8px;font-size:14px;margin-bottom:16px;box-sizing:border-box;background:var(--bg);color:var(--txt)" onkeydown="if(event.key===\'Enter\')npVerificarSenha()"/>'
+      +'<input id="np-senha-acesso" type="password" autocomplete="current-password" placeholder="Sua senha" autofocus style="width:100%;padding:12px;border:1px solid var(--border2);border-radius:8px;font-size:14px;margin-bottom:16px;box-sizing:border-box;background:var(--bg);color:var(--txt)" onkeydown="if(event.key===\'Enter\')npVerificarSenha()"/>'
       +'<button onclick="npVerificarSenha()" class="btn btn-primary" style="width:100%;padding:12px;font-size:14px;margin-bottom:10px">Desbloquear</button>'
       +'<div><a onclick="npResetarSenha()" style="font-size:11px;color:var(--txt3);cursor:pointer;text-decoration:underline">Esqueci a senha (apaga tudo)</a></div>'
     +'</div>';
