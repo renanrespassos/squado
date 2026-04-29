@@ -2121,23 +2121,23 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
 </script>
 
 <!-- Módulos JS extraídos -->
-<script src="js/admin.js?v=1777457864"></script>
-<script src="js/dashboard.js?v=1777457864"></script>
-<script src="js/colaboradores.js?v=1777457864"></script>
-<script src="js/organograma.js?v=1777457864"></script>
-<script src="js/avaliacao.js?v=1777457864"></script>
-<script src="js/pdi.js?v=1777457864"></script>
-<script src="js/ninebox.js?v=1777457864"></script>
-<script src="js/competencias.js?v=1777457864"></script>
-<script src="js/config.js?v=1777457864"></script>
-<script src="js/perfil.js?v=1777457864"></script>
-<script src="js/notas-particulares.js?v=1777457864"></script>
-<script src="js/suporte.js?v=1777457864"></script>
-<script src="js/metas.js?v=1777457864"></script>
-<script src="js/okr.js?v=1777457864"></script>
-<script src="js/ia.js?v=1777457864"></script>
-<script src="js/notas.js?v=1777457864"></script>
-<script src="js/capacidade.js?v=1777457864"></script>
+<script src="js/admin.js?v=1777458246"></script>
+<script src="js/dashboard.js?v=1777458246"></script>
+<script src="js/colaboradores.js?v=1777458246"></script>
+<script src="js/organograma.js?v=1777458246"></script>
+<script src="js/avaliacao.js?v=1777458246"></script>
+<script src="js/pdi.js?v=1777458246"></script>
+<script src="js/ninebox.js?v=1777458246"></script>
+<script src="js/competencias.js?v=1777458246"></script>
+<script src="js/config.js?v=1777458246"></script>
+<script src="js/perfil.js?v=1777458246"></script>
+<script src="js/notas-particulares.js?v=1777458246"></script>
+<script src="js/suporte.js?v=1777458246"></script>
+<script src="js/metas.js?v=1777458246"></script>
+<script src="js/okr.js?v=1777458246"></script>
+<script src="js/ia.js?v=1777458246"></script>
+<script src="js/notas.js?v=1777458246"></script>
+<script src="js/capacidade.js?v=1777458246"></script>
 
 <script>
 // ══════════════════════════════════════════
@@ -3012,17 +3012,15 @@ async function forcarSync(){
 function squadoLogout() {
   _squadoSessionToken++; // invalida fetches em andamento
   pararSyncPeriodico();
-  // CRÍTICO: limpar todos os dados locais ao sair para evitar vazamento entre contas
-  const keysToRemove = [
-    'cols_v3','avaliacoes','metas_v2','notas','pdis_v1','funcoes_v8',
-    'areas_config','valores_empresa','competencias_v2','niveis_v2',
-    'perguntas_v3','valores_v1','matriz_comp_v1','gestor_config_v1',
-    'feedbacks','aiHistory','qtdServicos','funcoes',
-    SQUADO_TOKEN_KEY, SQUADO_USER_KEY
-  ];
-  keysToRemove.forEach(k => localStorage.removeItem(k));
-  // Limpar TODOS os outros keys para garantir isolamento total entre contas
+  // Chaves que devem sobreviver ao logout (dados pessoais do browser)
+  var keepKeys = ['squado_notas_senha','squado_notas_part','squado_dark_mode','squado_onboarding_done'];
+  var saved = {};
+  keepKeys.forEach(function(k){ var v=localStorage.getItem(k); if(v!==null) saved[k]=v; });
+  // Limpar TUDO
   localStorage.clear();
+  sessionStorage.clear();
+  // Restaurar chaves protegidas
+  Object.keys(saved).forEach(function(k){ localStorage.setItem(k, saved[k]); });
   // Resetar variáveis em memória
   colaboradores = []; avaliacoes = []; metas = []; notas = []; niveis = [];
   const badge = document.getElementById('squado-user-badge');
