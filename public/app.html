@@ -842,28 +842,27 @@ input[type=number]{
     </div>
   </div>
   <nav class="nav">
-    <div class="nav-section">Visão Geral</div>
     <div class="nav-item active" onclick="go('dashboard')"><svg class="nav-svg" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Dashboard</div>
-    <div class="nav-section">Pessoas</div>
+    <div class="nav-section">Organização</div>
     <div class="nav-item" onclick="go('colaboradores')"><svg class="nav-svg" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Colaboradores</div>
-    <div class="nav-item" onclick="go('organograma')"><svg class="nav-svg" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="2" y="18" width="6" height="4" rx="1"/><rect x="16" y="18" width="6" height="4" rx="1"/><path d="M12 6v4M12 10H5v4M12 10h7v4"/></svg>Organograma</div>
-    <div class="nav-item" onclick="go('capacidade')"><svg class="nav-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg>Capacidade</div>
-    <div class="nav-section">Avaliação</div>
-    <div class="nav-item" onclick="go('avaliacao_hub')"><svg class="nav-svg" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Avaliação</div>
-    <div class="nav-section">Desenvolvimento</div>
-    <div class="nav-item" onclick="go('okr')"><svg class="nav-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>OKR</div>
-    <div class="nav-item" onclick="go('metas')"><svg class="nav-svg" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Metas</div>
-    <div class="nav-item" onclick="go('pdi')"><svg class="nav-svg" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>PDI</div>
-    <div class="nav-item" onclick="go('valores')"><svg class="nav-svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Valores</div>
-    <div class="nav-item" onclick="go('ninebox')"><svg class="nav-svg" viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="5"/><rect x="9.5" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/><rect x="3" y="9.5" width="5" height="5"/><rect x="9.5" y="9.5" width="5" height="5"/><rect x="16" y="9.5" width="5" height="5"/><rect x="3" y="16" width="5" height="5"/><rect x="9.5" y="16" width="5" height="5"/><rect x="16" y="16" width="5" height="5"/></svg>Nine-Box</div>
-    <div class="nav-item" onclick="go('competencias')"><svg class="nav-svg" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Competências</div>
     <div class="nav-item" onclick="go('niveis')"><svg class="nav-svg" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line><line x1="2" y1="20" x2="22" y2="20"></line></svg>Níveis e Áreas</div>
-    <div class="nav-section">IA &amp; Anotações</div>
+    <div class="nav-item" onclick="go('capacidade')"><svg class="nav-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg>Capacidade e Funções</div>
+    <div class="nav-item" onclick="go('organograma')"><svg class="nav-svg" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="2" y="18" width="6" height="4" rx="1"/><rect x="16" y="18" width="6" height="4" rx="1"/><path d="M12 6v4M12 10H5v4M12 10h7v4"/></svg>Organograma</div>
+    <div class="nav-section">Performance</div>
+    <div class="nav-item" onclick="go('avaliacao_hub')"><svg class="nav-svg" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Avaliação</div>
+    <div class="nav-item" onclick="go('metas')"><svg class="nav-svg" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Metas</div>
+    <div class="nav-item" onclick="go('okr')"><svg class="nav-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>OKR</div>
+    <div class="nav-item" onclick="go('ninebox')"><svg class="nav-svg" viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="5"/><rect x="9.5" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/><rect x="3" y="9.5" width="5" height="5"/><rect x="9.5" y="9.5" width="5" height="5"/><rect x="16" y="9.5" width="5" height="5"/><rect x="3" y="16" width="5" height="5"/><rect x="9.5" y="16" width="5" height="5"/><rect x="16" y="16" width="5" height="5"/></svg>Nine-Box</div>
+    <div class="nav-section">Desenvolvimento</div>
+    <div class="nav-item" onclick="go('pdi')"><svg class="nav-svg" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>PDI</div>
+    <div class="nav-item" onclick="go('competencias')"><svg class="nav-svg" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Competências</div>
+    <div class="nav-item" onclick="go('valores')"><svg class="nav-svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Valores</div>
+    <div class="nav-section">Gestor &amp; IA</div>
     <div class="nav-item" onclick="go('agente')"><svg class="nav-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>Agente IA</div>
     <div class="nav-item" onclick="go('notas')"><svg class="nav-svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Bloco de Notas</div>
     <div class="nav-item" onclick="go('notas-particulares')"><svg class="nav-svg" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Notas Particulares</div>
     <div class="nav-section">Ajuda</div>
-    <div class="nav-item" onclick="go('suporte')"><span class="nav-icon">💬</span>Suporte</div>
+    <div class="nav-item" onclick="go('suporte')"><svg class="nav-svg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Suporte</div>
     <div class="nav-section" id="nav-admin-section" style="display:none">Administração</div>
     <div class="nav-item" id="nav-admin-item" onclick="go('admin')" style="display:none"><svg class="nav-svg" viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>Administrador</div>
   </nav>
@@ -877,7 +876,7 @@ input[type=number]{
     </div>
     <button id="btn-migrar" onclick="squadoMigrarDados()" style="display:none;width:100%;font-size:10px;padding:5px 8px;background:#EF9F27;border:none;border-radius:6px;color:#412402;font-weight:700;cursor:pointer">☁️ Migrar dados para nuvem</button>
     <button class="btn btn-sm" onclick="showApiKeyModal()" style="display:none;font-size:11px;padding:5px 10px;background:#F5F6F4;border:1px solid #E0E2E0;color:#3A4240;border-radius:5px;cursor:pointer;width:100%;text-align:left;font-family:'Inter',sans-serif">⚙️ Configurar IA</button>
-    <div style="font-size:9px;color:#9BA09E;text-align:center;margin-top:4px;letter-spacing:.05em">Squado v6.0 · 2025</div>
+    <div style="font-size:9px;color:#9BA09E;text-align:center;margin-top:4px;letter-spacing:.05em">Squado v7.0 · 2025</div>
     <div id="sq-sync-ind" style="font-size:9px;color:#9BA09E;text-align:center;min-height:12px;transition:color .3s"></div>
     <button class="btn btn-sm" onclick="squadoLogout()" id="btn-sair-sidebar" style="font-size:11px;padding:8px 10px;background:transparent;border:1px solid #E0E2E0;color:#6B7370;border-radius:5px;cursor:pointer;width:100%;text-align:center;font-family:'Inter',sans-serif">🚪 Sair</button>
   </div>
@@ -2122,23 +2121,23 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
 </script>
 
 <!-- Módulos JS extraídos -->
-<script src="js/admin.js?v=1777456819"></script>
-<script src="js/dashboard.js?v=1777456819"></script>
-<script src="js/colaboradores.js?v=1777456819"></script>
-<script src="js/organograma.js?v=1777456819"></script>
-<script src="js/avaliacao.js?v=1777456819"></script>
-<script src="js/pdi.js?v=1777456819"></script>
-<script src="js/ninebox.js?v=1777456819"></script>
-<script src="js/competencias.js?v=1777456819"></script>
-<script src="js/config.js?v=1777456819"></script>
-<script src="js/perfil.js?v=1777456819"></script>
-<script src="js/notas-particulares.js?v=1777456819"></script>
-<script src="js/suporte.js?v=1777456819"></script>
-<script src="js/metas.js?v=1777456819"></script>
-<script src="js/okr.js?v=1777456819"></script>
-<script src="js/ia.js?v=1777456819"></script>
-<script src="js/notas.js?v=1777456819"></script>
-<script src="js/capacidade.js?v=1777456819"></script>
+<script src="js/admin.js?v=1777457864"></script>
+<script src="js/dashboard.js?v=1777457864"></script>
+<script src="js/colaboradores.js?v=1777457864"></script>
+<script src="js/organograma.js?v=1777457864"></script>
+<script src="js/avaliacao.js?v=1777457864"></script>
+<script src="js/pdi.js?v=1777457864"></script>
+<script src="js/ninebox.js?v=1777457864"></script>
+<script src="js/competencias.js?v=1777457864"></script>
+<script src="js/config.js?v=1777457864"></script>
+<script src="js/perfil.js?v=1777457864"></script>
+<script src="js/notas-particulares.js?v=1777457864"></script>
+<script src="js/suporte.js?v=1777457864"></script>
+<script src="js/metas.js?v=1777457864"></script>
+<script src="js/okr.js?v=1777457864"></script>
+<script src="js/ia.js?v=1777457864"></script>
+<script src="js/notas.js?v=1777457864"></script>
+<script src="js/capacidade.js?v=1777457864"></script>
 
 <script>
 // ══════════════════════════════════════════
