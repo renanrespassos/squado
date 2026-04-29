@@ -80,7 +80,7 @@ function renderColaboradores(search=''){
     '<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">',
     '<div style="display:flex;align-items:center;gap:8px;background:#F5F6F4;border:1px solid #E0E2E0;border-radius:6px;padding:7px 12px">',
     '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9BA09E" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>',
-    '<input id="col-search-input" type="search" name="sq-busca-colaborador" placeholder="Buscar colaboradores..." autocomplete="nope" spellcheck="false" oninput="document.getElementById(\'page-content\').innerHTML=renderColaboradores(this.value)" style="border:none;background:transparent;outline:none;flex:1;font-size:13px;color:#1A1F1D" value="'+search+'">',
+    '<input id="col-search-input" type="search" name="sq-busca-colaborador" placeholder="Buscar colaboradores..." autocomplete="nope" spellcheck="false" oninput="atualizarTabelaCols(this.value)" style="border:none;background:transparent;outline:none;flex:1;font-size:13px;color:#1A1F1D" value="'+search+'">',
     '</div>',
     '<div style="display:flex;align-items:center;justify-content:space-between">',
     '<div style="display:flex;gap:4px">',
@@ -126,6 +126,48 @@ function atualizarBtnExcluirCols(){
     btn.style.display = sel > 0 ? '' : 'none';
     btn.textContent = '🗑 Excluir '+sel+' selecionado'+(sel!==1?'s':'');
   }
+}
+
+// Atualiza apenas a tabela sem destruir o input de busca
+function atualizarTabelaCols(search){
+  var abaAtiva = window._colTab || 'ativos';
+  var list = abaAtiva === 'desligados'
+    ? colaboradores.filter(function(c){return c.status === 'Desligado';})
+    : colaboradores.filter(function(c){return c.status !== 'Desligado';});
+  if(search) list = list.filter(function(c){
+    return c.nome.toLowerCase().includes(search.toLowerCase()) ||
+      (c.area||'').toLowerCase().includes(search.toLowerCase()) ||
+      (c.nivel||'').toLowerCase().includes(search.toLowerCase());
+  });
+  var filtroArea = window._colFiltroArea || '';
+  var filtroNivel = window._colFiltroNivel || '';
+  if(filtroArea) list = list.filter(function(c){return c.area === filtroArea;});
+  if(filtroNivel) list = list.filter(function(c){return c.nivel === filtroNivel;});
+
+  var sortCol = window._colSort || 'nome';
+  var sortDir = window._colSortDir || 'asc';
+  list.sort(function(a,b){
+    var va=(a[sortCol]||'').toLowerCase(),vb=(b[sortCol]||'').toLowerCase();
+    return sortDir==='asc'?(va>vb?1:va<vb?-1:0):(va<vb?1:va>vb?-1:0);
+  });
+
+  var rows = list.map(function(c){
+    var avsCol=avaliacoes.filter(function(a){return a.colaboradorId===c.id;});
+    var lastAv=avsCol.length?avsCol[avsCol.length-1]:null;
+    return '<tr>'
+      +'<td><input type="checkbox" class="col-sel" data-id="'+c.id+'" onchange="atualizarBtnExcluirCols()" style="cursor:pointer"/></td>'
+      +'<td><a onclick="verCol(\''+c.id+'\')" style="cursor:pointer;color:#185FA5;font-weight:500;text-decoration:none">'+esc(c.nome)+'</a></td>'
+      +'<td>'+nivelBadge(c.nivel)+'</td>'
+      +'<td>'+areaBadge(c.area)+'</td>'
+      +'<td style="font-size:11px;color:#6B7370">'+(c.gestor||'—')+'</td>'
+      +'<td style="text-align:center">'+(lastAv?'<span style="font-weight:700;color:'+(lastAv.mediaGeral>=7?'#0F6E56':lastAv.mediaGeral>=5?'#854F0B':'#A32D2D')+'">'+lastAv.mediaGeral+'</span>':'—')+'</td>'
+      +'<td style="text-align:center">'+((c.historico||[]).length?'<span class="badge badge-blue">'+(c.historico||[]).length+'</span>':'<span style="color:#9BA09E">—</span>')+'</td>'
+      +'<td><span class="badge" style="background:#E1F5EE;color:#0F6E56">'+c.status+'</span></td>'
+    +'</tr>';
+  }).join('');
+
+  var tbody = document.querySelector('#page-content tbody');
+  if(tbody) tbody.innerHTML = rows;
 }
 
 function excluirColsSelecionados(){

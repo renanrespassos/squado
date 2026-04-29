@@ -776,7 +776,27 @@ function _renderIAPergsWizard(){
     }
 
     content+='<div style="font-size:12px;font-weight:600;margin-bottom:6px">Objetivos e foco da avaliação: *</div>'
-      +'<textarea id="ia-perg-objetivos" placeholder="Exemplos:\n• Avaliar competências técnicas e comportamentais\n• Foco em liderança e gestão de equipe\n• Medir capacidade de inovação e resolução de problemas\n• Avaliar alinhamento com valores da empresa" style="width:100%;min-height:100px;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box;background:var(--bg);color:var(--txt)">'+(s.objetivos||'')+'</textarea>'
+      // Balões de sugestões clicáveis
+      +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">';
+    var sugestoes = [
+      'Competências técnicas da função',
+      'Competências comportamentais',
+      'Liderança e gestão de equipe',
+      'Comunicação e relacionamento',
+      'Resultados e entregas',
+      'Inovação e resolução de problemas',
+      'Trabalho em equipe e colaboração',
+      'Autodesenvolvimento e aprendizado',
+      'Alinhamento com valores da empresa',
+      'Organização e gestão do tempo',
+      'Atendimento ao cliente',
+      'Qualidade e atenção a detalhes'
+    ];
+    sugestoes.forEach(function(sug){
+      content+='<button onclick="var ta=document.getElementById(\'ia-perg-objetivos\');if(ta){ta.value=(ta.value?ta.value+\'\\n\':\'\')+\'• '+sug+'\';}" style="padding:5px 12px;border:1px solid #E0E2E0;border-radius:16px;background:#fff;font-size:11px;color:#3A4240;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor=\'#534AB7\';this.style.background=\'#F3F0FF\';this.style.color=\'#534AB7\'" onmouseout="this.style.borderColor=\'#E0E2E0\';this.style.background=\'#fff\';this.style.color=\'#3A4240\'">'+sug+'</button>';
+    });
+    content+='</div>'
+      +'<textarea id="ia-perg-objetivos" placeholder="Clique nos balões acima ou escreva livremente..." style="width:100%;min-height:80px;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box;background:var(--bg);color:var(--txt)">'+(s.objetivos||'')+'</textarea>'
 
       +'<div style="font-size:12px;font-weight:600;margin-top:14px;margin-bottom:6px">Quantas seções por nível?</div>'
       +'<select id="ia-perg-qtd-secoes" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg);color:var(--txt)">'
@@ -867,57 +887,55 @@ async function iaPergsGerar(){
   var area=((document.getElementById('ia-perg-area')||{}).value||'');
   var qtdSecoes=((document.getElementById('ia-perg-qtd-secoes')||{}).value||'5');
 
-  if(!s.objetivos){alert('Descreva os objetivos da avaliação.');return;}
+  if(!s.objetivos){alert('Selecione pelo menos um objetivo.');return;}
 
-  s.step=3;s.loading=true;s.geradas=null;
+  // Montar prompt - um nível por vez pra evitar JSON muito grande
+  var niveisParaGerar = [...s.niveisSelect];
+  s.geradas = {};
+  s.step=3;s.loading=true;
   _renderIAPergsWizard();
 
-  // Montar prompt
-  var prompt = 'Você é especialista em avaliação de desempenho e gestão de pessoas no Brasil.\n\n'
-    +'Gere perguntas de avaliação de desempenho para os seguintes NÍVEIS DE CARGO:\n'
-    +s.niveisSelect.map(function(n){return '• '+n;}).join('\n')+'\n\n'
-    +'OBJETIVOS DA AVALIAÇÃO:\n'+s.objetivos+'\n\n';
+  for(var ni=0; ni<niveisParaGerar.length; ni++){
+    var nivel = niveisParaGerar[ni];
+    var prompt = 'Gere perguntas de avaliação de desempenho para o nível: '+nivel+'.\n\n'
+      +'Objetivos: '+s.objetivos+'\n';
+    if(s.competencias.length>0) prompt+='Competências: '+s.competencias.join(', ')+'\n';
+    if(area) prompt+='Área: '+area+'\n';
+    prompt+='\nGere '+qtdSecoes+' seções com 3-5 perguntas cada.\n'
+      +'Perguntas devem ser avaliáveis na escala 1 a 10.\n'
+      +'Responda SOMENTE com JSON no formato: {"Nome da Seção":["pergunta 1","pergunta 2"]}\n'
+      +'Sem texto antes ou depois. Sem markdown. Apenas JSON puro.';
 
-  if(s.competencias.length>0){
-    prompt+='COMPETÊNCIAS DA EMPRESA (usar como base):\n'+s.competencias.map(function(c){return '• '+c;}).join('\n')+'\n\n';
-  }
-  if(area) prompt+='ÁREA DE ATUAÇÃO: '+area+'\n\n';
-
-  prompt+='REGRAS:\n'
-    +'- Gere exatamente '+qtdSecoes+' SEÇÕES por nível\n'
-    +'- Cada seção deve ter 3 a 6 perguntas\n'
-    +'- As perguntas devem ser na escala 1-10 (nunca a sempre)\n'
-    +'- Adapte a complexidade das perguntas ao nível de cargo\n'
-    +'- Use linguagem profissional em português brasileiro\n'
-    +'- Seções sugeridas: Competências Técnicas, Competências Comportamentais, Liderança, Comunicação, Resultados, Inovação, Trabalho em Equipe, Autodesenvolvimento\n\n'
-    +'FORMATO DE RESPOSTA (JSON estrito, sem markdown, sem backticks):\n'
-    +'{"NomeDonível":{"NomeDaSeção":["pergunta 1","pergunta 2"]}}\n'
-    +'Retorne APENAS o JSON, nada mais.';
-
-  try{
-    var token = squadoGetToken();
-    var r = await fetch(SQUADO_API+'/api/ai/chat',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-      body:JSON.stringify({
-        messages:[{role:'user',content:prompt}],
-        max_tokens:2000
-      })
-    });
-    var d = await r.json();
-    var resposta = d.content || '';
-
-    // Limpar e parsear JSON
-    resposta = resposta.replace(/```json/g,'').replace(/```/g,'').trim();
-    var jsonMatch = resposta.match(/\{[\s\S]*\}/);
-    if(jsonMatch){
-      s.geradas = JSON.parse(jsonMatch[0]);
-    } else {
-      throw new Error('Resposta não contém JSON válido');
+    try{
+      var token = squadoGetToken();
+      var r = await fetch(SQUADO_API+'/api/ai/chat',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body:JSON.stringify({
+          messages:[
+            {role:'system',content:'Você é especialista em avaliação de desempenho. Responda APENAS com JSON válido, sem markdown, sem backticks, sem texto adicional.'},
+            {role:'user',content:prompt}
+          ],
+          max_tokens:2000
+        })
+      });
+      var d = await r.json();
+      if(d.erro){throw new Error(d.erro);}
+      var resposta = (d.content || '').replace(/```json/g,'').replace(/```/g,'').trim();
+      var jsonMatch = resposta.match(/\{[\s\S]*\}/);
+      if(jsonMatch){
+        s.geradas[nivel] = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error('Resposta sem JSON: '+resposta.substring(0,100));
+      }
+    } catch(e){
+      console.error('Erro IA perguntas nível '+nivel+':', e);
+      s.geradas[nivel] = {'Erro ao gerar':['Erro: '+e.message+'. Tente novamente.']};
     }
-  } catch(e){
-    console.error('Erro IA perguntas:', e);
-    toast('❌ Erro ao gerar perguntas. Tente novamente.');
+  }
+
+  if(Object.keys(s.geradas).length === 0){
+    toast('❌ Erro ao gerar. Tente novamente.');
     s.step=2;
   }
 
