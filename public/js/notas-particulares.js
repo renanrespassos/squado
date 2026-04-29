@@ -7,7 +7,7 @@ function npIsUnlocked(){ return sessionStorage.getItem('squado_np_unlocked')==='
 function npSetUnlocked(v){ sessionStorage.setItem('squado_np_unlocked', v?'1':'0'); }
 
 function getNP(){ try{return JSON.parse(localStorage.getItem('squado_notas_part')||'[]');}catch(e){return [];} }
-function saveNP(list){ localStorage.setItem('squado_notas_part', JSON.stringify(list)); }
+function saveNP(list){ localStorage.setItem('squado_notas_part', JSON.stringify(list)); if(typeof agendarSync==='function') agendarSync(); }
 
 function renderNotasParticularesPage(){
   var senhaExiste = !!localStorage.getItem('squado_notas_senha');
@@ -114,6 +114,7 @@ function npDefinirSenha(){
   if(s1!==s2){alert('As senhas não conferem');return;}
   localStorage.setItem('squado_notas_senha', btoa(s1));
   npSetUnlocked(true);
+  if(typeof agendarSync==='function') agendarSync();
   toast('Senha definida!');
   render('notas-particulares');
 }
