@@ -2121,23 +2121,23 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
 </script>
 
 <!-- Módulos JS extraídos -->
-<script src="js/admin.js?v=1777461970"></script>
-<script src="js/dashboard.js?v=1777461970"></script>
-<script src="js/colaboradores.js?v=1777461970"></script>
-<script src="js/organograma.js?v=1777461970"></script>
-<script src="js/avaliacao.js?v=1777461970"></script>
-<script src="js/pdi.js?v=1777461970"></script>
-<script src="js/ninebox.js?v=1777461970"></script>
-<script src="js/competencias.js?v=1777461970"></script>
-<script src="js/config.js?v=1777461970"></script>
-<script src="js/perfil.js?v=1777461970"></script>
-<script src="js/notas-particulares.js?v=1777461970"></script>
-<script src="js/suporte.js?v=1777461970"></script>
-<script src="js/metas.js?v=1777461970"></script>
-<script src="js/okr.js?v=1777461970"></script>
-<script src="js/ia.js?v=1777461970"></script>
-<script src="js/notas.js?v=1777461970"></script>
-<script src="js/capacidade.js?v=1777461970"></script>
+<script src="js/admin.js?v=1777477109"></script>
+<script src="js/dashboard.js?v=1777477109"></script>
+<script src="js/colaboradores.js?v=1777477109"></script>
+<script src="js/organograma.js?v=1777477109"></script>
+<script src="js/avaliacao.js?v=1777477109"></script>
+<script src="js/pdi.js?v=1777477109"></script>
+<script src="js/ninebox.js?v=1777477109"></script>
+<script src="js/competencias.js?v=1777477109"></script>
+<script src="js/config.js?v=1777477109"></script>
+<script src="js/perfil.js?v=1777477109"></script>
+<script src="js/notas-particulares.js?v=1777477109"></script>
+<script src="js/suporte.js?v=1777477109"></script>
+<script src="js/metas.js?v=1777477109"></script>
+<script src="js/okr.js?v=1777477109"></script>
+<script src="js/ia.js?v=1777477109"></script>
+<script src="js/notas.js?v=1777477109"></script>
+<script src="js/capacidade.js?v=1777477109"></script>
 
 <script>
 // ══════════════════════════════════════════
@@ -2498,16 +2498,13 @@ async function squadoCarregarDaNuvem() {
       if (cfg.organograma_conn){ orgConnections = cfg.organograma_conn; lss('orgConns', orgConnections); }
       if (cfg.gestor_config)  lss('gestor_config_v1', cfg.gestor_config);
       if (cfg.historico_ia)   { aiHistory = cfg.historico_ia; lss('aiHistory', aiHistory); }
-      // Notas particulares (sincronizar entre dispositivos)
+      // Notas particulares (sincronizar entre dispositivos — nuvem é fonte de verdade)
       if (cfg.snapshot_notas_part) {
-        var existente = localStorage.getItem('squado_notas_part');
-        // Nuvem só sobrescreve se local estiver vazio ou se nuvem tiver mais dados
-        if (!existente || existente === '[]') {
-          localStorage.setItem('squado_notas_part', typeof cfg.snapshot_notas_part === 'string' ? cfg.snapshot_notas_part : JSON.stringify(cfg.snapshot_notas_part));
-        }
+        var notasNuvem = typeof cfg.snapshot_notas_part === 'string' ? cfg.snapshot_notas_part : JSON.stringify(cfg.snapshot_notas_part);
+        localStorage.setItem('squado_notas_part', notasNuvem);
       }
-      if (cfg.snapshot_notas_senha && !localStorage.getItem('squado_notas_senha')) {
-        localStorage.setItem('squado_notas_senha', cfg.snapshot_notas_senha);
+      if (cfg.snapshot_notas_senha) {
+        localStorage.setItem('squado_notas_senha', typeof cfg.snapshot_notas_senha === 'string' ? cfg.snapshot_notas_senha : String(cfg.snapshot_notas_senha));
       }
     }
 
