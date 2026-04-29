@@ -42,6 +42,7 @@ function renderPerfilAba(id, aba){
       +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">'+nivelBadge(c.nivel)+areaBadge(c.area)
         +(c.gestor?'<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:var(--bg2);color:var(--txt3)">Gestor: '+c.gestor.split(' ')[0]+'</span>':'')
       +'</div>'
+      +((p.email||p.celular)?'<div style="display:flex;gap:10px;margin-top:4px">'+(p.email?'<span style="font-size:11px;color:var(--txt3)">✉️ '+p.email+'</span>':'')+(p.celular?'<span style="font-size:11px;color:var(--txt3)">📱 '+p.celular+'</span>':'')+'</div>':'')
     +'</div>'
     +'<div style="display:flex;gap:6px;flex-shrink:0">'
       +(ultimaAvalGlobal?'<div style="background:var(--bg2);border-radius:8px;padding:6px 10px;text-align:center"><div style="font-size:16px;font-weight:800;color:var(--green)">'+ultimaAvalGlobal.mediaGeral+'</div><div style="font-size:9px;color:var(--txt3)">nota</div></div>':'')
@@ -70,24 +71,8 @@ function renderPerfilAba(id, aba){
     const cargaP=cargaFuncs?calcCargaFuncao_pessoa(c.nome):null;
 
     conteudo=
-      // Header com avatar e info
-      '<div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px">'
-        +avLarge(c.nome)
-        +'<div style="flex:1">'
-          +'<div style="font-size:20px;font-weight:800;color:var(--txt)">'+c.nome+'</div>'
-          +(p.cargo||c.nivel?'<div style="font-size:13px;color:var(--txt2);margin-top:2px">'+(p.cargo||c.nivel)+'</div>':'')
-          +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'+nivelBadge(c.nivel)+areaBadge(c.area)+'</div>'
-          +(p.email?'<div style="font-size:12px;color:var(--blue);margin-top:6px">✉️ '+p.email+'</div>':'')
-          +(p.celular?'<div style="font-size:12px;color:var(--txt2);margin-top:2px">📱 '+p.celular+'</div>':'')
-        +'</div>'
-        +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">'
-          +'<button class="btn btn-primary btn-sm" onclick="closeModal();setTimeout(()=>openColFormDirect(\''+id+'\'),100)">✏️ Editar</button>'
-          +'<div style="font-size:10px;color:var(--txt3)">Status</div>'
-          +'</div>'
-        +'</div>'
-      +'</div>'
-      // Stats
-      +'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px">'
+      // Stats resumidos (header já mostra nome/avatar/badges)
+      '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px">'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800">'+avsC.length+'</div><div style="font-size:10px;color:var(--txt2)">Avaliações</div></div>'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800">'+(c.historico||[]).length+'</div><div style="font-size:10px;color:var(--txt2)">Movimentações</div></div>'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--blue)">'+metas.filter(function(m){return m.colId===id;}).length+'</div><div style="font-size:10px;color:var(--txt2)">Metas</div></div>'
