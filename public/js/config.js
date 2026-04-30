@@ -387,142 +387,219 @@ function salvarAreaModal(nomeAtualEncoded){
 function renderValores(){
   const vCustom=getValores();
   const _titulos=(vCustom?.titulos)||{};
-  const _tPucrs=_titulos.pucrs||'Valores PUCRS';
-  const _tLabelo=_titulos.labelo||'Valores LABELO';
-  const _tNaoNeg=_titulos.naoNeg||'Não Negociamos';
-  const _tResps=_titulos.resps||'Responsabilidades';
-  const _tPilares=_titulos.pilares||'Pilares do Laboratório';
-  const pucrs=vCustom?vCustom.pucrs:[
-    {icon:'❤️',nome:'Amor ao Trabalho',desc:'Dedicação, paixão e entrega em tudo que fazemos.'},
-    {icon:'🔥',nome:'Audácia',desc:'Coragem para inovar, ousar e buscar novos caminhos.'},
-    {icon:'👨‍👩‍👧‍👦',nome:'Espírito de Família',desc:'União, confiança mútua e cuidado genuíno com o próximo.'},
-    {icon:'🙏',nome:'Espiritualidade',desc:'Abertura ao transcendente e ao sentido mais profundo da vida.'},
-    {icon:'🌟',nome:'Presença',desc:'Estar inteiramente disponível — de corpo, mente e coração.'},
-    {icon:'🌿',nome:'Simplicidade',desc:'Clareza, objetividade e ausência de pretensão no agir.'},
-    {icon:'🤝',nome:'Solidariedade',desc:'Compromisso com o bem comum e com quem mais precisa.'},
+  // Categorias disponíveis com títulos editáveis
+  var categorias=[
+    {key:'pucrs',label:_titulos.pucrs||'Valores da Instituição',cor:'#185FA5',sub:'Fundamentos da identidade institucional'},
+    {key:'labelo',label:_titulos.labelo||'Valores da Unidade',cor:'#0F6E56',sub:'Os pilares que guiam a operação'},
+    {key:'naoNegociamos',label:_titulos.naoNeg||'Não Negociamos',cor:'#A32D2D',sub:'Comportamentos que não são aceitos'},
+    {key:'responsabilidades',label:_titulos.resps||'Responsabilidades',cor:'#854F0B',sub:'Compromissos de todos os colaboradores'},
+    {key:'pilares',label:_titulos.pilares||'Pilares',cor:'#534AB7',sub:'Fundamentos da excelência operacional'},
+    {key:'outros',label:_titulos.outros||'Outros',cor:'#3B6D11',sub:'Valores e princípios adicionais'},
   ];
+  // Quais categorias estão ativas
+  var ativas=ls('valores_categorias_ativas',['pucrs','labelo','naoNegociamos','responsabilidades','pilares']);
 
-  const labelo=vCustom?vCustom.labelo:[
-    {icon:'💚',nome:'Vida',desc:'Cuidado com a saúde, segurança e bem-estar de todos.'},
-    {icon:'👥',nome:'Pessoas',desc:'Desenvolvimento humano como centro da nossa missão.'},
-    {icon:'⭐',nome:'Cliente',desc:'Excelência na entrega e satisfação de quem nos escolhe.'},
-    {icon:'📈',nome:'Resultado',desc:'Comprometimento com metas, qualidade e impacto real.'},
-  ];
+  // Dados de cada categoria
+  var dados={
+    pucrs:vCustom?vCustom.pucrs:[
+      {icon:'❤️',nome:'Amor ao Trabalho',desc:'Dedicação, paixão e entrega em tudo que fazemos.'},
+      {icon:'🔥',nome:'Audácia',desc:'Coragem para inovar, ousar e buscar novos caminhos.'},
+      {icon:'👨‍👩‍👧‍👦',nome:'Espírito de Família',desc:'União, confiança mútua e cuidado genuíno com o próximo.'},
+      {icon:'🙏',nome:'Espiritualidade',desc:'Abertura ao transcendente e ao sentido mais profundo da vida.'},
+      {icon:'🌟',nome:'Presença',desc:'Estar inteiramente disponível — de corpo, mente e coração.'},
+      {icon:'🌿',nome:'Simplicidade',desc:'Clareza, objetividade e ausência de pretensão no agir.'},
+      {icon:'🤝',nome:'Solidariedade',desc:'Compromisso com o bem comum e com quem mais precisa.'},
+    ],
+    labelo:vCustom?vCustom.labelo:[
+      {icon:'💚',nome:'Vida',desc:'Cuidado com a saúde, segurança e bem-estar de todos.'},
+      {icon:'👥',nome:'Pessoas',desc:'Desenvolvimento humano como centro da nossa missão.'},
+      {icon:'⭐',nome:'Cliente',desc:'Excelência na entrega e satisfação de quem nos escolhe.'},
+      {icon:'📈',nome:'Resultado',desc:'Comprometimento com metas, qualidade e impacto real.'},
+    ],
+    naoNegociamos:vCustom?vCustom.naoNegociamos:[
+      {icon:'⏰',text:'Atrasos sem aviso ou justificativa prévia.'},
+      {icon:'🧹',text:'Falta de organização ou bagunça no laboratório.'},
+      {icon:'🚫',text:'Falas negativas da instituição ou dos clientes.'},
+      {icon:'👔',text:'Informalidade excessiva, improviso ou falta de preparo.'},
+      {icon:'🔁',text:'Errar várias vezes a mesma coisa sem buscar aprendizado.'},
+      {icon:'💬',text:'Ironia, desdém, comentários atravessados ou desrespeito.'},
+    ],
+    responsabilidades:vCustom?vCustom.responsabilidades:[
+      {icon:'🧹',nome:'Organização',desc:'Manter bancadas, equipamentos e áreas comuns organizados.'},
+      {icon:'🦺',nome:'EPI',desc:'Utilizar equipamentos de proteção individual conforme exigido.'},
+      {icon:'⏰',nome:'Horários',desc:'Respeitar os horários de entrada, saída e intervalos.'},
+      {icon:'👔',nome:'Postura Profissional',desc:'Manter conduta ética e comunicação respeitosa.'},
+    ],
+    pilares:vCustom?vCustom.pilares:[
+      {icon:'📋',nome:'Organização',itens:['Bancadas','Serviços em andamento','Itens do laboratório']},
+      {icon:'🤝',nome:'Respeito',itens:['Com os colegas','Com o cliente']},
+      {icon:'✅',nome:'Responsabilidade',itens:['Com as entregas']},
+      {icon:'⚙️',nome:'Processo',itens:[]},
+      {icon:'🎯',nome:'Postura',itens:[]},
+    ],
+    outros:vCustom&&vCustom.outros?vCustom.outros:[],
+  };
 
-  const naoNegociamos=vCustom?vCustom.naoNegociamos:[
-    {icon:'⏰',text:'Atrasos sem aviso ou justificativa prévia.'},
-    {icon:'🧹',text:'Falta de organização ou bagunça no laboratório.'},
-    {icon:'🚫',text:'Falas negativas da instituição ou dos clientes.'},
-    {icon:'👔',text:'Informalidade excessiva, improviso ou falta de preparo no dia a dia ou na presença do cliente.'},
-    {icon:'🔁',text:'Errar várias vezes a mesma coisa sem buscar aprendizado ou apoio.'},
-    {icon:'💬',text:'Ironia, desdém, comentários atravessados ou desrespeito, seja presencial ou em mensagens.'},
-  ];
+  // Bolhas de categorias
+  var bolhasHtml='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">';
+  categorias.forEach(function(cat){
+    var isAtiva=ativas.indexOf(cat.key)>=0;
+    bolhasHtml+='<button onclick="toggleCategValor(\''+cat.key+'\')" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:20px;border:2px solid '+(isAtiva?cat.cor:'var(--border)')+';background:'+(isAtiva?cat.cor+'15':'var(--bg)')+';color:'+(isAtiva?cat.cor:'var(--txt3)')+';font-size:12px;font-weight:'+(isAtiva?'700':'400')+';cursor:pointer;font-family:inherit;transition:all .15s">'
+      +(isAtiva?'✓ ':'')+cat.label
+    +'</button>';
+  });
+  bolhasHtml+='</div>';
 
-  const responsabilidades=vCustom?vCustom.responsabilidades:[
-    {icon:'🧹',nome:'Organização do Laboratório',desc:'Manter bancadas, equipamentos e áreas comuns organizados e limpos.'},
-    {icon:'🦺',nome:'Jaleco e EPI',desc:'Utilizar jaleco e equipamentos de proteção individual conforme exigido.'},
-    {icon:'⏰',nome:'Horários de Trabalho e Intervalos',desc:'Respeitar os horários de entrada, saída e intervalos estabelecidos.'},
-    {icon:'👔',nome:'Postura Profissional',desc:'Manter conduta ética, comunicação respeitosa e apresentação adequada.'},
-    {icon:'📋',nome:'ISO IEC 17025:2017',desc:'Conhecer e cumprir os requisitos da norma de acreditação do laboratório.'},
-    {icon:'🔬',nome:'Conhecimento Técnico da Área',desc:'Manter e desenvolver continuamente o conhecimento técnico específico da sua área de atuação.'},
-  ];
+  // Botões de ação
+  var acoesHtml='<div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:16px" class="no-print">'
+    +'<button class="btn btn-sm" onclick="abrirValoresIA()" style="border-color:#534AB7;color:#534AB7">🤖 Criar com IA</button>'
+    +'<button class="btn btn-sm" onclick="editarValores()" style="border-color:#854F0B;color:#854F0B">✏️ Editar</button>'
+    +'<button class="btn btn-sm" onclick="imprimirValores()" style="border-color:#185FA5;color:#185FA5">🖨 Imprimir</button>'
+  +'</div>';
 
-  const pilares=vCustom?vCustom.pilares:[
-    {icon:'📋',nome:'Organização',itens:['Bancadas do Laboratório','Serviços em andamento','Itens do laboratório']},
-    {icon:'🤝',nome:'Respeito',itens:['Com os colegas','Com o cliente']},
-    {icon:'✅',nome:'Responsabilidade',itens:['Com as entregas']},
-    {icon:'⚙️',nome:'Processo',itens:[]},
-    {icon:'🎯',nome:'Postura',itens:[]},
-  ];
+  // Renderizar seções ativas
+  var secoesHtml='';
 
-  function secTitle(icon, title, sub, cor){
+  function secTitle(title, sub, cor){
     return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid '+cor+'">'
-      +''
       +'<div><div style="font-size:16px;font-weight:800;color:var(--txt)">'+title+'</div>'
-        +'<div style="font-size:11px;color:var(--txt3)">'+sub+'</div>'
-      +'</div>'
+      +'<div style="font-size:11px;color:var(--txt3)">'+sub+'</div></div>'
     +'</div>';
   }
 
-  // Cards PUCRS
-  const pucrsCards='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:32px">'
-    +pucrs.map(v=>'<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:16px;border-left:3px solid #185FA5">'
-      
-      +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:4px">'+v.nome+'</div>'
-      +'<div style="font-size:11.5px;color:var(--txt2);line-height:1.5">'+(v.desc||'')+'</div>'
-    +'</div>').join('')
-  +'</div>';
+  function renderCards(items,cor,tipo){
+    if(!items||!items.length)return '<div style="text-align:center;padding:20px;color:var(--txt3);font-size:12px">Nenhum item cadastrado. Clique em "Editar" pra adicionar.</div>';
+    if(tipo==='nn'){
+      return '<div style="background:#FCEBEB;border:0.5px solid rgba(163,45,45,.2);border-radius:12px;padding:20px;margin-bottom:32px">'
+        +'<div style="display:flex;flex-direction:column;gap:10px">'
+        +items.map(function(n){return '<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:rgba(255,255,255,.6);border-radius:8px">'
+          +'<div style="font-size:12.5px;color:#374151;line-height:1.6"><span style="font-weight:700;color:#A32D2D">Não negociamos </span>'+(n.text||n.desc||'')+'</div>'
+        +'</div>';}).join('')+'</div></div>';
+    }
+    if(tipo==='pilares'){
+      return '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:32px">'
+        +items.map(function(p){
+          return '<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid '+cor+'">'
+            +'<div style="font-size:13px;font-weight:800;color:'+cor+';margin-bottom:6px">'+p.nome+'</div>'
+            +(p.desc?'<div style="font-size:11px;color:var(--txt2);line-height:1.5;margin-bottom:8px">'+p.desc+'</div>':'')
+            +((p.itens||[]).length?'<ul style="margin:0;padding-left:16px;display:flex;flex-direction:column;gap:4px">'+(p.itens||[]).map(function(i){return '<li style="font-size:11.5px;color:var(--txt2)">'+i+'</li>';}).join('')+'</ul>':'')
+          +'</div>';
+        }).join('')+'</div>';
+    }
+    return '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:32px">'
+      +items.map(function(v){return '<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:16px;border-left:3px solid '+cor+'">'
+        +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:4px">'+(v.nome||'')+'</div>'
+        +'<div style="font-size:11.5px;color:var(--txt2);line-height:1.5">'+(v.desc||'')+'</div>'
+      +'</div>';}).join('')+'</div>';
+  }
 
-  // Cards LABELO
-  const labeloCards='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:32px">'
-    +labelo.map(v=>'<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:16px;text-align:center;border-top:3px solid #0F6E56">'
-      
-      +'<div style="font-size:13px;font-weight:800;color:var(--txt);margin-bottom:4px">'+v.nome+'</div>'
-      +'<div style="font-size:11px;color:var(--txt2);line-height:1.5">'+(v.desc||'')+'</div>'
-    +'</div>').join('')
-  +'</div>';
+  categorias.forEach(function(cat){
+    if(ativas.indexOf(cat.key)<0) return;
+    var tipo=cat.key==='naoNegociamos'?'nn':cat.key==='pilares'?'pilares':'cards';
+    secoesHtml+=secTitle(cat.label,cat.sub,cat.cor)+renderCards(dados[cat.key],cat.cor,tipo);
+  });
 
-  // Não Negociamos
-  const nnCards='<div style="background:#FCEBEB;border:0.5px solid rgba(163,45,45,.2);border-radius:12px;padding:20px;margin-bottom:32px">'
-    +'<div style="display:flex;flex-direction:column;gap:10px">'
-    +naoNegociamos.map(n=>'<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:rgba(255,255,255,.6);border-radius:8px">'
-      
-      +'<div style="font-size:12.5px;color:#374151;line-height:1.6">'
-        +'<span style="font-weight:700;color:#A32D2D">Não negociamos </span>'+n.text
-      +'</div>'
-    +'</div>').join('')
-    +'</div>'
-  +'</div>';
+  if(!secoesHtml) secoesHtml='<div style="text-align:center;padding:40px;color:var(--txt3)"><div style="font-size:40px;margin-bottom:8px">⭐</div><div style="font-size:14px;font-weight:600;margin-bottom:6px">Selecione as categorias acima</div><div style="font-size:12px">Clique nos balões para ativar as seções que deseja exibir.</div></div>';
 
-  // Pilares
-  const pilaresCards='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:16px">'
-    +pilares.map(p=>{
-      const corMap={'Organização':'#185FA5','Respeito':'#0F6E56','Responsabilidade':'#854F0B','Processo':'#534AB7','Postura':'#3B6D11'};
-      const cor=corMap[p.nome]||'#888';
-      return '<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid '+cor+'">'
-        
-        +'<div style="font-size:13px;font-weight:800;color:'+cor+';margin-bottom:'+(p.desc||((p.itens||[]).length)?'6px':'0')+'">'
-          +p.nome
-        +'</div>'
-        +(p.desc?'<div style="font-size:11px;color:var(--txt2);line-height:1.5;margin-bottom:'+((p.itens||[]).length?'8px':'0')+'">'+p.desc+'</div>':'')
-        +((p.itens||[]).length
-          ?'<ul style="margin:0;padding-left:16px;display:flex;flex-direction:column;gap:4px">'
-            +(p.itens||[]).map(i=>'<li style="font-size:11.5px;color:var(--txt2)">'+i+'</li>').join('')
-          +'</ul>':'')
-      +'</div>';
-    }).join('')
-  +'</div>';
+  return '<div style="max-width:900px">'+bolhasHtml+acoesHtml+secoesHtml+'</div>';
+}
 
-  return '<div style="max-width:900px">'
-    // Botões de ação
-    +'<div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:20px" class="no-print">'
-      +'<button class="btn btn-sm" onclick="editarValores()" style="border-color:#854F0B;color:#854F0B">Editar Valores</button>'
-      +(getValores()?'<button class="btn btn-sm" onclick="resetarValores()" style="border-color:var(--txt3);color:var(--txt3)" title="Restaurar padrão">Restaurar padrão</button>':'')
-      +'<button class="btn btn-sm" onclick="imprimirValores()" style="border-color:#185FA5;color:#185FA5;display:flex;align-items:center;gap:6px">'
-        +'Imprimir / PDF'
-      +'</button>'
-    +'</div>'
-    // PUCRS
-    +secTitle('',_tPucrs,'Fundamentos da nossa identidade institucional','#185FA5')
-    +pucrsCards
-    // LABELO
-    +secTitle('',_tLabelo,'Os pilares que guiam nossa operação','#0F6E56')
-    +labeloCards
-    // Não Negociamos
-    +secTitle('',_tNaoNeg,'Comportamentos que não são aceitos em nossa cultura','#A32D2D')
-    +nnCards
-    // Pilares
-    +secTitle('',_tResps,'Compromissos de todos os colaboradores do laboratório','#854F0B')
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:32px">'
-      +responsabilidades.map(r=>'<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:16px;border-left:3px solid #854F0B">'
-        
-        +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:4px">'+r.nome+'</div>'
-        +'<div style="font-size:11.5px;color:var(--txt2);line-height:1.5">'+(r.desc||'')+'</div>'
-      +'</div>').join('')
-    +'</div>'
-    +secTitle('',_tPilares,'Os fundamentos que sustentam nossa excelência operacional','#534AB7')
-    +pilaresCards
-  +'</div>';
+// ── Toggle categoria de valores ──────────────────────────────
+function toggleCategValor(key){
+  var ativas=ls('valores_categorias_ativas',['pucrs','labelo','naoNegociamos','responsabilidades','pilares']);
+  var idx=ativas.indexOf(key);
+  if(idx>=0) ativas.splice(idx,1);
+  else ativas.push(key);
+  lss('valores_categorias_ativas',ativas);
+  render('valores');
+}
+
+// ── Criar Valores com IA ─────────────────────────────────────
+function abrirValoresIA(){
+  var categorias=[
+    {key:'pucrs',label:'Valores da Instituição',emoji:'🏛'},
+    {key:'labelo',label:'Valores da Unidade/Equipe',emoji:'👥'},
+    {key:'naoNegociamos',label:'Não Negociamos',emoji:'🚫'},
+    {key:'responsabilidades',label:'Responsabilidades',emoji:'📋'},
+    {key:'pilares',label:'Pilares',emoji:'🏗'},
+    {key:'outros',label:'Outros Valores',emoji:'⭐'},
+  ];
+
+  var html='<div style="font-size:14px;font-weight:700;margin-bottom:8px">O que deseja criar?</div>'
+    +'<div style="font-size:12px;color:var(--txt3);margin-bottom:14px">Selecione as categorias e descreva o contexto da sua organização.</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">';
+  categorias.forEach(function(c){
+    html+='<button onclick="this.classList.toggle(\'vl-ia-sel\');this.style.borderColor=this.classList.contains(\'vl-ia-sel\')?\'#534AB7\':\'#E0E2E0\';this.style.background=this.classList.contains(\'vl-ia-sel\')?\'#F3F0FF\':\'#fff\';this.style.fontWeight=this.classList.contains(\'vl-ia-sel\')?\'700\':\'400\'" class="vl-ia-opt" data-key="'+c.key+'" style="display:flex;align-items:center;gap:6px;padding:8px 14px;border:1.5px solid #E0E2E0;border-radius:16px;background:#fff;font-size:12px;color:#3A4240;cursor:pointer;font-family:inherit;transition:all .15s">'
+      +c.emoji+' '+c.label+'</button>';
+  });
+  html+='</div>'
+    +'<div style="font-size:12px;font-weight:600;margin-bottom:6px">Contexto da organização:</div>'
+    +'<textarea id="vl-ia-contexto" placeholder="Descreva sua organização, setor de atuação, cultura desejada...\nEx: Somos um laboratório de ensaios elétricos, valorizamos qualidade, segurança e inovação." style="width:100%;min-height:80px;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box;background:var(--bg);color:var(--txt)"></textarea>'
+    +'<div style="font-size:12px;font-weight:600;margin-top:10px;margin-bottom:6px">Quantos itens por categoria?</div>'
+    +'<select id="vl-ia-qtd" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg);color:var(--txt)">'
+      +'<option value="3">3 itens</option><option value="5" selected>5 itens</option><option value="7">7 itens</option>'
+    +'</select>'
+    +'<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">'
+      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
+      +'<button class="btn btn-primary" onclick="gerarValoresIA()" style="background:#534AB7;border-color:#534AB7">🤖 Gerar com IA</button>'
+    +'</div>';
+
+  openModal('🤖 Criar Valores com IA',html);
+}
+
+async function gerarValoresIA(){
+  var selecionados=[];
+  document.querySelectorAll('.vl-ia-opt.vl-ia-sel').forEach(function(b){selecionados.push(b.dataset.key);});
+  if(!selecionados.length){toast('Selecione pelo menos uma categoria');return;}
+  var contexto=((document.getElementById('vl-ia-contexto')||{}).value||'').trim();
+  if(!contexto){toast('Descreva o contexto da organização');return;}
+  var qtd=(document.getElementById('vl-ia-qtd')||{}).value||'5';
+
+  closeModal();
+  toast('🤖 Gerando valores...');
+
+  var catLabels={pucrs:'Valores da Instituição',labelo:'Valores da Unidade',naoNegociamos:'Não Negociamos (comportamentos inaceitáveis)',responsabilidades:'Responsabilidades (compromissos de todos)',pilares:'Pilares (fundamentos operacionais)',outros:'Outros Valores'};
+
+  var prompt='Gere valores e cultura organizacional para:\nContexto: '+contexto+'\n\nCategories para gerar:\n';
+  selecionados.forEach(function(k){prompt+='- '+catLabels[k]+': '+qtd+' itens\n';});
+  prompt+='\nFormato JSON (sem markdown):\n{'
+    +selecionados.map(function(k){
+      if(k==='naoNegociamos') return '"naoNegociamos":[{"text":"..."}]';
+      if(k==='pilares') return '"pilares":[{"nome":"...","itens":["..."]}]';
+      return '"'+k+'":[{"nome":"...","desc":"..."}]';
+    }).join(',')+'}\nRetorne APENAS JSON puro.';
+
+  try{
+    var token=squadoGetToken();
+    var r=await fetch(SQUADO_API+'/api/ai/chat',{
+      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({messages:[
+        {role:'system',content:'Responda APENAS com JSON válido, sem markdown, sem backticks.'},
+        {role:'user',content:prompt}
+      ],max_tokens:2000})
+    });
+    var d=await r.json();
+    var resposta=(d.content||'').replace(/```json/g,'').replace(/```/g,'').trim();
+    var jsonMatch=resposta.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('Sem JSON');
+    var gerado=JSON.parse(jsonMatch[0]);
+
+    // Mesclar com valores existentes
+    var vAtual=getValores()||{};
+    selecionados.forEach(function(k){if(gerado[k])vAtual[k]=gerado[k];});
+    saveValores(vAtual);
+
+    // Ativar categorias geradas
+    var ativas=ls('valores_categorias_ativas',['pucrs','labelo','naoNegociamos','responsabilidades','pilares']);
+    selecionados.forEach(function(k){if(ativas.indexOf(k)<0)ativas.push(k);});
+    lss('valores_categorias_ativas',ativas);
+
+    toast('✅ Valores gerados!');
+    render('valores');
+  }catch(e){
+    console.error('Erro IA valores:',e);
+    toast('❌ Erro ao gerar. Tente novamente.');
+  }
 }
 
 
