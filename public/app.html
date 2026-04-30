@@ -1017,24 +1017,73 @@ input[type=number]{
       <div class="sq-login-footer-txt">Sem conta? <a onclick="squadoShowTab('registro')">Solicitar acesso</a></div>
     </div>
     <div id="form-registro" style="display:none">
-      <div class="sq-field">
-        <div class="sq-field-header"><span class="sq-field-label">Nome completo</span></div>
-        <input id="sq-reg-nome" type="text" class="sq-input" placeholder="Seu nome"/>
+      <!-- Barra de progresso -->
+      <div style="display:flex;gap:0;margin-bottom:16px;align-items:center;justify-content:center">
+        <div id="reg-dot-1" style="width:28px;height:28px;border-radius:50%;background:#0F6E56;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">1</div>
+        <div id="reg-line-1" style="width:40px;height:2px;background:#E0E2E0"></div>
+        <div id="reg-dot-2" style="width:28px;height:28px;border-radius:50%;background:#E0E2E0;color:#9BA09E;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">2</div>
+        <div id="reg-line-2" style="width:40px;height:2px;background:#E0E2E0"></div>
+        <div id="reg-dot-3" style="width:28px;height:28px;border-radius:50%;background:#E0E2E0;color:#9BA09E;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">3</div>
       </div>
-      <div class="sq-field">
-        <div class="sq-field-header"><span class="sq-field-label">E-mail corporativo</span></div>
-        <input id="sq-reg-email" type="email" class="sq-input" placeholder="voce@empresa.com"/>
+      <!-- Step 1: Dados pessoais -->
+      <div id="reg-step-1">
+        <div style="font-size:13px;font-weight:600;color:#1A1F1D;margin-bottom:10px">Seus dados</div>
+        <div class="sq-field"><div class="sq-field-header"><span class="sq-field-label">Nome completo</span></div><input id="sq-reg-nome" type="text" class="sq-input" placeholder="Seu nome completo"/></div>
+        <div class="sq-field"><div class="sq-field-header"><span class="sq-field-label">Email corporativo</span></div><input id="sq-reg-email" type="email" class="sq-input" placeholder="voce@empresa.com"/></div>
+        <div class="sq-field"><div class="sq-field-header"><span class="sq-field-label">WhatsApp / Celular</span></div><input id="sq-reg-telefone" type="tel" class="sq-input" placeholder="(51) 99999-0000"/></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="sq-field"><div class="sq-field-header"><span class="sq-field-label">Senha</span></div><input id="sq-reg-senha" type="password" class="sq-input" placeholder="Mínimo 8 caracteres"/></div>
+          <div class="sq-field"><div class="sq-field-header"><span class="sq-field-label">Confirmar</span></div><input id="sq-reg-senha2" type="password" class="sq-input" placeholder="Repita a senha"/></div>
+        </div>
+        <div id="sq-reg-erro" style="display:none;color:#A6311F;font-size:12px;padding:4px 0;font-family:'Inter',sans-serif"></div>
+        <button class="sq-btn-login" onclick="regNextStep(2)">PRÓXIMO <span>→</span></button>
       </div>
-      <div class="sq-field">
-        <div class="sq-field-header"><span class="sq-field-label">Empresa (opcional)</span></div>
-        <input id="sq-reg-empresa" type="text" class="sq-input" placeholder="Nome da empresa"/>
+      <!-- Step 2: Empresa -->
+      <div id="reg-step-2" style="display:none">
+        <div style="font-size:13px;font-weight:600;color:#1A1F1D;margin-bottom:10px">Sobre sua empresa</div>
+        <div class="sq-field"><div class="sq-field-header"><span class="sq-field-label">Nome da empresa</span></div><input id="sq-reg-empresa" type="text" class="sq-input" placeholder="Nome da empresa"/></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="sq-field"><div class="sq-field-header"><span class="sq-field-label">Segmento</span></div>
+            <select id="sq-reg-segmento" class="sq-input" style="height:40px"><option value="">Selecione...</option><option>Tecnologia</option><option>Saúde</option><option>Educação</option><option>Indústria</option><option>Laboratório / Engenharia</option><option>Serviços</option><option>Varejo / Comércio</option><option>Governo / Público</option><option>Financeiro</option><option>Agronegócio</option><option>Outro</option></select>
+          </div>
+          <div class="sq-field"><div class="sq-field-header"><span class="sq-field-label">Tamanho da equipe</span></div>
+            <select id="sq-reg-tamanho" class="sq-input" style="height:40px"><option value="">Selecione...</option><option value="1-10">1 a 10 pessoas</option><option value="11-50">11 a 50 pessoas</option><option value="51-200">51 a 200 pessoas</option><option value="200+">Mais de 200</option></select>
+          </div>
+        </div>
+        <div class="sq-field"><div class="sq-field-header"><span class="sq-field-label">Seu cargo</span></div>
+          <select id="sq-reg-cargo" class="sq-input" style="height:40px"><option value="">Selecione...</option><option>Diretor / CEO</option><option>Gerente</option><option>Coordenador / Supervisor</option><option>RH / People</option><option>Analista</option><option>Outro</option></select>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;margin:8px 0">
+          <input type="checkbox" id="sq-reg-termos" style="accent-color:#0F6E56;margin-top:2px"/>
+          <label for="sq-reg-termos" style="font-size:11px;color:#6B7370;cursor:pointer">Aceito os <a href="#" style="color:#185FA5" onclick="event.preventDefault()">Termos de Uso</a> e a <a href="#" style="color:#185FA5" onclick="event.preventDefault()">Política de Privacidade</a></label>
+        </div>
+        <div id="sq-reg-erro2" style="display:none;color:#A6311F;font-size:12px;padding:4px 0;font-family:'Inter',sans-serif"></div>
+        <div style="display:flex;gap:8px">
+          <button class="sq-btn-login" onclick="regNextStep(1)" style="background:#E0E2E0;color:#3A4240;flex:0.4">← VOLTAR</button>
+          <button class="sq-btn-login" onclick="regNextStep(3)" style="flex:0.6">VERIFICAR EMAIL <span>→</span></button>
+        </div>
       </div>
-      <div class="sq-field">
-        <div class="sq-field-header"><span class="sq-field-label">Senha</span></div>
-        <input id="sq-reg-senha" type="password" class="sq-input" placeholder="Mínimo 6 caracteres"/>
+      <!-- Step 3: Verificar email -->
+      <div id="reg-step-3" style="display:none">
+        <div style="text-align:center;padding:8px 0">
+          <div style="font-size:13px;font-weight:600;color:#1A1F1D;margin-bottom:6px">Verificar email</div>
+          <div style="font-size:12px;color:#6B7370;margin-bottom:16px">Enviamos um código de 6 dígitos para<br/><strong id="reg-email-display">email@empresa.com</strong></div>
+          <div style="display:flex;justify-content:center;gap:6px;margin-bottom:12px">
+            <input class="sq-code-input" id="sq-code-1" maxlength="1" inputmode="numeric" style="width:40px;height:48px;text-align:center;font-size:22px;font-weight:600;border:1.5px solid #E0E2E0;border-radius:8px;font-family:'Inter',sans-serif" oninput="regCodeInput(this,2)"/>
+            <input class="sq-code-input" id="sq-code-2" maxlength="1" inputmode="numeric" style="width:40px;height:48px;text-align:center;font-size:22px;font-weight:600;border:1.5px solid #E0E2E0;border-radius:8px;font-family:'Inter',sans-serif" oninput="regCodeInput(this,3)" onkeydown="regCodeBack(event,1)"/>
+            <input class="sq-code-input" id="sq-code-3" maxlength="1" inputmode="numeric" style="width:40px;height:48px;text-align:center;font-size:22px;font-weight:600;border:1.5px solid #E0E2E0;border-radius:8px;font-family:'Inter',sans-serif" oninput="regCodeInput(this,4)" onkeydown="regCodeBack(event,2)"/>
+            <input class="sq-code-input" id="sq-code-4" maxlength="1" inputmode="numeric" style="width:40px;height:48px;text-align:center;font-size:22px;font-weight:600;border:1.5px solid #E0E2E0;border-radius:8px;font-family:'Inter',sans-serif" oninput="regCodeInput(this,5)" onkeydown="regCodeBack(event,3)"/>
+            <input class="sq-code-input" id="sq-code-5" maxlength="1" inputmode="numeric" style="width:40px;height:48px;text-align:center;font-size:22px;font-weight:600;border:1.5px solid #E0E2E0;border-radius:8px;font-family:'Inter',sans-serif" oninput="regCodeInput(this,6)" onkeydown="regCodeBack(event,4)"/>
+            <input class="sq-code-input" id="sq-code-6" maxlength="1" inputmode="numeric" style="width:40px;height:48px;text-align:center;font-size:22px;font-weight:600;border:1.5px solid #E0E2E0;border-radius:8px;font-family:'Inter',sans-serif" oninput="regCodeInput(this,null)" onkeydown="regCodeBack(event,5)"/>
+          </div>
+          <div id="sq-reg-erro3" style="display:none;color:#A6311F;font-size:12px;padding:4px 0;font-family:'Inter',sans-serif"></div>
+          <div style="font-size:11px;color:#9BA09E;margin-bottom:12px">Não recebeu? <a onclick="regReenviarCodigo()" style="color:#185FA5;cursor:pointer">Reenviar código</a> · <span id="reg-timer">Expira em 10:00</span></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="sq-btn-login" onclick="regNextStep(2)" style="background:#E0E2E0;color:#3A4240;flex:0.4">← VOLTAR</button>
+          <button class="sq-btn-login" id="sq-reg-btn" onclick="squadoRegistro()" style="flex:0.6">CRIAR CONTA <span>↗</span></button>
+        </div>
       </div>
-      <div id="sq-reg-erro" style="display:none;color:#A6311F;font-size:12px;padding:4px 0;font-family:'Inter',sans-serif"></div>
-      <button class="sq-btn-login" id="sq-reg-btn" onclick="squadoRegistro()">CRIAR CONTA <span>↗</span></button>
       <div class="sq-login-footer-txt" style="margin-top:12px">Já tem conta? <a onclick="squadoShowTab('login')">Entrar</a></div>
     </div>
   </div>
@@ -2121,23 +2170,23 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
 </script>
 
 <!-- Módulos JS extraídos -->
-<script src="js/admin.js?v=1777540604"></script>
-<script src="js/dashboard.js?v=1777540604"></script>
-<script src="js/colaboradores.js?v=1777540604"></script>
-<script src="js/organograma.js?v=1777540604"></script>
-<script src="js/avaliacao.js?v=1777540604"></script>
-<script src="js/pdi.js?v=1777540604"></script>
-<script src="js/ninebox.js?v=1777540604"></script>
-<script src="js/competencias.js?v=1777540604"></script>
-<script src="js/config.js?v=1777540604"></script>
-<script src="js/perfil.js?v=1777540604"></script>
-<script src="js/notas-particulares.js?v=1777540604"></script>
-<script src="js/suporte.js?v=1777540604"></script>
-<script src="js/metas.js?v=1777540604"></script>
-<script src="js/okr.js?v=1777540604"></script>
-<script src="js/ia.js?v=1777540604"></script>
-<script src="js/notas.js?v=1777540604"></script>
-<script src="js/capacidade.js?v=1777540604"></script>
+<script src="js/admin.js?v=1777541382"></script>
+<script src="js/dashboard.js?v=1777541382"></script>
+<script src="js/colaboradores.js?v=1777541382"></script>
+<script src="js/organograma.js?v=1777541382"></script>
+<script src="js/avaliacao.js?v=1777541382"></script>
+<script src="js/pdi.js?v=1777541382"></script>
+<script src="js/ninebox.js?v=1777541382"></script>
+<script src="js/competencias.js?v=1777541382"></script>
+<script src="js/config.js?v=1777541382"></script>
+<script src="js/perfil.js?v=1777541382"></script>
+<script src="js/notas-particulares.js?v=1777541382"></script>
+<script src="js/suporte.js?v=1777541382"></script>
+<script src="js/metas.js?v=1777541382"></script>
+<script src="js/okr.js?v=1777541382"></script>
+<script src="js/ia.js?v=1777541382"></script>
+<script src="js/notas.js?v=1777541382"></script>
+<script src="js/capacidade.js?v=1777541382"></script>
 
 <script>
 // ══════════════════════════════════════════
@@ -2798,6 +2847,8 @@ function squadoShowTab(tab) {
   document.getElementById('tab-login').style.color         = isLogin ? '#fff' : '#6b7280';
   document.getElementById('tab-registro').style.background = isLogin ? '#f9fafb' : '#0F6E56';
   document.getElementById('tab-registro').style.color      = isLogin ? '#6b7280' : '#fff';
+  // Resetar wizard pro passo 1
+  if (!isLogin) regNextStep(1);
 }
 
 async function squadoLogin() {
@@ -2835,29 +2886,130 @@ async function squadoLogin() {
   btn.textContent = 'Entrar'; btn.disabled = false;
 }
 
+// ── Wizard de registro: 3 passos ─────────────────────────────
+var _regTimer = null;
+function regNextStep(step) {
+  // Validação do passo atual
+  if (step === 2) {
+    var nome = (document.getElementById('sq-reg-nome')||{}).value||'';
+    var email = (document.getElementById('sq-reg-email')||{}).value||'';
+    var senha = (document.getElementById('sq-reg-senha')||{}).value||'';
+    var senha2 = (document.getElementById('sq-reg-senha2')||{}).value||'';
+    var erroEl = document.getElementById('sq-reg-erro');
+    erroEl.style.display = 'none';
+    if (!nome.trim()) { erroEl.textContent = 'Preencha seu nome.'; erroEl.style.display = 'block'; return; }
+    if (!email.trim() || !email.includes('@')) { erroEl.textContent = 'Email inválido.'; erroEl.style.display = 'block'; return; }
+    if (senha.length < 8) { erroEl.textContent = 'Senha deve ter ao menos 8 caracteres.'; erroEl.style.display = 'block'; return; }
+    if (senha !== senha2) { erroEl.textContent = 'Senhas não conferem.'; erroEl.style.display = 'block'; return; }
+  }
+  if (step === 3) {
+    var empresa = (document.getElementById('sq-reg-empresa')||{}).value||'';
+    var termos = document.getElementById('sq-reg-termos');
+    var erroEl2 = document.getElementById('sq-reg-erro2');
+    erroEl2.style.display = 'none';
+    if (!empresa.trim()) { erroEl2.textContent = 'Preencha o nome da empresa.'; erroEl2.style.display = 'block'; return; }
+    if (!termos || !termos.checked) { erroEl2.textContent = 'Aceite os Termos de Uso para continuar.'; erroEl2.style.display = 'block'; return; }
+    // Enviar código de verificação
+    regEnviarCodigo();
+  }
+
+  // Atualizar UI
+  [1,2,3].forEach(function(s) {
+    var el = document.getElementById('reg-step-'+s);
+    if (el) el.style.display = s === step ? '' : 'none';
+    var dot = document.getElementById('reg-dot-'+s);
+    if (dot) {
+      if (s < step) { dot.style.background='#E1F5EE'; dot.style.color='#0F6E56'; dot.textContent='✓'; }
+      else if (s === step) { dot.style.background='#0F6E56'; dot.style.color='#fff'; dot.textContent=String(s); }
+      else { dot.style.background='#E0E2E0'; dot.style.color='#9BA09E'; dot.textContent=String(s); }
+    }
+    if (s < 3) {
+      var line = document.getElementById('reg-line-'+s);
+      if (line) line.style.background = s < step ? '#0F6E56' : '#E0E2E0';
+    }
+  });
+}
+
+async function regEnviarCodigo() {
+  var email = (document.getElementById('sq-reg-email')||{}).value||'';
+  var nome = (document.getElementById('sq-reg-nome')||{}).value||'';
+  document.getElementById('reg-email-display').textContent = email;
+  try {
+    await fetch(SQUADO_API+'/api/auth/enviar-codigo', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email:email.trim(), nome:nome.trim()})
+    });
+    toast('📧 Código enviado para '+email);
+    regStartTimer();
+  } catch(e) { toast('Erro ao enviar código'); }
+}
+
+function regReenviarCodigo() {
+  regEnviarCodigo();
+  // Limpar inputs
+  for(var i=1;i<=6;i++){var inp=document.getElementById('sq-code-'+i);if(inp)inp.value='';}
+  document.getElementById('sq-code-1').focus();
+}
+
+function regStartTimer() {
+  if (_regTimer) clearInterval(_regTimer);
+  var secs = 600; // 10 min
+  var timerEl = document.getElementById('reg-timer');
+  _regTimer = setInterval(function() {
+    secs--;
+    var m = Math.floor(secs/60), s = secs%60;
+    if (timerEl) timerEl.textContent = 'Expira em '+m+':'+(s<10?'0':'')+s;
+    if (secs <= 0) { clearInterval(_regTimer); if(timerEl) timerEl.textContent='Código expirado'; }
+  }, 1000);
+}
+
+function regCodeInput(el, nextNum) {
+  if (el.value.length >= 1 && nextNum) {
+    var next = document.getElementById('sq-code-'+nextNum);
+    if (next) next.focus();
+  }
+}
+function regCodeBack(e, prevNum) {
+  if (e.key === 'Backspace' && !e.target.value) {
+    var prev = document.getElementById('sq-code-'+prevNum);
+    if (prev) { prev.focus(); prev.value=''; }
+  }
+}
+
 async function squadoRegistro() {
-  const nome    = document.getElementById('sq-reg-nome').value.trim();
-  const email   = document.getElementById('sq-reg-email').value.trim();
-  const empresa = document.getElementById('sq-reg-empresa').value.trim();
-  const senha   = document.getElementById('sq-reg-senha').value;
-  const erroEl  = document.getElementById('sq-reg-erro');
-  const btn     = document.getElementById('sq-reg-btn');
+  var nome = (document.getElementById('sq-reg-nome')||{}).value||'';
+  var email = (document.getElementById('sq-reg-email')||{}).value||'';
+  var senha = (document.getElementById('sq-reg-senha')||{}).value||'';
+  var empresa = (document.getElementById('sq-reg-empresa')||{}).value||'';
+  var segmento = (document.getElementById('sq-reg-segmento')||{}).value||'';
+  var telefone = (document.getElementById('sq-reg-telefone')||{}).value||'';
+  var tamanho = (document.getElementById('sq-reg-tamanho')||{}).value||'';
+  var cargo = (document.getElementById('sq-reg-cargo')||{}).value||'';
+
+  // Montar código de verificação
+  var codigo = '';
+  for(var i=1;i<=6;i++){ codigo += (document.getElementById('sq-code-'+i)||{}).value||''; }
+
+  var erroEl = document.getElementById('sq-reg-erro3');
+  var btn = document.getElementById('sq-reg-btn');
   erroEl.style.display = 'none';
-  if (!nome || !email || !senha) { erroEl.textContent = 'Preencha nome, email e senha.'; erroEl.style.display = 'block'; return; }
-  if (senha.length < 6) { erroEl.textContent = 'Senha deve ter ao menos 6 caracteres.'; erroEl.style.display = 'block'; return; }
+
+  if (codigo.length !== 6) { erroEl.textContent = 'Digite o código de 6 dígitos.'; erroEl.style.display = 'block'; return; }
+
   btn.textContent = 'Criando conta...'; btn.disabled = true;
   try {
     var recaptchaToken = '';
     if (RECAPTCHA_SITE_KEY && typeof grecaptcha !== 'undefined') {
       try { recaptchaToken = await grecaptcha.execute(RECAPTCHA_SITE_KEY, {action: 'registro'}); } catch(e){}
     }
-    const r = await fetch(`${SQUADO_API}/api/auth/registro`, {
+    const r = await fetch(SQUADO_API+'/api/auth/registro', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome, email, senha, empresa, segmento: 'laboratorio', recaptchaToken })
+      body: JSON.stringify({ nome:nome.trim(), email:email.trim(), senha, empresa:empresa.trim(), segmento, telefone:telefone.trim(), tamanho_equipe:tamanho, cargo, codigo_verificacao:codigo, recaptchaToken })
     });
     const d = await r.json();
     if (d.token) {
+      if(_regTimer) clearInterval(_regTimer);
       localStorage.setItem(SQUADO_TOKEN_KEY, d.token);
       localStorage.setItem(SQUADO_USER_KEY, JSON.stringify(d.tenant));
       squadoEntrar(d.tenant);
@@ -2869,7 +3021,7 @@ async function squadoRegistro() {
     erroEl.textContent = 'Erro de conexão. Tente novamente.';
     erroEl.style.display = 'block';
   }
-  btn.textContent = 'Criar conta grátis · 7 dias trial'; btn.disabled = false;
+  btn.textContent = 'CRIAR CONTA'; btn.disabled = false;
 }
 
 // ── Google Sign-In callback ──────────────────────────────────────
