@@ -394,7 +394,6 @@ function renderValores(){
     {key:'naoNegociamos',label:_titulos.naoNeg||'Não Negociamos',cor:'#A32D2D',sub:'Comportamentos que não são aceitos'},
     {key:'responsabilidades',label:_titulos.resps||'Responsabilidades',cor:'#854F0B',sub:'Compromissos de todos os colaboradores'},
     {key:'pilares',label:_titulos.pilares||'Pilares',cor:'#534AB7',sub:'Fundamentos da excelência operacional'},
-    {key:'outros',label:_titulos.outros||'Outros',cor:'#3B6D11',sub:'Valores e princípios adicionais'},
   ];
   // Quais categorias estão ativas
   var ativas=ls('valores_categorias_ativas',['pucrs','labelo','naoNegociamos','responsabilidades','pilares']);
@@ -437,7 +436,6 @@ function renderValores(){
       {icon:'⚙️',nome:'Processo',itens:[]},
       {icon:'🎯',nome:'Postura',itens:[]},
     ],
-    outros:vCustom&&vCustom.outros?vCustom.outros:[],
   };
 
   // Bolhas de categorias
@@ -586,7 +584,6 @@ function abrirValoresIA(){
     {key:'naoNegociamos',label:'Não Negociamos',emoji:'🚫'},
     {key:'responsabilidades',label:'Responsabilidades',emoji:'📋'},
     {key:'pilares',label:'Pilares',emoji:'🏗'},
-    {key:'outros',label:'Outros Valores',emoji:'⭐'},
   ];
 
   var html='<div style="font-size:14px;font-weight:700;margin-bottom:8px">O que deseja criar?</div>'
@@ -625,7 +622,7 @@ async function gerarValoresIA(){
   closeModal();
   toast('🤖 Gerando valores...');
 
-  var catLabels={pucrs:'Valores da Instituição',labelo:'Valores da Unidade',naoNegociamos:'Não Negociamos (comportamentos inaceitáveis)',responsabilidades:'Responsabilidades (compromissos de todos)',pilares:'Pilares (fundamentos operacionais)',outros:'Outros Valores'};
+  var catLabels={pucrs:'Valores da Instituição',labelo:'Valores da Unidade',naoNegociamos:'Não Negociamos (comportamentos inaceitáveis)',responsabilidades:'Responsabilidades (compromissos de todos)',pilares:'Pilares (fundamentos operacionais)'};
 
   var prompt='Gere valores e cultura organizacional para:\nContexto: '+contexto+'\n\nCategories para gerar:\n';
   selecionados.forEach(function(k){prompt+='- '+catLabels[k]+': '+qtd+' itens\n';});
@@ -720,7 +717,6 @@ function editarValores(){
     {key:'naoNegociamos',label:'🚫 Não Negociamos',cor:'#A32D2D'},
     {key:'responsabilidades',label:'📋 Responsabilidades',cor:'#854F0B'},
     {key:'pilares',label:'🏗 Pilares',cor:'#534AB7'},
-    {key:'outros',label:'⭐ Outros',cor:'#3B6D11'},
   ];
   var customCatsV=ls('valores_custom_categorias',[]);
   customCatsV.forEach(function(cc){catsDef.push({key:cc.key,label:cc.label,cor:cc.cor||'#888',custom:true});});
@@ -738,7 +734,7 @@ function editarValores(){
   bolhasEdit+='<button onclick="adicionarCatCustomValor()" style="padding:6px 12px;border-radius:16px;border:2px dashed var(--border);background:var(--bg);color:var(--txt3);font-size:11px;cursor:pointer;font-family:inherit">+ Outro</button>'
   +'</div></div>';
 
-  // Seções de edição para categorias customizadas
+  // Seções de edição para categorias customizadas apenas
   var customSecoesEdit='';
   customCatsV.forEach(function(cc){
     var items=vCustom&&vCustom[cc.key]?vCustom[cc.key]:[];
@@ -746,11 +742,6 @@ function editarValores(){
       +secTitle(cc.key,cc.label)
       +listaEditavel(cc.key,items,'nome');
   });
-  // Seção "outros" padrão
-  var outrosItems=vCustom&&vCustom.outros?vCustom.outros:[];
-  var outrosSecao='<div style="border-top:0.5px solid var(--border);margin:12px 0"></div>'
-    +secTitle('outros','Outros')
-    +listaEditavel('outros',outrosItems,'nome');
 
   function secTitle(id,label){
     return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
@@ -802,7 +793,6 @@ function editarValores(){
       +'<div style="border-top:0.5px solid var(--border);margin:12px 0"></div>'
       +secTitle('pilares',titulos.pilares)
       +listaEditavel('pilares',pilares,'nome')
-      +outrosSecao
       +customSecoesEdit
     +'</div>'
     +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border)">'
@@ -886,14 +876,12 @@ async function salvarEdicaoValores(){
     naoNegociamos:coletarLista('naoNeg','text',origNaoNeg),
     responsabilidades:coletarLista('resps','nome',origResps),
     pilares:      coletarLista('pilares','nome',origPilares),
-    outros:       coletarLista('outros','nome',vOrig.outros||[]),
     titulos:{
       pucrs:  getTitulo('pucrs'),
       labelo: getTitulo('labelo'),
       naoNeg: getTitulo('naoNeg'),
       resps:  getTitulo('resps'),
       pilares:getTitulo('pilares'),
-      outros: getTitulo('outros'),
     }
   };
   // Salvar categorias customizadas
