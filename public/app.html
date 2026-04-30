@@ -1688,7 +1688,7 @@ const SEED=[
   {id:'c28',nome:'Guilherme',nivel:'Estagiário',area:'Entrada e Devolucao',status:'Ativo',gestor:'Renan E S Passos',historico:[],funcoes:[],perfil:{}}
 ];
 let niveis=ls('niveis_v2',DEFAULT_NIVEIS);
-let perguntas=DEFAULT_PERGUNTAS;
+let perguntas=ls('perguntas_v3',DEFAULT_PERGUNTAS);
 // Se tem token salvo, começa com localStorage (pode estar vazio — nuvem preenche)
 // Se não tem token, usa SEED como demo local
 const _temToken = !!localStorage.getItem('squado_jwt_token');
@@ -1726,7 +1726,7 @@ function squadoGetUser()  { try { return JSON.parse(localStorage.getItem('squado
 function saveAll(){
   lss('avaliacoes',avaliacoes);
   lss('metas_v2',metas);lss('feedbacks',feedbacks);lss('cols_v3',colaboradores);lss('funcoes',funcoes);lss('orgPos_v2',orgPositions);lss('orgConns',orgConnections);lss('notas',notas);lss('aiHistory',aiHistory);lss('qtdServicos',qtdServicos);
-  lss('niveis_v2',niveis);lss('perguntas_v2',perguntas);
+  lss('niveis_v2',niveis);lss('perguntas_v3',perguntas);
   if(typeof areas!=='undefined')lss('areas_v1',areas);
   // Timestamp da última modificação local
   if(ls('valores_v1'))lss('valores_v1',ls('valores_v1'));
@@ -2121,23 +2121,23 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
 </script>
 
 <!-- Módulos JS extraídos -->
-<script src="js/admin.js?v=1777477109"></script>
-<script src="js/dashboard.js?v=1777477109"></script>
-<script src="js/colaboradores.js?v=1777477109"></script>
-<script src="js/organograma.js?v=1777477109"></script>
-<script src="js/avaliacao.js?v=1777477109"></script>
-<script src="js/pdi.js?v=1777477109"></script>
-<script src="js/ninebox.js?v=1777477109"></script>
-<script src="js/competencias.js?v=1777477109"></script>
-<script src="js/config.js?v=1777477109"></script>
-<script src="js/perfil.js?v=1777477109"></script>
-<script src="js/notas-particulares.js?v=1777477109"></script>
-<script src="js/suporte.js?v=1777477109"></script>
-<script src="js/metas.js?v=1777477109"></script>
-<script src="js/okr.js?v=1777477109"></script>
-<script src="js/ia.js?v=1777477109"></script>
-<script src="js/notas.js?v=1777477109"></script>
-<script src="js/capacidade.js?v=1777477109"></script>
+<script src="js/admin.js?v=1777512133"></script>
+<script src="js/dashboard.js?v=1777512133"></script>
+<script src="js/colaboradores.js?v=1777512133"></script>
+<script src="js/organograma.js?v=1777512133"></script>
+<script src="js/avaliacao.js?v=1777512133"></script>
+<script src="js/pdi.js?v=1777512133"></script>
+<script src="js/ninebox.js?v=1777512133"></script>
+<script src="js/competencias.js?v=1777512133"></script>
+<script src="js/config.js?v=1777512133"></script>
+<script src="js/perfil.js?v=1777512133"></script>
+<script src="js/notas-particulares.js?v=1777512133"></script>
+<script src="js/suporte.js?v=1777512133"></script>
+<script src="js/metas.js?v=1777512133"></script>
+<script src="js/okr.js?v=1777512133"></script>
+<script src="js/ia.js?v=1777512133"></script>
+<script src="js/notas.js?v=1777512133"></script>
+<script src="js/capacidade.js?v=1777512133"></script>
 
 <script>
 // ══════════════════════════════════════════
@@ -2492,7 +2492,7 @@ async function squadoCarregarDaNuvem() {
     if (cfg && cfg.tenant_id) {
       if (cfg.valores)        lss('valores_v1', cfg.valores);
       if (cfg.matriz_comp)    lss('matriz_comp_v1', cfg.matriz_comp);
-      if (cfg.perguntas)      lss('perguntas_v3', cfg.perguntas);
+      if (cfg.perguntas)      { perguntas = cfg.perguntas; lss('perguntas_v3', cfg.perguntas); }
       if (cfg.niveis)         { niveis = cfg.niveis; }
       if (cfg.organograma_pos){ orgPositions = cfg.organograma_pos; lss('orgPos_v2', orgPositions); }
       if (cfg.organograma_conn){ orgConnections = cfg.organograma_conn; lss('orgConns', orgConnections); }
