@@ -186,23 +186,6 @@ function renderCompetencias(){
   }
 
   // Bolhas de categorias
-  var bolhasHtml='<div style="display:flex;flex-wrap:wrap;gap:6px">';
-  categorias.forEach(function(cat){
-    var isAtiva=ativas.indexOf(cat.key)>=0;
-    bolhasHtml+='<button onclick="toggleCategComp(\''+cat.key+'\')" style="display:flex;align-items:center;gap:5px;padding:6px 14px;border-radius:20px;border:2px solid '+(isAtiva?cat.cor:'var(--border)')+';background:'+(isAtiva?cat.cor+'15':'var(--bg)')+';color:'+(isAtiva?cat.cor:'var(--txt3)')+';font-size:11px;font-weight:'+(isAtiva?'700':'400')+';cursor:pointer;font-family:inherit;transition:all .15s">'
-      +(isAtiva?'✓ ':'')+cat.emoji+' '+cat.label+'</button>';
-  });
-  bolhasHtml+='</div>';
-
-  // Tabs de perfil
-  var tabs='<div style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;overflow:hidden;margin-bottom:14px;width:fit-content">'
-    +perfis.map(function(p){return '<button onclick="window._compSel=\''+p.id+'\';render(\'competencias\')" '
-      +'style="padding:8px 18px;border:none;border-left:0.5px solid var(--border2);font-size:12.5px;font-weight:600;cursor:pointer;'
-      +'background:'+(p.id===sel?'var(--green)':'var(--bg2)')+';color:'+(p.id===sel?'#fff':'var(--txt2)')+';transition:all .15s">'
-      +p.cargo+'</button>';}).join('')
-  +'</div>';
-
-  // Seções
   var secoesHtml='';
 
   if(ativas.indexOf('escolaridade')>=0){
@@ -246,33 +229,59 @@ function renderCompetencias(){
     +'</div>';
   }
 
-  // Níveis aplicáveis
+  // Categorias customizadas
+  var customCats=ls('comp_custom_categorias',[]);
+  customCats.forEach(function(cc){
+    if(ativas.indexOf(cc.key)<0)return;
+    var items=(perfil[cc.key]||mc[cc.key]||[]);
+    secoesHtml+='<div class="card" style="padding:16px;margin-bottom:10px">'
+      +'<div style="font-size:13px;font-weight:700;color:'+(cc.cor||'#888')+';margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid '+(cc.cor||'#888')+'">'+cc.label+'</div>'
+      +(items.length?'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px">'+items.map(function(c){return compCard(c);}).join('')+'</div>':'<div style="text-align:center;padding:14px;color:var(--txt3);font-size:12px">Sem dados. Use "✏️ Editar".</div>')
+    +'</div>';
+  });
+
   var niveisHtml='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">'
     +perfil.niveis.map(function(n){var ns=NIVEL_STYLE[n]||{cor:'#888',bg:'#eee'};return '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:'+ns.bg+';color:'+ns.cor+'">'+n+'</span>';}).join('')
   +'</div>';
 
   return '<div>'
-    // Card header com bolhas + botões
+    // Card header com botões
     +'<div class="card" style="padding:16px;margin-bottom:12px">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">'
-        +'<div style="font-size:12px;color:var(--txt3)">Selecione as seções a exibir:</div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'
+        +'<div style="font-size:12px;color:var(--txt3)">'+ativas.length+' seções ativas · '+perfis.length+' cargos</div>'
         +'<div style="display:flex;gap:8px">'
           +'<button class="btn btn-sm" onclick="abrirCompetenciasIA()" style="border-color:#534AB7;color:#534AB7">🤖 Criar com IA</button>'
           +'<button class="btn btn-sm" onclick="editarCompetencias()" style="border-color:#854F0B;color:#854F0B">✏️ Editar</button>'
           +'<button class="btn btn-sm" data-perfil="'+perfil.id+'" onclick="exportarPDFCompetencias(this.dataset.perfil)" style="border-color:#185FA5;color:#185FA5">📄 PDF</button>'
         +'</div>'
       +'</div>'
-      +bolhasHtml
     +'</div>'
-    // Tabs de perfil
-    +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">'
-      +tabs
+    // Tabs de perfil com drag-and-drop
+    +'<div id="comp-tabs-sortable" style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;overflow:hidden;margin-bottom:14px;width:fit-content">'
+      +perfis.map(function(p,pi){return '<div draggable="true" ondragstart="compDragStart(event,'+pi+')" ondragover="event.preventDefault()" ondrop="compDrop(event,'+pi+')" onclick="window._compSel=\''+p.id+'\';render(\'competencias\')" '
+        +'style="padding:8px 18px;border-left:0.5px solid var(--border2);font-size:12.5px;font-weight:600;cursor:grab;user-select:none;'
+        +'background:'+(p.id===sel?'var(--green)':'var(--bg2)')+';color:'+(p.id===sel?'#fff':'var(--txt2)')+';transition:all .15s">'
+        +p.cargo+'</div>';}).join('')
     +'</div>'
     +'<div style="font-size:16px;font-weight:800;color:var(--txt);margin-bottom:4px">'+perfil.cargo+'</div>'
     +'<div style="font-size:11px;color:var(--txt3);margin-bottom:8px">Níveis aplicáveis:</div>'
     +niveisHtml
     +secoesHtml
   +'</div>';
+}
+
+// Drag-and-drop dos perfis
+var _compDragIdx=null;
+function compDragStart(e,idx){_compDragIdx=idx;e.dataTransfer.effectAllowed='move';}
+function compDrop(e,toIdx){
+  e.preventDefault();
+  if(_compDragIdx===null||_compDragIdx===toIdx)return;
+  var mc=JSON.parse(JSON.stringify(getMatrizCompetencias()));
+  var item=mc.perfis.splice(_compDragIdx,1)[0];
+  mc.perfis.splice(toIdx,0,item);
+  saveMatrizCompetencias(mc);
+  _compDragIdx=null;
+  render('competencias');
 }
 
 // Toggle categoria de competências
@@ -432,8 +441,35 @@ function editarCompetencias(){
   const sel=window._compSel||'assistente';
   const perfil=mc.perfis.find(p=>p.id===sel)||mc.perfis[0];
 
-  document.getElementById('modal-title').textContent='Editar Competencias · '+perfil.cargo;
+  document.getElementById('modal-title').textContent='Editar Competências · '+perfil.cargo;
   document.getElementById('modal-box').classList.add('modal-lg');
+
+  // Categorias ativas
+  var ativas=ls('comp_categorias_ativas',['essenciais','grupo','especificas','escolaridade','escopo','entregas']);
+  var categorias=[
+    {key:'essenciais',label:'💎 Essenciais',cor:'#534AB7'},
+    {key:'grupo',label:'🏆 Grupo Ocupacional',cor:'#185FA5'},
+    {key:'especificas',label:'🔧 Específicas',cor:'#0F6E56'},
+    {key:'escolaridade',label:'📚 Escolaridade',cor:'#854F0B'},
+    {key:'escopo',label:'🎯 Escopo',cor:'#3B6D11'},
+    {key:'entregas',label:'📦 Entregas',cor:'#A32D2D'},
+  ];
+  // Categorias customizadas
+  var customCats=ls('comp_custom_categorias',[]);
+  customCats.forEach(function(cc){categorias.push({key:cc.key,label:cc.label,cor:cc.cor||'#888',custom:true});});
+
+  var bolhasEdit='<div style="margin-bottom:14px;padding:12px;background:var(--bg2);border-radius:10px">'
+    +'<div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px">Seções a exibir:</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:6px">';
+  categorias.forEach(function(cat){
+    var isAtiva=ativas.indexOf(cat.key)>=0;
+    bolhasEdit+='<button onclick="toggleCategCompEdit(\''+cat.key+'\',this)" style="display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:16px;border:2px solid '+(isAtiva?cat.cor:'var(--border)')+';background:'+(isAtiva?cat.cor+'15':'var(--bg)')+';color:'+(isAtiva?cat.cor:'var(--txt3)')+';font-size:11px;font-weight:'+(isAtiva?'700':'400')+';cursor:pointer;font-family:inherit;transition:all .15s">'
+      +(isAtiva?'✓ ':'')+cat.label
+      +(cat.custom?'<span onclick="event.stopPropagation();removerCatCustom(\''+cat.key+'\')" style="margin-left:4px;color:#A32D2D;font-weight:700" title="Remover">×</span>':'')
+    +'</button>';
+  });
+  bolhasEdit+='<button onclick="adicionarCatCustom()" style="padding:6px 12px;border-radius:16px;border:2px dashed var(--border);background:var(--bg);color:var(--txt3);font-size:11px;cursor:pointer;font-family:inherit">+ Outro</button>'
+  +'</div></div>';
 
   // Helper: seção de competências (nome + tipo + desc)
   function secaoHtml(titulo,cor,itens,dataKey){
@@ -476,40 +512,85 @@ function editarCompetencias(){
   });
   tabsHtml+='<button class="btn btn-xs" style="background:#E1F5EE;color:#0F6E56" onclick="criarNovoPerfil()">+ Novo Perfil</button></div>';
 
+  // Adicionar seções customizadas ao editar
+  var customCatsEdit=ls('comp_custom_categorias',[]);
+  var customSecoes='';
+  customCatsEdit.forEach(function(cc){
+    customSecoes+='<div style="border-top:0.5px solid var(--border);margin:14px 0"></div>'
+      +secaoHtml(cc.label,cc.cor,perfil[cc.key]||mc[cc.key]||[],cc.key);
+  });
+  
   document.getElementById('modal-body').innerHTML=
     '<div style="max-height:65vh;overflow-y:auto;padding-right:4px">'
+      +bolhasEdit
       +tabsHtml
-      // Dados do perfil
       +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">Dados do Perfil</div>'
-      +'<div style="margin-bottom:14px"><div class="field-label">Nome do Cargo</div><input id="comp-edit-cargo" value="'+perfil.cargo.replace(/"/g,'&quot;')+'" style="font-size:12px;width:100%"/></div>'
-      // Escolaridade
+      +'<div style="margin-bottom:14px"><div class="field-label">Nome do Cargo</div><input id="comp-edit-cargo" value="'+perfil.cargo.replace(/"/g,'&quot;')+'" style="font-size:12px;width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--txt)"/></div>'
       +'<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">ESCOLARIDADE</div>'
         +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
-          +'<div><div class="field-label">Basica</div><input id="comp-edit-esc-basica" value="'+(perfil.escolaridade&&perfil.escolaridade.basica||'').replace(/"/g,'&quot;')+'" style="font-size:12px;width:100%"/></div>'
-          +'<div><div class="field-label">Excelencia</div><input id="comp-edit-esc-excelencia" value="'+(perfil.escolaridade&&perfil.escolaridade.excelencia||'').replace(/"/g,'&quot;')+'" style="font-size:12px;width:100%"/></div>'
+          +'<div><div class="field-label">Basica</div><input id="comp-edit-esc-basica" value="'+(perfil.escolaridade&&perfil.escolaridade.basica||'').replace(/"/g,'&quot;')+'" style="font-size:12px;width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--txt)"/></div>'
+          +'<div><div class="field-label">Excelencia</div><input id="comp-edit-esc-excelencia" value="'+(perfil.escolaridade&&perfil.escolaridade.excelencia||'').replace(/"/g,'&quot;')+'" style="font-size:12px;width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--txt)"/></div>'
         +'</div></div>'
-      // Níveis aplicáveis
       +listaHtml('📊 Níveis Aplicáveis','#854F0B',perfil.niveis,'niveis','Ex: Assistente I')
       +'<div style="border-top:0.5px solid var(--border);margin:14px 0"></div>'
-      // Escopo do grupo
       +listaHtml('🎯 Escopo do Grupo','#3B6D11',perfil.escopo,'escopo','Descreva uma responsabilidade')
-      // Entregas do cargo
       +listaHtml('📦 Entregas do Cargo','#A32D2D',perfil.entregas,'entregas','Descreva uma entrega esperada')
       +'<div style="border-top:0.5px solid var(--border);margin:14px 0"></div>'
-      // Essenciais
       +secaoHtml('💎 Competências Essenciais (todos os cargos)','#534AB7',mc.essenciais,'essenciais')
       +'<div style="border-top:0.5px solid var(--border);margin:14px 0"></div>'
-      // Grupo Ocupacional
       +secaoHtml('🏆 Competências do Grupo — '+perfil.cargo,'#185FA5',perfil.compGrupo||[],'compGrupo')
       +'<div style="border-top:0.5px solid var(--border);margin:14px 0"></div>'
-      // Específicas
       +secaoHtml('🔧 Competências Específicas — '+perfil.cargo,'#0F6E56',perfil.compEspecificas||[],'compEspecificas')
+      +customSecoes
     +'</div>'
     +'<div style="display:flex;gap:8px;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border)">'
       +(mc.perfis.length>1?'<button class="btn btn-sm" style="border-color:#DC2626;color:#DC2626" onclick="excluirPerfilComp(\''+sel+'\')">Excluir Perfil</button>':'<div></div>')
       +'<div style="display:flex;gap:8px"><button class="btn btn-sm" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicaoCompetencias(\''+sel+'\')">Salvar</button></div>'
     +'</div>';
   document.getElementById('modal').style.display='flex';
+}
+
+// Toggle categoria dentro do editar
+function toggleCategCompEdit(key,btn){
+  var ativas=ls('comp_categorias_ativas',['essenciais','grupo','especificas','escolaridade','escopo','entregas']);
+  var idx=ativas.indexOf(key);
+  if(idx>=0)ativas.splice(idx,1);else ativas.push(key);
+  lss('comp_categorias_ativas',ativas);
+  // Re-renderizar o editar pra refletir a mudança
+  editarCompetencias();
+}
+
+// Adicionar categoria customizada "Outro"
+function adicionarCatCustom(){
+  var nome=prompt('Nome da nova seção:');
+  if(!nome||!nome.trim())return;
+  nome=nome.trim();
+  var customs=ls('comp_custom_categorias',[]);
+  var key='custom_'+nome.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+  if(customs.find(function(c){return c.key===key;})){toast('Já existe');return;}
+  var cores=['#0891B2','#9333EA','#D97706','#059669','#DC2626','#7C3AED'];
+  var cor=cores[customs.length%cores.length];
+  customs.push({key:key,label:nome,cor:cor});
+  lss('comp_custom_categorias',customs);
+  // Ativar a nova categoria
+  var ativas=ls('comp_categorias_ativas',[]);
+  ativas.push(key);
+  lss('comp_categorias_ativas',ativas);
+  toast('✅ Seção "'+nome+'" adicionada!');
+  editarCompetencias();
+}
+
+// Remover categoria customizada
+function removerCatCustom(key){
+  if(!confirm('Remover esta seção?'))return;
+  var customs=ls('comp_custom_categorias',[]);
+  customs=customs.filter(function(c){return c.key!==key;});
+  lss('comp_custom_categorias',customs);
+  var ativas=ls('comp_categorias_ativas',[]);
+  ativas=ativas.filter(function(k){return k!==key;});
+  lss('comp_categorias_ativas',ativas);
+  toast('Seção removida');
+  editarCompetencias();
 }
 
 function adicionarItemComp(dataKey){
@@ -615,6 +696,12 @@ function salvarEdicaoCompetencias(perfilId){
     var niv=lerLista('niveis');if(niv)mc.perfis[pi].niveis=niv;
     var esc=lerLista('escopo');if(esc)mc.perfis[pi].escopo=esc;
     var ent=lerLista('entregas');if(ent)mc.perfis[pi].entregas=ent;
+    // Categorias customizadas
+    var customCatsSave=ls('comp_custom_categorias',[]);
+    customCatsSave.forEach(function(cc){
+      var customData=lerSecao(cc.key);
+      if(customData)mc.perfis[pi][cc.key]=customData;
+    });
   }
 
   saveMatrizCompetencias(mc);
