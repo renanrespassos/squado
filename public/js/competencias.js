@@ -205,43 +205,44 @@ function renderCompetencias(){
   // Seções
   var secoesHtml='';
 
-  if(ativas.indexOf('escolaridade')>=0 && perfil.escolaridade){
+  if(ativas.indexOf('escolaridade')>=0){
+    var escExiste=perfil.escolaridade&&perfil.escolaridade.basica&&perfil.escolaridade.basica!=='—';
     secoesHtml+='<div class="card" style="padding:16px;margin-bottom:10px">'
       +'<div style="font-size:13px;font-weight:700;color:#854F0B;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #854F0B">📚 Escolaridade</div>'
-      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+      +(escExiste?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
         +'<div style="background:var(--bg2);border-radius:8px;padding:12px"><div style="font-size:9px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Básica</div><div style="font-size:12px;color:var(--txt)">'+perfil.escolaridade.basica+'</div></div>'
         +'<div style="background:var(--green-bg);border-radius:8px;padding:12px"><div style="font-size:9px;font-weight:700;color:var(--green2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Excelência</div><div style="font-size:12px;color:var(--txt)">'+perfil.escolaridade.excelencia+'</div></div>'
-      +'</div>'
+      +'</div>':'<div style="text-align:center;padding:14px;color:var(--txt3);font-size:12px">Sem dados. Use "✏️ Editar" ou "🤖 Criar com IA".</div>')
     +'</div>';
   }
-  if(ativas.indexOf('escopo')>=0 && perfil.escopo && perfil.escopo.length){
+  if(ativas.indexOf('escopo')>=0){
     secoesHtml+='<div class="card" style="padding:16px;margin-bottom:10px">'
       +'<div style="font-size:13px;font-weight:700;color:#3B6D11;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #3B6D11">🎯 Escopo do Grupo Ocupacional</div>'
-      +'<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px">'+perfil.escopo.map(function(e){return '<li style="font-size:12px;color:var(--txt);line-height:1.5">'+e+'</li>';}).join('')+'</ul>'
+      +(perfil.escopo&&perfil.escopo.length?'<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px">'+perfil.escopo.map(function(e){return '<li style="font-size:12px;color:var(--txt);line-height:1.5">'+e+'</li>';}).join('')+'</ul>':'<div style="text-align:center;padding:14px;color:var(--txt3);font-size:12px">Sem dados.</div>')
     +'</div>';
   }
-  if(ativas.indexOf('entregas')>=0 && perfil.entregas && perfil.entregas.length){
+  if(ativas.indexOf('entregas')>=0){
     secoesHtml+='<div class="card" style="padding:16px;margin-bottom:10px">'
       +'<div style="font-size:13px;font-weight:700;color:#A32D2D;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #A32D2D">📦 Entregas do Cargo</div>'
-      +'<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px">'+perfil.entregas.map(function(e){return '<li style="font-size:12px;color:var(--txt);line-height:1.5">'+e+'</li>';}).join('')+'</ul>'
+      +(perfil.entregas&&perfil.entregas.length?'<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px">'+perfil.entregas.map(function(e){return '<li style="font-size:12px;color:var(--txt);line-height:1.5">'+e+'</li>';}).join('')+'</ul>':'<div style="text-align:center;padding:14px;color:var(--txt3);font-size:12px">Sem dados.</div>')
     +'</div>';
   }
-  if(ativas.indexOf('essenciais')>=0 && essenciais && essenciais.length){
+  if(ativas.indexOf('essenciais')>=0){
     secoesHtml+='<div class="card" style="padding:16px;margin-bottom:10px">'
       +'<div style="font-size:13px;font-weight:700;color:#534AB7;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #534AB7">💎 Competências Essenciais <span style="font-size:10px;color:var(--txt3);font-weight:400">(todos os cargos)</span></div>'
-      +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px">'+essenciais.map(function(c){return compCard(c);}).join('')+'</div>'
+      +(essenciais&&essenciais.length?'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px">'+essenciais.map(function(c){return compCard(c);}).join('')+'</div>':'<div style="text-align:center;padding:14px;color:var(--txt3);font-size:12px">Sem competências essenciais. Use "🤖 Criar com IA".</div>')
     +'</div>';
   }
-  if(ativas.indexOf('grupo')>=0 && perfil.compGrupo && perfil.compGrupo.length){
+  if(ativas.indexOf('grupo')>=0){
     secoesHtml+='<div class="card" style="padding:16px;margin-bottom:10px">'
       +'<div style="font-size:13px;font-weight:700;color:#185FA5;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #185FA5">🏆 Competências do Grupo Ocupacional</div>'
-      +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px">'+perfil.compGrupo.map(function(c){return compCard(c);}).join('')+'</div>'
+      +(perfil.compGrupo&&perfil.compGrupo.length?'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px">'+perfil.compGrupo.map(function(c){return compCard(c);}).join('')+'</div>':'<div style="text-align:center;padding:14px;color:var(--txt3);font-size:12px">Sem competências do grupo.</div>')
     +'</div>';
   }
-  if(ativas.indexOf('especificas')>=0 && perfil.compEspecificas && perfil.compEspecificas.length){
+  if(ativas.indexOf('especificas')>=0){
     secoesHtml+='<div class="card" style="padding:16px;margin-bottom:10px">'
       +'<div style="font-size:13px;font-weight:700;color:#0F6E56;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #0F6E56">🔧 Competências Específicas</div>'
-      +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px">'+perfil.compEspecificas.map(function(c){return compCard(c);}).join('')+'</div>'
+      +(perfil.compEspecificas&&perfil.compEspecificas.length?'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px">'+perfil.compEspecificas.map(function(c){return compCard(c);}).join('')+'</div>':'<div style="text-align:center;padding:14px;color:var(--txt3);font-size:12px">Sem competências específicas.</div>')
     +'</div>';
   }
 
@@ -342,40 +343,53 @@ async function gerarCompetenciasIA(){
   if(!contexto){toast('Descreva o contexto');return;}
 
   closeModal();
-  toast('🤖 Gerando competências...');
+  toast('🤖 Gerando competências... pode levar até 30s por cargo');
 
   var mc=getMatrizCompetencias()||{perfis:[],essenciais:[]};
 
   for(var ni=0;ni<niveisEscolhidos.length;ni++){
     var nivel=niveisEscolhidos[ni];
-    var prompt='Gere uma matriz de competências para o cargo: '+nivel+'\nContexto: '+contexto+'\n\n'
-      +'Gere em JSON:\n{\n'
-      +'"cargo":"'+nivel+'",\n'
-      +(selecionados.indexOf('escolaridade')>=0?'"escolaridade":{"basica":"...","excelencia":"..."},\n':'')
-      +(selecionados.indexOf('escopo')>=0?'"escopo":["item1","item2","item3"],\n':'')
-      +(selecionados.indexOf('entregas')>=0?'"entregas":["entrega1","entrega2"],\n':'')
-      +(selecionados.indexOf('essenciais')>=0?'"essenciais":[{"nome":"...","tipo":"Comportamental","desc":"..."}],\n':'')
-      +(selecionados.indexOf('grupo')>=0?'"compGrupo":[{"nome":"...","tipo":"Técnica ou Comportamental","desc":"..."}],\n':'')
-      +(selecionados.indexOf('especificas')>=0?'"compEspecificas":[{"nome":"...","tipo":"Técnica","desc":"..."}],\n':'')
-      +'}\nRetorne APENAS JSON puro, sem markdown.';
+
+    var prompt='Você é especialista em RH e gestão de competências no Brasil.\n'
+      +'Gere uma matriz de competências COMPLETA para o cargo "'+nivel+'".\n'
+      +'Contexto: '+contexto+'\n\n'
+      +'Retorne um JSON com TODAS essas chaves:\n'
+      +'{\n'
+      +'  "escolaridade": {"basica": "formação mínima", "excelencia": "formação ideal"},\n'
+      +'  "escopo": ["responsabilidade 1", "responsabilidade 2", "responsabilidade 3", "responsabilidade 4"],\n'
+      +'  "entregas": ["entrega 1", "entrega 2", "entrega 3"],\n'
+      +'  "essenciais": [{"nome": "nome", "tipo": "Comportamental", "desc": "descrição curta"}],\n'
+      +'  "compGrupo": [{"nome": "nome", "tipo": "Técnica", "desc": "descrição curta"}],\n'
+      +'  "compEspecificas": [{"nome": "nome", "tipo": "Técnica", "desc": "descrição curta"}]\n'
+      +'}\n\n'
+      +'REGRAS IMPORTANTES:\n'
+      +'- essenciais: gere EXATAMENTE 4 competências COMPORTAMENTAIS\n'
+      +'- compGrupo: gere EXATAMENTE 4 competências do grupo (mix técnica/comportamental)\n'
+      +'- compEspecificas: gere EXATAMENTE 4 competências TÉCNICAS do cargo\n'
+      +'- tipo deve ser EXATAMENTE "Técnica" ou "Comportamental"\n'
+      +'- escopo: EXATAMENTE 4 itens\n'
+      +'- entregas: EXATAMENTE 3 itens\n'
+      +'- Português brasileiro\n'
+      +'- APENAS JSON. Sem markdown. Sem backticks. Sem texto.';
 
     try{
       var token=squadoGetToken();
       var r=await fetch(SQUADO_API+'/api/ai/chat',{
         method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
         body:JSON.stringify({messages:[
-          {role:'system',content:'Responda APENAS com JSON válido, sem markdown, sem backticks. tipo deve ser "Técnica" ou "Comportamental".'},
+          {role:'system',content:'Responda SOMENTE com JSON válido. Proibido usar markdown ou backticks. Proibido texto fora do JSON.'},
           {role:'user',content:prompt}
         ],max_tokens:2000})
       });
       var d=await r.json();
       var resposta=(d.content||'').replace(/```json/g,'').replace(/```/g,'').trim();
       var jsonMatch=resposta.match(/\{[\s\S]*\}/);
-      if(!jsonMatch)continue;
+      if(!jsonMatch){console.error('Sem JSON para '+nivel);continue;}
       var gerado=JSON.parse(jsonMatch[0]);
 
-      // Mesclar com existentes
-      var perfilExistente=mc.perfis.find(function(p){return p.cargo===nivel;});
+      var perfilId=nivel.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+      var perfilExistente=mc.perfis.find(function(p){return p.id===perfilId||p.cargo===nivel;});
+      
       if(perfilExistente){
         if(gerado.escolaridade)perfilExistente.escolaridade=gerado.escolaridade;
         if(gerado.escopo)perfilExistente.escopo=gerado.escopo;
@@ -384,9 +398,8 @@ async function gerarCompetenciasIA(){
         if(gerado.compEspecificas)perfilExistente.compEspecificas=gerado.compEspecificas;
       } else {
         mc.perfis.push({
-          id:nivel.toLowerCase().replace(/\s+/g,'_'),
-          cargo:nivel,niveis:[nivel],
-          escolaridade:gerado.escolaridade||{basica:'—',excelencia:'—'},
+          id:perfilId,cargo:nivel,niveis:[nivel],
+          escolaridade:gerado.escolaridade||{basica:'a definir',excelencia:'a definir'},
           escopo:gerado.escopo||[],entregas:gerado.entregas||[],
           compGrupo:gerado.compGrupo||[],compEspecificas:gerado.compEspecificas||[]
         });
@@ -396,12 +409,19 @@ async function gerarCompetenciasIA(){
           if(!mc.essenciais.find(function(x){return x.nome===e.nome;})) mc.essenciais.push(e);
         });
       }
-    }catch(e){console.error('Erro IA comp '+nivel+':',e);}
+      toast('✅ '+nivel+' gerado!');
+    }catch(e){
+      console.error('Erro IA comp '+nivel+':',e);
+      toast('⚠️ Erro em '+nivel);
+    }
   }
 
   saveMatrizCompetencias(mc);
-  toast('✅ Competências geradas!');
-  window._compSel=niveisEscolhidos[0].toLowerCase().replace(/\s+/g,'_');
+  var primeiroPerfil=mc.perfis.find(function(p){
+    return niveisEscolhidos.some(function(n){return p.cargo===n||p.id===n.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');});
+  });
+  if(primeiroPerfil) window._compSel=primeiroPerfil.id;
+  toast('✅ Todas as competências geradas!');
   render('competencias');
 }
 
@@ -415,35 +435,36 @@ function editarCompetencias(){
   document.getElementById('modal-title').textContent='Editar Competencias · '+perfil.cargo;
   document.getElementById('modal-box').classList.add('modal-lg');
 
-  // Helper: seção de competências (nome + tipo)
-  function secaoHtml(titulo,itens,dataKey){
-    return '<div style="margin-bottom:14px">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">'+titulo+'</div>'
+  // Helper: seção de competências (nome + tipo + desc)
+  function secaoHtml(titulo,cor,itens,dataKey){
+    return '<div style="margin-bottom:14px;padding:12px;background:'+cor+'08;border-radius:10px;border:1px solid '+cor+'20">'
+      +'<div style="font-size:12px;font-weight:700;color:'+cor+';margin-bottom:8px">'+titulo+'</div>'
       +'<div id="comp-edit-'+dataKey+'" style="display:flex;flex-direction:column;gap:6px">'
-        +itens.map((c,i)=>'<div style="display:grid;grid-template-columns:2fr 1fr auto;gap:6px;align-items:center">'
-          +'<input value="'+c.nome.replace(/"/g,'&quot;')+'" data-sec="'+dataKey+'" data-idx="'+i+'" data-field="nome" style="font-size:12px"/>'
-          +'<select data-sec="'+dataKey+'" data-idx="'+i+'" data-field="tipo" style="font-size:12px">'
+        +itens.map((c,i)=>'<div style="display:grid;grid-template-columns:2fr 1fr 2fr auto;gap:6px;align-items:center">'
+          +'<input value="'+c.nome.replace(/"/g,'&quot;')+'" data-sec="'+dataKey+'" data-idx="'+i+'" data-field="nome" placeholder="Nome" style="font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--txt)"/>'
+          +'<select data-sec="'+dataKey+'" data-idx="'+i+'" data-field="tipo" style="font-size:11px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--txt)">'
             +'<option'+(c.tipo==='Comportamental'?' selected':'')+'>Comportamental</option>'
             +'<option'+(c.tipo==='Técnica'?' selected':'')+'>Técnica</option>'
           +'</select>'
-          +'<button class="btn btn-xs btn-danger" onclick="this.closest(\'div[style*=grid]\').remove()">×</button>'
+          +'<input value="'+(c.desc||'').replace(/"/g,'&quot;')+'" data-sec="'+dataKey+'" data-idx="'+i+'" data-field="desc" placeholder="Descrição (opcional)" style="font-size:11px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--txt)"/>'
+          +'<button onclick="this.closest(\'div[style*=grid]\').remove()" style="border:none;background:#FCEBEB;color:#A32D2D;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:14px">×</button>'
         +'</div>').join('')
       +'</div>'
-      +'<button class="btn btn-xs" style="margin-top:6px" onclick="adicionarItemComp(\''+dataKey+'\')">+ Adicionar</button>'
+      +'<button onclick="adicionarItemComp(\''+dataKey+'\')" style="margin-top:6px;padding:4px 12px;border:1px dashed '+cor+';border-radius:6px;background:transparent;color:'+cor+';font-size:11px;cursor:pointer;font-family:inherit">+ Adicionar competência</button>'
     +'</div>';
   }
 
-  // Helper: lista de textos simples (entregas, escopo, niveis)
-  function listaHtml(titulo,itens,dataKey,placeholder){
-    return '<div style="margin-bottom:14px">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">'+titulo+'</div>'
+  // Helper: lista de textos simples
+  function listaHtml(titulo,cor,itens,dataKey,placeholder){
+    return '<div style="margin-bottom:14px;padding:12px;background:'+cor+'08;border-radius:10px;border:1px solid '+cor+'20">'
+      +'<div style="font-size:12px;font-weight:700;color:'+cor+';margin-bottom:8px">'+titulo+'</div>'
       +'<div id="comp-edit-'+dataKey+'" style="display:flex;flex-direction:column;gap:6px">'
         +(itens||[]).map((t,i)=>'<div style="display:flex;gap:6px;align-items:center">'
-          +'<input value="'+(t||'').replace(/"/g,'&quot;')+'" data-lista="'+dataKey+'" style="font-size:12px;flex:1" placeholder="'+placeholder+'"/>'
-          +'<button class="btn btn-xs btn-danger" onclick="this.parentElement.remove()">×</button>'
+          +'<input value="'+(t||'').replace(/"/g,'&quot;')+'" data-lista="'+dataKey+'" style="font-size:12px;flex:1;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--txt)" placeholder="'+placeholder+'"/>'
+          +'<button onclick="this.parentElement.remove()" style="border:none;background:#FCEBEB;color:#A32D2D;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:14px">×</button>'
         +'</div>').join('')
       +'</div>'
-      +'<button class="btn btn-xs" style="margin-top:6px" onclick="adicionarItemLista(\''+dataKey+'\',\''+placeholder+'\')">+ Adicionar</button>'
+      +'<button onclick="adicionarItemLista(\''+dataKey+'\',\''+placeholder+'\')" style="margin-top:6px;padding:4px 12px;border:1px dashed '+cor+';border-radius:6px;background:transparent;color:'+cor+';font-size:11px;cursor:pointer;font-family:inherit">+ Adicionar item</button>'
     +'</div>';
   }
 
@@ -468,24 +489,21 @@ function editarCompetencias(){
           +'<div><div class="field-label">Excelencia</div><input id="comp-edit-esc-excelencia" value="'+(perfil.escolaridade&&perfil.escolaridade.excelencia||'').replace(/"/g,'&quot;')+'" style="font-size:12px;width:100%"/></div>'
         +'</div></div>'
       // Níveis aplicáveis
-      +listaHtml('Niveis Aplicaveis',perfil.niveis,'niveis','Ex: Assistente I')
+      +listaHtml('📊 Níveis Aplicáveis','#854F0B',perfil.niveis,'niveis','Ex: Assistente I')
       +'<div style="border-top:0.5px solid var(--border);margin:14px 0"></div>'
       // Escopo do grupo
-      +listaHtml('Escopo do Grupo',perfil.escopo,'escopo','Descreva uma responsabilidade do escopo')
+      +listaHtml('🎯 Escopo do Grupo','#3B6D11',perfil.escopo,'escopo','Descreva uma responsabilidade')
       // Entregas do cargo
-      +listaHtml('Entregas do Cargo',perfil.entregas,'entregas','Descreva uma entrega esperada')
+      +listaHtml('📦 Entregas do Cargo','#A32D2D',perfil.entregas,'entregas','Descreva uma entrega esperada')
       +'<div style="border-top:0.5px solid var(--border);margin:14px 0"></div>'
       // Essenciais
-      +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">Competencias Essenciais</div>'
-      +secaoHtml('Essenciais (todos os cargos)',mc.essenciais,'essenciais')
+      +secaoHtml('💎 Competências Essenciais (todos os cargos)','#534AB7',mc.essenciais,'essenciais')
       +'<div style="border-top:0.5px solid var(--border);margin:14px 0"></div>'
       // Grupo Ocupacional
-      +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">Grupo Ocupacional — '+perfil.cargo+'</div>'
-      +secaoHtml('Competencias do Grupo',perfil.compGrupo||[],'compGrupo')
+      +secaoHtml('🏆 Competências do Grupo — '+perfil.cargo,'#185FA5',perfil.compGrupo||[],'compGrupo')
       +'<div style="border-top:0.5px solid var(--border);margin:14px 0"></div>'
       // Específicas
-      +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">Especificas — '+perfil.cargo+'</div>'
-      +secaoHtml('Competencias Especificas',perfil.compEspecificas||[],'compEspecificas')
+      +secaoHtml('🔧 Competências Específicas — '+perfil.cargo,'#0F6E56',perfil.compEspecificas||[],'compEspecificas')
     +'</div>'
     +'<div style="display:flex;gap:8px;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border)">'
       +(mc.perfis.length>1?'<button class="btn btn-sm" style="border-color:#DC2626;color:#DC2626" onclick="excluirPerfilComp(\''+sel+'\')">Excluir Perfil</button>':'<div></div>')
@@ -499,10 +517,11 @@ function adicionarItemComp(dataKey){
   if(!container)return;
   var idx=container.children.length;
   var div=document.createElement('div');
-  div.style.cssText='display:grid;grid-template-columns:2fr 1fr auto;gap:6px;align-items:center';
-  div.innerHTML='<input placeholder="Nome da competencia" data-sec="'+dataKey+'" data-idx="'+idx+'" data-field="nome" style="font-size:12px"/>'
-    +'<select data-sec="'+dataKey+'" data-idx="'+idx+'" data-field="tipo" style="font-size:12px"><option>Comportamental</option><option>Técnica</option></select>'
-    +'<button class="btn btn-xs btn-danger" onclick="this.closest(\'div[style*=grid]\').remove()">×</button>';
+  div.style.cssText='display:grid;grid-template-columns:2fr 1fr 2fr auto;gap:6px;align-items:center';
+  div.innerHTML='<input placeholder="Nome da competência" data-sec="'+dataKey+'" data-idx="'+idx+'" data-field="nome" style="font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--txt)"/>'
+    +'<select data-sec="'+dataKey+'" data-idx="'+idx+'" data-field="tipo" style="font-size:11px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--txt)"><option>Comportamental</option><option>Técnica</option></select>'
+    +'<input placeholder="Descrição (opcional)" data-sec="'+dataKey+'" data-idx="'+idx+'" data-field="desc" style="font-size:11px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--txt)"/>'
+    +'<button onclick="this.closest(\'div[style*=grid]\').remove()" style="border:none;background:#FCEBEB;color:#A32D2D;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:14px">×</button>';
   container.appendChild(div);
 }
 
@@ -511,8 +530,8 @@ function adicionarItemLista(dataKey,placeholder){
   if(!container)return;
   var div=document.createElement('div');
   div.style.cssText='display:flex;gap:6px;align-items:center';
-  div.innerHTML='<input data-lista="'+dataKey+'" style="font-size:12px;flex:1" placeholder="'+placeholder+'"/>'
-    +'<button class="btn btn-xs btn-danger" onclick="this.parentElement.remove()">×</button>';
+  div.innerHTML='<input data-lista="'+dataKey+'" style="font-size:12px;flex:1;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--txt)" placeholder="'+placeholder+'"/>'
+    +'<button onclick="this.parentElement.remove()" style="border:none;background:#FCEBEB;color:#A32D2D;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:14px">×</button>';
   container.appendChild(div);
 }
 
@@ -556,8 +575,10 @@ function salvarEdicaoCompetencias(perfilId){
       if(!nome)return;
       const idx=inp.dataset.idx;
       const tipoEl=container.querySelector('[data-field="tipo"][data-idx="'+idx+'"]');
+      const descEl=container.querySelector('[data-field="desc"][data-idx="'+idx+'"]');
       const tipo=tipoEl?tipoEl.value:'Comportamental';
-      result.push({nome,tipo,desc:''});
+      const desc=descEl?(descEl.value||'').trim():'';
+      result.push({nome,tipo,desc});
     });
     return result;
   }
