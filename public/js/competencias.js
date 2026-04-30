@@ -155,124 +155,254 @@ function renderCompetencias(){
   const mc=getMatrizCompetencias();
   const perfis = mc.perfis;
   const essenciais = mc.essenciais;
-
-  // Estado: qual perfil está selecionado
-  const sel = window._compSel || 'assistente';
+  const sel = window._compSel || (perfis[0]?perfis[0].id:'assistente');
   const perfil = perfis.find(p=>p.id===sel)||perfis[0];
+  if(!perfil) return '<div class="card" style="text-align:center;padding:40px"><div style="font-size:40px;margin-bottom:8px">📋</div><div style="font-size:14px;font-weight:600">Nenhum perfil de competências cadastrado</div><div style="font-size:12px;color:var(--txt3);margin-top:6px">Clique em "🤖 Criar com IA" pra gerar uma matriz completa.</div><br><button class="btn btn-primary" onclick="abrirCompetenciasIA()">🤖 Criar com IA</button></div>';
 
-  // Badges de tipo
+  // Categorias selecionáveis
+  var categorias=[
+    {key:'essenciais',label:'Essenciais',cor:'#534AB7',emoji:'💎'},
+    {key:'grupo',label:'Grupo Ocupacional',cor:'#185FA5',emoji:'🏆'},
+    {key:'especificas',label:'Específicas',cor:'#0F6E56',emoji:'🔧'},
+    {key:'escolaridade',label:'Escolaridade',cor:'#854F0B',emoji:'📚'},
+    {key:'escopo',label:'Escopo',cor:'#3B6D11',emoji:'🎯'},
+    {key:'entregas',label:'Entregas',cor:'#A32D2D',emoji:'📦'},
+  ];
+  var ativas=ls('comp_categorias_ativas',['essenciais','grupo','especificas','escolaridade','escopo','entregas']);
+
   function tipoBadge(tipo){
     const cor = tipo==='Técnica'?'#185FA5':'#534AB7';
     const bg  = tipo==='Técnica'?'#E6F1FB':'#EEEDFE';
     return '<span style="font-size:9px;font-weight:700;padding:1px 7px;border-radius:20px;background:'+bg+';color:'+cor+'">'+tipo+'</span>';
   }
-
-  // Card de competência
-  function compCard(c, cor){
-    return '<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:12px;display:flex;gap:10px;align-items:flex-start">'
-      +'<div style="flex:1;min-width:0">'
-        +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">'
-          +'<span style="font-size:12px;font-weight:700;color:var(--txt)">'+c.nome+'</span>'
-          +tipoBadge(c.tipo)
-        +'</div>'
-        +(c.desc?'<div style="font-size:11px;color:var(--txt2);line-height:1.5">'+c.desc+'</div>':'')
+  function compCard(c){
+    return '<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:12px">'
+      +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">'
+        +'<span style="font-size:12px;font-weight:700;color:var(--txt)">'+c.nome+'</span>'
+        +tipoBadge(c.tipo)
       +'</div>'
+      +(c.desc?'<div style="font-size:11px;color:var(--txt2);line-height:1.5">'+c.desc+'</div>':'')
     +'</div>';
   }
 
+  // Bolhas de categorias
+  var bolhasHtml='<div style="display:flex;flex-wrap:wrap;gap:6px">';
+  categorias.forEach(function(cat){
+    var isAtiva=ativas.indexOf(cat.key)>=0;
+    bolhasHtml+='<button onclick="toggleCategComp(\''+cat.key+'\')" style="display:flex;align-items:center;gap:5px;padding:6px 14px;border-radius:20px;border:2px solid '+(isAtiva?cat.cor:'var(--border)')+';background:'+(isAtiva?cat.cor+'15':'var(--bg)')+';color:'+(isAtiva?cat.cor:'var(--txt3)')+';font-size:11px;font-weight:'+(isAtiva?'700':'400')+';cursor:pointer;font-family:inherit;transition:all .15s">'
+      +(isAtiva?'✓ ':'')+cat.emoji+' '+cat.label+'</button>';
+  });
+  bolhasHtml+='</div>';
+
   // Tabs de perfil
-  const tabs='<div style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;overflow:hidden;margin-bottom:20px;width:fit-content">'
-    +perfis.map(p=>'<button onclick="window._compSel=\''+p.id+'\';render(\'competencias\')" '
+  var tabs='<div style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;overflow:hidden;margin-bottom:14px;width:fit-content">'
+    +perfis.map(function(p){return '<button onclick="window._compSel=\''+p.id+'\';render(\'competencias\')" '
       +'style="padding:8px 18px;border:none;border-left:0.5px solid var(--border2);font-size:12.5px;font-weight:600;cursor:pointer;'
       +'background:'+(p.id===sel?'var(--green)':'var(--bg2)')+';color:'+(p.id===sel?'#fff':'var(--txt2)')+';transition:all .15s">'
-      +p.cargo+'</button>'
-    ).join('')
+      +p.cargo+'</button>';}).join('')
   +'</div>';
+
+  // Seções
+  var secoesHtml='';
+
+  if(ativas.indexOf('escolaridade')>=0 && perfil.escolaridade){
+    secoesHtml+='<div class="card" style="padding:16px;margin-bottom:10px">'
+      +'<div style="font-size:13px;font-weight:700;color:#854F0B;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #854F0B">📚 Escolaridade</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+        +'<div style="background:var(--bg2);border-radius:8px;padding:12px"><div style="font-size:9px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Básica</div><div style="font-size:12px;color:var(--txt)">'+perfil.escolaridade.basica+'</div></div>'
+        +'<div style="background:var(--green-bg);border-radius:8px;padding:12px"><div style="font-size:9px;font-weight:700;color:var(--green2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Excelência</div><div style="font-size:12px;color:var(--txt)">'+perfil.escolaridade.excelencia+'</div></div>'
+      +'</div>'
+    +'</div>';
+  }
+  if(ativas.indexOf('escopo')>=0 && perfil.escopo && perfil.escopo.length){
+    secoesHtml+='<div class="card" style="padding:16px;margin-bottom:10px">'
+      +'<div style="font-size:13px;font-weight:700;color:#3B6D11;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #3B6D11">🎯 Escopo do Grupo Ocupacional</div>'
+      +'<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px">'+perfil.escopo.map(function(e){return '<li style="font-size:12px;color:var(--txt);line-height:1.5">'+e+'</li>';}).join('')+'</ul>'
+    +'</div>';
+  }
+  if(ativas.indexOf('entregas')>=0 && perfil.entregas && perfil.entregas.length){
+    secoesHtml+='<div class="card" style="padding:16px;margin-bottom:10px">'
+      +'<div style="font-size:13px;font-weight:700;color:#A32D2D;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #A32D2D">📦 Entregas do Cargo</div>'
+      +'<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px">'+perfil.entregas.map(function(e){return '<li style="font-size:12px;color:var(--txt);line-height:1.5">'+e+'</li>';}).join('')+'</ul>'
+    +'</div>';
+  }
+  if(ativas.indexOf('essenciais')>=0 && essenciais && essenciais.length){
+    secoesHtml+='<div class="card" style="padding:16px;margin-bottom:10px">'
+      +'<div style="font-size:13px;font-weight:700;color:#534AB7;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #534AB7">💎 Competências Essenciais <span style="font-size:10px;color:var(--txt3);font-weight:400">(todos os cargos)</span></div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px">'+essenciais.map(function(c){return compCard(c);}).join('')+'</div>'
+    +'</div>';
+  }
+  if(ativas.indexOf('grupo')>=0 && perfil.compGrupo && perfil.compGrupo.length){
+    secoesHtml+='<div class="card" style="padding:16px;margin-bottom:10px">'
+      +'<div style="font-size:13px;font-weight:700;color:#185FA5;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #185FA5">🏆 Competências do Grupo Ocupacional</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px">'+perfil.compGrupo.map(function(c){return compCard(c);}).join('')+'</div>'
+    +'</div>';
+  }
+  if(ativas.indexOf('especificas')>=0 && perfil.compEspecificas && perfil.compEspecificas.length){
+    secoesHtml+='<div class="card" style="padding:16px;margin-bottom:10px">'
+      +'<div style="font-size:13px;font-weight:700;color:#0F6E56;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #0F6E56">🔧 Competências Específicas</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px">'+perfil.compEspecificas.map(function(c){return compCard(c);}).join('')+'</div>'
+    +'</div>';
+  }
 
   // Níveis aplicáveis
-  const niveisHtml='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">'
-    +perfil.niveis.map(n=>{
-      const ns=NIVEL_STYLE[n]||{cor:'#888',bg:'#eee'};
-      return '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:'+ns.bg+';color:'+ns.cor+'">'+n+'</span>';
-    }).join('')
-  +'</div>';
-
-  // Escolaridade
-  const escHtml='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">'
-    +'<div style="background:var(--bg2);border-radius:8px;padding:12px">'
-      +'<div style="font-size:9px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">📚 Escolaridade Básica</div>'
-      +'<div style="font-size:12px;color:var(--txt)">'+perfil.escolaridade.basica+'</div>'
-    +'</div>'
-    +'<div style="background:var(--green-bg);border-radius:8px;padding:12px">'
-      +'<div style="font-size:9px;font-weight:700;color:var(--green2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">⭐ Escolaridade de Excelência</div>'
-      +'<div style="font-size:12px;color:var(--txt)">'+perfil.escolaridade.excelencia+'</div>'
-    +'</div>'
-  +'</div>';
-
-  // Escopo
-  const escopoHtml='<div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:20px">'
-    +'<div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">🎯 Escopo do Grupo Ocupacional</div>'
-    +'<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px">'
-      +perfil.escopo.map(e=>'<li style="font-size:12px;color:var(--txt);line-height:1.5">'+e+'</li>').join('')
-    +'</ul>'
-  +'</div>';
-
-  // Entregas
-  const entregasHtml='<div style="background:#E6F1FB;border:0.5px solid #185FA5;border-radius:10px;padding:14px;margin-bottom:20px">'
-    +'<div style="font-size:11px;font-weight:700;color:#185FA5;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">📦 Entregas do Cargo</div>'
-    +'<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px">'
-      +perfil.entregas.map(e=>'<li style="font-size:12px;color:var(--txt);line-height:1.5">'+e+'</li>').join('')
-    +'</ul>'
-  +'</div>';
-
-  // Competências Essenciais
-  const essHtml='<div style="margin-bottom:20px">'
-    +'<div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">💎 Competências Essenciais <span style="font-size:10px;color:var(--txt3);font-weight:400">(todos os cargos)</span></div>'
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px">'
-      +essenciais.map(c=>compCard(c,'#534AB7')).join('')
-    +'</div>'
-  +'</div>';
-
-  // Competências do Grupo Ocupacional
-  const grpHtml='<div style="margin-bottom:20px">'
-    +'<div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">🏆 Competências do Grupo Ocupacional</div>'
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px">'
-      +perfil.compGrupo.map(c=>compCard(c,'#185FA5')).join('')
-    +'</div>'
-  +'</div>';
-
-  // Competências Específicas
-  const espHtml='<div style="margin-bottom:24px">'
-    +'<div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">🔧 Competências Específicas</div>'
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px">'
-      +perfil.compEspecificas.map(c=>compCard(c,'#0F6E56')).join('')
-    +'</div>'
-  +'</div>';
-
-  // Botão exportar PDF
-  const exportBtn='<div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:16px">'
-    +'<button class="btn btn-sm" onclick="editarCompetencias()" style="border-color:#854F0B;color:#854F0B">✏️ Editar Competências</button>'
-    +'<button class="btn btn-sm" onclick="resetarCompetencias()" style="border-color:var(--txt3);color:var(--txt3)" title="Restaurar padrão">Restaurar padrão</button>'
-    +'<button class="btn btn-sm" data-perfil="'+perfil.id+'" onclick="exportarPDFCompetencias(this.dataset.perfil)" style="border-color:#185FA5;color:#185FA5">📄 Exportar PDF</button>'
+  var niveisHtml='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">'
+    +perfil.niveis.map(function(n){var ns=NIVEL_STYLE[n]||{cor:'#888',bg:'#eee'};return '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:'+ns.bg+';color:'+ns.cor+'">'+n+'</span>';}).join('')
   +'</div>';
 
   return '<div>'
-    +exportBtn
-    +tabs
-    +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'
-      +'<div>'
-        +'<div style="font-size:18px;font-weight:800;color:var(--txt)">'+perfil.cargo+'</div>'
-        +'<div style="font-size:11px;color:var(--txt3);margin-top:2px">Níveis aplicáveis:</div>'
+    // Card header com bolhas + botões
+    +'<div class="card" style="padding:16px;margin-bottom:12px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">'
+        +'<div style="font-size:12px;color:var(--txt3)">Selecione as seções a exibir:</div>'
+        +'<div style="display:flex;gap:8px">'
+          +'<button class="btn btn-sm" onclick="abrirCompetenciasIA()" style="border-color:#534AB7;color:#534AB7">🤖 Criar com IA</button>'
+          +'<button class="btn btn-sm" onclick="editarCompetencias()" style="border-color:#854F0B;color:#854F0B">✏️ Editar</button>'
+          +'<button class="btn btn-sm" data-perfil="'+perfil.id+'" onclick="exportarPDFCompetencias(this.dataset.perfil)" style="border-color:#185FA5;color:#185FA5">📄 PDF</button>'
+        +'</div>'
       +'</div>'
+      +bolhasHtml
     +'</div>'
+    // Tabs de perfil
+    +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">'
+      +tabs
+    +'</div>'
+    +'<div style="font-size:16px;font-weight:800;color:var(--txt);margin-bottom:4px">'+perfil.cargo+'</div>'
+    +'<div style="font-size:11px;color:var(--txt3);margin-bottom:8px">Níveis aplicáveis:</div>'
     +niveisHtml
-    +escHtml
-    +escopoHtml
-    +entregasHtml
-    +essHtml
-    +grpHtml
-    +espHtml
+    +secoesHtml
   +'</div>';
+}
+
+// Toggle categoria de competências
+function toggleCategComp(key){
+  var ativas=ls('comp_categorias_ativas',['essenciais','grupo','especificas','escolaridade','escopo','entregas']);
+  var idx=ativas.indexOf(key);
+  if(idx>=0)ativas.splice(idx,1);else ativas.push(key);
+  lss('comp_categorias_ativas',ativas);
+  render('competencias');
+}
+
+// Criar Competências com IA
+function abrirCompetenciasIA(){
+  var perfis=(getMatrizCompetencias()||{}).perfis||[];
+  var niveisDisp=niveis.sort(function(a,b){return a.ordem-b.ordem;}).map(function(n){return n.nome;});
+
+  var html='<div style="font-size:14px;font-weight:700;margin-bottom:8px">Gerar Matriz de Competências com IA</div>'
+    +'<div style="font-size:12px;color:var(--txt3);margin-bottom:14px">A IA vai criar perfis de competências com escolaridade, escopo, entregas e competências técnicas/comportamentais.</div>';
+
+  // Selecionar o que gerar
+  var opcoes=[
+    {key:'essenciais',label:'Competências Essenciais',emoji:'💎'},
+    {key:'grupo',label:'Competências do Grupo',emoji:'🏆'},
+    {key:'especificas',label:'Competências Específicas',emoji:'🔧'},
+    {key:'escolaridade',label:'Escolaridade exigida',emoji:'📚'},
+    {key:'escopo',label:'Escopo do cargo',emoji:'🎯'},
+    {key:'entregas',label:'Entregas esperadas',emoji:'📦'},
+  ];
+  html+='<div style="font-size:12px;font-weight:600;margin-bottom:6px">O que gerar:</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">';
+  opcoes.forEach(function(o){
+    html+='<button onclick="this.classList.toggle(\'cp-ia-sel\');this.style.borderColor=this.classList.contains(\'cp-ia-sel\')?\'#534AB7\':\'#E0E2E0\';this.style.background=this.classList.contains(\'cp-ia-sel\')?\'#F3F0FF\':\'#fff\';this.style.fontWeight=this.classList.contains(\'cp-ia-sel\')?\'700\':\'400\'" class="cp-ia-opt cp-ia-sel" data-key="'+o.key+'" style="display:flex;align-items:center;gap:5px;padding:6px 12px;border:1.5px solid #534AB7;border-radius:16px;background:#F3F0FF;font-size:11px;color:#3A4240;cursor:pointer;font-family:inherit;font-weight:700;transition:all .15s">'
+      +o.emoji+' '+o.label+'</button>';
+  });
+  html+='</div>';
+
+  // Perfis/cargos
+  html+='<div style="font-size:12px;font-weight:600;margin-bottom:6px">Cargos/perfis para gerar:</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">';
+  if(niveisDisp.length>0){
+    niveisDisp.forEach(function(n){
+      html+='<button onclick="this.classList.toggle(\'cp-ia-nv\');this.style.borderColor=this.classList.contains(\'cp-ia-nv\')?\'#0F6E56\':\'#E0E2E0\';this.style.background=this.classList.contains(\'cp-ia-nv\')?\'#E1F5EE\':\'#fff\';this.style.fontWeight=this.classList.contains(\'cp-ia-nv\')?\'700\':\'400\'" class="cp-ia-nivel cp-ia-nv" data-nivel="'+n+'" style="padding:6px 12px;border:1.5px solid #0F6E56;border-radius:16px;background:#E1F5EE;font-size:11px;color:#3A4240;cursor:pointer;font-family:inherit;font-weight:700;transition:all .15s">'+n+'</button>';
+    });
+  }
+  html+='</div>';
+
+  // Contexto
+  html+='<div style="font-size:12px;font-weight:600;margin-bottom:6px">Contexto (setor, tipo de empresa, foco):</div>'
+    +'<textarea id="cp-ia-contexto" placeholder="Ex: Laboratório de ensaios elétricos, foco em qualidade e acreditação ISO 17025" style="width:100%;min-height:60px;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box;background:var(--bg);color:var(--txt)"></textarea>'
+    +'<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">'
+      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
+      +'<button class="btn btn-primary" onclick="gerarCompetenciasIA()" style="background:#534AB7;border-color:#534AB7">🤖 Gerar</button>'
+    +'</div>';
+
+  document.getElementById('modal-title').textContent='🤖 Criar Competências com IA';
+  document.getElementById('modal-box').classList.remove('modal-lg');
+  document.getElementById('modal-body').innerHTML=html;
+  document.getElementById('modal').style.display='flex';
+}
+
+async function gerarCompetenciasIA(){
+  var selecionados=[];
+  document.querySelectorAll('.cp-ia-opt.cp-ia-sel').forEach(function(b){selecionados.push(b.dataset.key);});
+  var niveisEscolhidos=[];
+  document.querySelectorAll('.cp-ia-nivel.cp-ia-nv').forEach(function(b){niveisEscolhidos.push(b.dataset.nivel);});
+  var contexto=((document.getElementById('cp-ia-contexto')||{}).value||'').trim();
+  if(!niveisEscolhidos.length){toast('Selecione pelo menos um cargo/nível');return;}
+  if(!contexto){toast('Descreva o contexto');return;}
+
+  closeModal();
+  toast('🤖 Gerando competências...');
+
+  var mc=getMatrizCompetencias()||{perfis:[],essenciais:[]};
+
+  for(var ni=0;ni<niveisEscolhidos.length;ni++){
+    var nivel=niveisEscolhidos[ni];
+    var prompt='Gere uma matriz de competências para o cargo: '+nivel+'\nContexto: '+contexto+'\n\n'
+      +'Gere em JSON:\n{\n'
+      +'"cargo":"'+nivel+'",\n'
+      +(selecionados.indexOf('escolaridade')>=0?'"escolaridade":{"basica":"...","excelencia":"..."},\n':'')
+      +(selecionados.indexOf('escopo')>=0?'"escopo":["item1","item2","item3"],\n':'')
+      +(selecionados.indexOf('entregas')>=0?'"entregas":["entrega1","entrega2"],\n':'')
+      +(selecionados.indexOf('essenciais')>=0?'"essenciais":[{"nome":"...","tipo":"Comportamental","desc":"..."}],\n':'')
+      +(selecionados.indexOf('grupo')>=0?'"compGrupo":[{"nome":"...","tipo":"Técnica ou Comportamental","desc":"..."}],\n':'')
+      +(selecionados.indexOf('especificas')>=0?'"compEspecificas":[{"nome":"...","tipo":"Técnica","desc":"..."}],\n':'')
+      +'}\nRetorne APENAS JSON puro, sem markdown.';
+
+    try{
+      var token=squadoGetToken();
+      var r=await fetch(SQUADO_API+'/api/ai/chat',{
+        method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body:JSON.stringify({messages:[
+          {role:'system',content:'Responda APENAS com JSON válido, sem markdown, sem backticks. tipo deve ser "Técnica" ou "Comportamental".'},
+          {role:'user',content:prompt}
+        ],max_tokens:2000})
+      });
+      var d=await r.json();
+      var resposta=(d.content||'').replace(/```json/g,'').replace(/```/g,'').trim();
+      var jsonMatch=resposta.match(/\{[\s\S]*\}/);
+      if(!jsonMatch)continue;
+      var gerado=JSON.parse(jsonMatch[0]);
+
+      // Mesclar com existentes
+      var perfilExistente=mc.perfis.find(function(p){return p.cargo===nivel;});
+      if(perfilExistente){
+        if(gerado.escolaridade)perfilExistente.escolaridade=gerado.escolaridade;
+        if(gerado.escopo)perfilExistente.escopo=gerado.escopo;
+        if(gerado.entregas)perfilExistente.entregas=gerado.entregas;
+        if(gerado.compGrupo)perfilExistente.compGrupo=gerado.compGrupo;
+        if(gerado.compEspecificas)perfilExistente.compEspecificas=gerado.compEspecificas;
+      } else {
+        mc.perfis.push({
+          id:nivel.toLowerCase().replace(/\s+/g,'_'),
+          cargo:nivel,niveis:[nivel],
+          escolaridade:gerado.escolaridade||{basica:'—',excelencia:'—'},
+          escopo:gerado.escopo||[],entregas:gerado.entregas||[],
+          compGrupo:gerado.compGrupo||[],compEspecificas:gerado.compEspecificas||[]
+        });
+      }
+      if(gerado.essenciais&&gerado.essenciais.length){
+        gerado.essenciais.forEach(function(e){
+          if(!mc.essenciais.find(function(x){return x.nome===e.nome;})) mc.essenciais.push(e);
+        });
+      }
+    }catch(e){console.error('Erro IA comp '+nivel+':',e);}
+  }
+
+  saveMatrizCompetencias(mc);
+  toast('✅ Competências geradas!');
+  window._compSel=niveisEscolhidos[0].toLowerCase().replace(/\s+/g,'_');
+  render('competencias');
 }
 
 
