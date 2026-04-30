@@ -502,23 +502,34 @@ function renderValores(){
     +'</div>';
   });
 
-  if(!secoesHtml) secoesHtml='<div style="text-align:center;padding:40px;color:var(--txt3)"><div style="font-size:40px;margin-bottom:8px">⭐</div><div style="font-size:14px;font-weight:600;margin-bottom:6px">Selecione as categorias acima</div><div style="font-size:12px">Clique nos balões para ativar as seções que deseja exibir.</div></div>';
+  // Categorias customizadas no display
+  var customCatsV=ls('valores_custom_categorias',[]);
+  customCatsV.forEach(function(cc){
+    if(ativas.indexOf(cc.key)<0) return;
+    var items=dados[cc.key]||(vCustom&&vCustom[cc.key])||[];
+    var tipo='cards';
+    secoesHtml+='<div class="card" style="padding:20px;margin-bottom:12px">'
+      +secTitle(cc.label,cc.sub||'Valores personalizados',cc.cor||'#888')
+      +renderCards(items,cc.cor||'#888',tipo)
+    +'</div>';
+  });
+
+  if(!secoesHtml) secoesHtml='<div style="text-align:center;padding:40px;color:var(--txt3)"><div style="font-size:40px;margin-bottom:8px">⭐</div><div style="font-size:14px;font-weight:600;margin-bottom:6px">Nenhuma seção ativa</div><div style="font-size:12px">Clique em "✏️ Editar" pra selecionar as seções visíveis.</div></div>';
 
   return '<div style="max-width:900px">'
-    // Card de categorias
+    // Card header com botões (SEM bolhas - ficam no editar)
     +'<div class="card" style="padding:16px;margin-bottom:12px">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
-        +'<div style="font-size:12px;color:var(--txt3)">Selecione as categorias que deseja exibir:</div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'
+        +'<div style="font-size:12px;color:var(--txt3)">'+ativas.length+' seções ativas · <span style="color:var(--txt2);cursor:pointer;text-decoration:underline" onclick="editarValores()">Editar seções visíveis</span></div>'
         +acoesHtml
       +'</div>'
-      +bolhasHtml
     +'</div>'
     // Conteúdo
     +secoesHtml
   +'</div>';
 }
 
-// ── Toggle categoria de valores ──────────────────────────────
+// ── Toggle categoria de valores (dentro do editar) ────────
 function toggleCategValor(key){
   var ativas=ls('valores_categorias_ativas',['pucrs','labelo','naoNegociamos','responsabilidades','pilares']);
   var idx=ativas.indexOf(key);
@@ -526,6 +537,45 @@ function toggleCategValor(key){
   else ativas.push(key);
   lss('valores_categorias_ativas',ativas);
   render('valores');
+}
+
+function toggleCategValorEdit(key){
+  var ativas=ls('valores_categorias_ativas',['pucrs','labelo','naoNegociamos','responsabilidades','pilares']);
+  var idx=ativas.indexOf(key);
+  if(idx>=0) ativas.splice(idx,1);
+  else ativas.push(key);
+  lss('valores_categorias_ativas',ativas);
+  editarValores();
+}
+
+function adicionarCatCustomValor(){
+  var nome=prompt('Nome da nova seção:');
+  if(!nome||!nome.trim())return;
+  nome=nome.trim();
+  var customs=ls('valores_custom_categorias',[]);
+  var key='vcustom_'+nome.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+  if(customs.find(function(c){return c.key===key;})){toast('Já existe');return;}
+  var cores=['#0891B2','#9333EA','#D97706','#059669','#DC2626','#7C3AED'];
+  var cor=cores[customs.length%cores.length];
+  customs.push({key:key,label:nome,cor:cor});
+  lss('valores_custom_categorias',customs);
+  var ativas=ls('valores_categorias_ativas',[]);
+  ativas.push(key);
+  lss('valores_categorias_ativas',ativas);
+  toast('✅ Seção "'+nome+'" adicionada!');
+  editarValores();
+}
+
+function removerCatCustomValor(key){
+  if(!confirm('Remover esta seção?'))return;
+  var customs=ls('valores_custom_categorias',[]);
+  customs=customs.filter(function(c){return c.key!==key;});
+  lss('valores_custom_categorias',customs);
+  var ativas=ls('valores_categorias_ativas',[]);
+  ativas=ativas.filter(function(k){return k!==key;});
+  lss('valores_categorias_ativas',ativas);
+  toast('Seção removida');
+  editarValores();
 }
 
 // ── Criar Valores com IA ─────────────────────────────────────
@@ -662,6 +712,46 @@ function editarValores(){
   // Títulos customizáveis
   const titulos=vCustom?.titulos||{pucrs:'Valores Institucionais',labelo:'Valores da Empresa',naoNeg:'Não Negociamos',resps:'Responsabilidades',pilares:'Pilares'};
 
+  // Bolhas de seleção dentro do editar
+  var ativas=ls('valores_categorias_ativas',['pucrs','labelo','naoNegociamos','responsabilidades','pilares']);
+  var catsDef=[
+    {key:'pucrs',label:'🏛 Valores da Instituição',cor:'#185FA5'},
+    {key:'labelo',label:'👥 Valores da Unidade',cor:'#0F6E56'},
+    {key:'naoNegociamos',label:'🚫 Não Negociamos',cor:'#A32D2D'},
+    {key:'responsabilidades',label:'📋 Responsabilidades',cor:'#854F0B'},
+    {key:'pilares',label:'🏗 Pilares',cor:'#534AB7'},
+    {key:'outros',label:'⭐ Outros',cor:'#3B6D11'},
+  ];
+  var customCatsV=ls('valores_custom_categorias',[]);
+  customCatsV.forEach(function(cc){catsDef.push({key:cc.key,label:cc.label,cor:cc.cor||'#888',custom:true});});
+
+  var bolhasEdit='<div style="margin-bottom:14px;padding:12px;background:var(--bg2);border-radius:10px">'
+    +'<div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px">Seções a exibir:</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:6px">';
+  catsDef.forEach(function(cat){
+    var isAtiva=ativas.indexOf(cat.key)>=0;
+    bolhasEdit+='<button onclick="toggleCategValorEdit(\''+cat.key+'\',this)" style="display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:16px;border:2px solid '+(isAtiva?cat.cor:'var(--border)')+';background:'+(isAtiva?cat.cor+'15':'var(--bg)')+';color:'+(isAtiva?cat.cor:'var(--txt3)')+';font-size:11px;font-weight:'+(isAtiva?'700':'400')+';cursor:pointer;font-family:inherit;transition:all .15s">'
+      +(isAtiva?'✓ ':'')+cat.label
+      +(cat.custom?'<span onclick="event.stopPropagation();removerCatCustomValor(\''+cat.key+'\')" style="margin-left:4px;color:#A32D2D;font-weight:700" title="Remover">×</span>':'')
+    +'</button>';
+  });
+  bolhasEdit+='<button onclick="adicionarCatCustomValor()" style="padding:6px 12px;border-radius:16px;border:2px dashed var(--border);background:var(--bg);color:var(--txt3);font-size:11px;cursor:pointer;font-family:inherit">+ Outro</button>'
+  +'</div></div>';
+
+  // Seções de edição para categorias customizadas
+  var customSecoesEdit='';
+  customCatsV.forEach(function(cc){
+    var items=vCustom&&vCustom[cc.key]?vCustom[cc.key]:[];
+    customSecoesEdit+='<div style="border-top:0.5px solid var(--border);margin:12px 0"></div>'
+      +secTitle(cc.key,cc.label)
+      +listaEditavel(cc.key,items,'nome');
+  });
+  // Seção "outros" padrão
+  var outrosItems=vCustom&&vCustom.outros?vCustom.outros:[];
+  var outrosSecao='<div style="border-top:0.5px solid var(--border);margin:12px 0"></div>'
+    +secTitle('outros','Outros')
+    +listaEditavel('outros',outrosItems,'nome');
+
   function secTitle(id,label){
     return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
       +'<input id="ve-title-'+id+'" value="'+label.replace(/"/g,'&quot;')+'" style="font-size:12px;font-weight:700;color:var(--txt);flex:1;border:none;border-bottom:1px solid var(--border2);background:transparent;padding:2px 0"/>'
@@ -697,6 +787,7 @@ function editarValores(){
   document.getElementById('modal-box').classList.add('modal-lg');
   document.getElementById('modal-body').innerHTML=
     '<div style="max-height:65vh;overflow-y:auto;padding-right:4px">'
+      +bolhasEdit
       +secTitle('pucrs',titulos.pucrs)
       +listaEditavel('pucrs',pucrs,'nome')
       +'<div style="border-top:0.5px solid var(--border);margin:12px 0"></div>'
@@ -711,6 +802,8 @@ function editarValores(){
       +'<div style="border-top:0.5px solid var(--border);margin:12px 0"></div>'
       +secTitle('pilares',titulos.pilares)
       +listaEditavel('pilares',pilares,'nome')
+      +outrosSecao
+      +customSecoesEdit
     +'</div>'
     +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border)">'
       +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
@@ -793,14 +886,22 @@ async function salvarEdicaoValores(){
     naoNegociamos:coletarLista('naoNeg','text',origNaoNeg),
     responsabilidades:coletarLista('resps','nome',origResps),
     pilares:      coletarLista('pilares','nome',origPilares),
+    outros:       coletarLista('outros','nome',vOrig.outros||[]),
     titulos:{
       pucrs:  getTitulo('pucrs'),
       labelo: getTitulo('labelo'),
       naoNeg: getTitulo('naoNeg'),
       resps:  getTitulo('resps'),
       pilares:getTitulo('pilares'),
+      outros: getTitulo('outros'),
     }
   };
+  // Salvar categorias customizadas
+  var customCatsVS=ls('valores_custom_categorias',[]);
+  customCatsVS.forEach(function(cc){
+    v[cc.key]=coletarLista(cc.key,'nome',vOrig[cc.key]||[]);
+    v.titulos[cc.key]=getTitulo(cc.key);
+  });
 
   // Salvar localmente
   lss('valores_v1',v);
