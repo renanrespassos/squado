@@ -90,10 +90,11 @@ function renderNotas(search=''){
             +colSelect
           +'</div>'
           +'<textarea class="notes-raw" id="notes-raw" placeholder="Ex: Bernardo se destacou hoje ajudando os colegas do RF com dificuldades t\u00E9cnicas&#10;Julia precisa melhorar prazos dos relat\u00F3rios&#10;Parab\u00E9ns ao Philipe pela aprova\u00E7\u00E3o na auditoria 17025"></textarea>'
-          +'<div class="flex gap-8 mt-10 items-center">'
+          +'<div class="flex gap-8 mt-10 items-center" style="flex-wrap:wrap">'
             +'<button class="btn btn-purple" onclick="processarNota()" id="btn-processar">\uD83E\uDD16 Organizar com IA</button>'
             +'<button class="btn btn-sm" onclick="salvarNotaRapida()">\uD83D\uDCBE Salvar sem IA</button>'
-            +'<span style="font-size:10px;color:var(--txt3)">Shift+Enter = nova linha</span>'
+            +'<button class="btn btn-sm" id="btn-voz" onclick="toggleTranscricaoVoz()" style="border-color:#A32D2D;color:#A32D2D">\uD83C\uDFA4 Ditar</button>'
+            +'<span id="voz-status" style="font-size:10px;color:var(--txt3)"></span>'
           +'</div>'
         +'</div>'
         +'<div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px">'
@@ -583,4 +584,118 @@ async function processarNota(){
     render('notas');toast('Nota salva (sem IA)');
   }
   if(btn){btn.disabled=false;btn.textContent='🤖 Organizar com IA';}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TRANSCRIÇÃO POR VOZ — Speech Recognition API
+// ═══════════════════════════════════════════════════════════════
+
+var _vozRecognition = null;
+var _vozAtiva = false;
+
+function toggleTranscricaoVoz(){
+  if(_vozAtiva){
+    pararTranscricao();
+    return;
+  }
+
+  // Verificar suporte
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRecognition){
+    toast('⚠️ Seu navegador não suporta transcrição de voz. Use o Chrome.');
+    return;
+  }
+
+  _vozRecognition = new SpeechRecognition();
+  _vozRecognition.continuous = true;
+  _vozRecognition.interimResults = true;
+  _vozRecognition.lang = 'pt-BR';
+  _vozRecognition.maxAlternatives = 1;
+
+  var textarea = document.getElementById('notes-raw');
+  var btnVoz = document.getElementById('btn-voz');
+  var statusEl = document.getElementById('voz-status');
+  var textoAntes = textarea ? textarea.value : '';
+  var textoFinal = '';
+
+  _vozRecognition.onstart = function(){
+    _vozAtiva = true;
+    if(btnVoz){
+      btnVoz.textContent = '⏹ Parar';
+      btnVoz.style.background = '#A32D2D';
+      btnVoz.style.color = '#fff';
+      btnVoz.style.borderColor = '#A32D2D';
+      btnVoz.style.animation = 'skeleton-pulse 1.5s infinite';
+    }
+    if(statusEl) statusEl.textContent = '🔴 Gravando... fale agora';
+    toast('🎤 Gravação iniciada — fale agora');
+  };
+
+  _vozRecognition.onresult = function(event){
+    var interimTranscript = '';
+    var finalTranscript = '';
+    for(var i = event.resultIndex; i < event.results.length; i++){
+      var transcript = event.results[i][0].transcript;
+      if(event.results[i].isFinal){
+        finalTranscript += transcript + '. ';
+      } else {
+        interimTranscript += transcript;
+      }
+    }
+    if(finalTranscript){
+      textoFinal += finalTranscript;
+    }
+    // Mostrar texto final + interim no textarea
+    if(textarea){
+      var prefixo = textoAntes ? textoAntes + '\n' : '';
+      textarea.value = prefixo + textoFinal + interimTranscript;
+      textarea.scrollTop = textarea.scrollHeight;
+    }
+    if(statusEl) statusEl.textContent = '🔴 Gravando... ' + (textoFinal.split(' ').length - 1) + ' palavras';
+  };
+
+  _vozRecognition.onerror = function(event){
+    console.error('Erro voz:', event.error);
+    if(event.error === 'not-allowed'){
+      toast('⚠️ Permissão de microfone negada. Permita o acesso nas configurações do navegador.');
+    } else if(event.error === 'no-speech'){
+      if(statusEl) statusEl.textContent = '⚠️ Nenhuma fala detectada';
+    } else {
+      toast('⚠️ Erro: ' + event.error);
+    }
+    pararTranscricao();
+  };
+
+  _vozRecognition.onend = function(){
+    // Se ainda está ativa, reiniciar (continuous mode pode parar)
+    if(_vozAtiva){
+      try { _vozRecognition.start(); } catch(e) { pararTranscricao(); }
+    }
+  };
+
+  try {
+    _vozRecognition.start();
+  } catch(e){
+    toast('⚠️ Erro ao iniciar gravação: ' + e.message);
+    pararTranscricao();
+  }
+}
+
+function pararTranscricao(){
+  _vozAtiva = false;
+  if(_vozRecognition){
+    try { _vozRecognition.stop(); } catch(e){}
+    _vozRecognition = null;
+  }
+  var btnVoz = document.getElementById('btn-voz');
+  var statusEl = document.getElementById('voz-status');
+  if(btnVoz){
+    btnVoz.textContent = '🎤 Ditar';
+    btnVoz.style.background = '';
+    btnVoz.style.color = '#A32D2D';
+    btnVoz.style.borderColor = '#A32D2D';
+    btnVoz.style.animation = '';
+  }
+  if(statusEl) statusEl.textContent = '✅ Transcrição finalizada';
+  setTimeout(function(){ if(statusEl) statusEl.textContent = ''; }, 3000);
 }
