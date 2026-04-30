@@ -802,17 +802,24 @@ function _renderWizardStep(isEdit){
     +'</div>';
   } else if(step===3){
     var funcoesDisp=ls('funcoes_v8',[]);
-    content='<div style="font-size:12px;color:var(--txt2);margin-bottom:10px">Selecione as funções que este colaborador executa (opcional):</div>'
-      +'<div style="max-height:180px;overflow-y:auto;margin-bottom:10px">';
+    // Inicializar dedicações se não existir
+    if(!d.funcoesDedicacao) d.funcoesDedicacao={};
+    content='<div style="font-size:12px;color:var(--txt2);margin-bottom:10px">Selecione as funções e defina a dedicação (%):</div>'
+      +'<div style="max-height:220px;overflow-y:auto;margin-bottom:10px">';
     if(funcoesDisp.length===0){
       content+='<div style="text-align:center;padding:16px;color:var(--txt3);font-size:12px">Nenhuma função cadastrada ainda.</div>';
     } else {
-      funcoesDisp.forEach(function(f,fi){
-        var checked=d.funcoes.indexOf(f.nome)>=0?'checked':'';
-        content+='<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:0.5px solid var(--border);border-radius:8px;margin-bottom:4px;cursor:pointer">'
-          +'<input type="checkbox" class="wz-func-check" data-nome="'+esc(f.nome)+'" '+checked+' style="accent-color:#0F6E56;width:16px;height:16px">'
-          +'<div style="flex:1"><div style="font-size:12px;font-weight:600">'+f.nome+'</div><div style="font-size:10px;color:var(--txt3)">'+(f.area||'')+'</div></div>'
-        +'</label>';
+      funcoesDisp.forEach(function(f){
+        var checked=d.funcoes.indexOf(f.nome)>=0;
+        var pctVal=d.funcoesDedicacao[f.nome]||100;
+        content+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:0.5px solid var(--border);border-radius:8px;margin-bottom:4px">'
+          +'<input type="checkbox" class="wz-func-check" data-nome="'+esc(f.nome)+'" '+(checked?'checked':'')+' onchange="wzToggleFunc(this)" style="accent-color:#0F6E56;width:16px;height:16px;cursor:pointer;flex-shrink:0">'
+          +'<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600">'+esc(f.nome)+'</div><div style="font-size:10px;color:var(--txt3)">'+(f.area||'')+(f.tempoMin?' · ~'+f.tempoMin+'min':'')+'</div></div>'
+          +'<div style="display:flex;align-items:center;gap:3px;flex-shrink:0;'+(checked?'':'opacity:.3;pointer-events:none')+'" id="wz-pct-wrap-'+esc(f.nome).replace(/\s/g,'_')+'">'
+            +'<input type="number" class="wz-func-pct" data-nome="'+esc(f.nome)+'" value="'+pctVal+'" min="1" max="100" style="width:48px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;text-align:center;background:var(--bg);color:var(--txt)">'
+            +'<span style="font-size:10px;color:var(--txt3)">%</span>'
+          +'</div>'
+        +'</div>';
       });
     }
     content+='</div>'
@@ -823,7 +830,8 @@ function _renderWizardStep(isEdit){
       +'<div style="font-size:12px;font-weight:600;margin-bottom:8px;color:#854F0B">Criar nova função</div>'
       +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">'
         +'<div style="flex:1;min-width:140px"><div style="font-size:10px;color:var(--txt3);margin-bottom:3px">Nome da função *</div><input id="wz-nf-nome" placeholder="Ex: Calibração de Equipamentos" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;background:var(--bg);color:var(--txt)"/></div>'
-        +'<div style="width:120px"><div style="font-size:10px;color:var(--txt3);margin-bottom:3px">Área</div><select id="wz-nf-area" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg);color:var(--txt)"><option value="">—</option>'+Object.keys(typeof AREA_COLORS!=='undefined'?AREA_COLORS:{}).map(function(a){return '<option value="'+a+'">'+a+'</option>';}).join('')+'</select></div>'
+        +'<div style="width:90px"><div style="font-size:10px;color:var(--txt3);margin-bottom:3px">Área</div><select id="wz-nf-area" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg);color:var(--txt)"><option value="">—</option>'+Object.keys(typeof AREA_COLORS!=='undefined'?AREA_COLORS:{}).map(function(a){return '<option value="'+a+'">'+a+'</option>';}).join('')+'</select></div>'
+        +'<div style="width:70px"><div style="font-size:10px;color:var(--txt3);margin-bottom:3px">Tempo (min)</div><input id="wz-nf-tempo" type="number" value="30" min="1" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;background:var(--bg);color:var(--txt)"/></div>'
         +'<button onclick="wzCriarFuncao()" class="btn btn-primary btn-sm" style="padding:6px 14px;background:#854F0B">Criar</button>'
       +'</div>'
     +'</div>';
@@ -839,7 +847,7 @@ function _renderWizardStep(isEdit){
         +(d.cargo?'💼 '+d.cargo+'<br>':'')
         +(d.status?'🔘 Status: '+d.status:'')
       +'</div>'
-      +(d.funcoes.length?'<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);font-size:11px;color:var(--txt2)">Funções: '+d.funcoes.join(', ')+'</div>':'')
+      +(d.funcoes.length?'<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);font-size:11px;color:var(--txt2)">Funções: '+d.funcoes.map(function(fn){var pct=(d.funcoesDedicacao||{})[fn]||100;return fn+' ('+pct+'%)';}).join(', ')+'</div>':'')
     +'</div>';
   }
 
@@ -872,8 +880,12 @@ function wizardNext(isEdit){
     d.cargo=(document.getElementById('wz-cargo')||{}).value||'';
     d.status=(document.getElementById('wz-status')||{}).value||'Ativo';
   } else if(step===3){
-    d.funcoes=[];
-    document.querySelectorAll('.wz-func-check:checked').forEach(function(cb){d.funcoes.push(cb.dataset.nome);});
+    d.funcoes=[];d.funcoesDedicacao=d.funcoesDedicacao||{};
+    document.querySelectorAll('.wz-func-check:checked').forEach(function(cb){
+      var nome=cb.dataset.nome;d.funcoes.push(nome);
+      var pi=document.querySelector('.wz-func-pct[data-nome="'+nome+'"]');
+      if(pi)d.funcoesDedicacao[nome]=parseInt(pi.value)||100;
+    });
   }
   window._wizardStep=Math.min(4,step+1);
   _renderWizardStep(isEdit);
@@ -888,8 +900,12 @@ function wizardBack(isEdit){
     d.cargo=(document.getElementById('wz-cargo')||{}).value||d.cargo;
     d.status=(document.getElementById('wz-status')||{}).value||d.status;
   } else if(step===3){
-    d.funcoes=[];
-    document.querySelectorAll('.wz-func-check:checked').forEach(function(cb){d.funcoes.push(cb.dataset.nome);});
+    d.funcoes=[];d.funcoesDedicacao=d.funcoesDedicacao||{};
+    document.querySelectorAll('.wz-func-check:checked').forEach(function(cb){
+      var nome=cb.dataset.nome;d.funcoes.push(nome);
+      var pi=document.querySelector('.wz-func-pct[data-nome="'+nome+'"]');
+      if(pi)d.funcoesDedicacao[nome]=parseInt(pi.value)||100;
+    });
   }
   window._wizardStep=Math.max(1,step-1);
   _renderWizardStep(isEdit);
@@ -907,6 +923,22 @@ function wizardSave(id){
   };
   if(id){var i=colaboradores.findIndex(x=>x.id===id);if(i>=0)colaboradores[i]=obj;}
   else colaboradores.push(obj);
+
+  // Atribuir colaborador como responsável nas funções selecionadas
+  var funcsAll=ls('funcoes_v8',[]);
+  var nomeCol=d.nome;
+  d.funcoes.forEach(function(fNome){
+    var func=funcsAll.find(function(f){return f.nome===fNome;});
+    if(!func)return;
+    if(!func.responsaveis)func.responsaveis=[];
+    // Remover se já existe (pra atualizar %)
+    func.responsaveis=func.responsaveis.filter(function(r){return r.nome!==nomeCol;});
+    // Adicionar com a dedicação definida
+    var pct=(d.funcoesDedicacao||{})[fNome]||100;
+    func.responsaveis.push({nome:nomeCol,pct:pct});
+  });
+  lss('funcoes_v8',funcsAll);
+
   saveAll();closeModal();toast(id?'Colaborador atualizado!':'✅ Colaborador cadastrado!');render(currentPage);
 }
 
@@ -958,19 +990,34 @@ function wzCriarFuncao(){
   var nome=((document.getElementById('wz-nf-nome')||{}).value||'').trim();
   if(!nome){toast('Digite o nome da função');return;}
   var area=(document.getElementById('wz-nf-area')||{}).value||'';
+  var tempo=parseInt((document.getElementById('wz-nf-tempo')||{}).value)||30;
   var funcs=ls('funcoes_v8',[]);
   if(funcs.find(function(f){return f.nome.toLowerCase()===nome.toLowerCase();})){toast('Função já existe');return;}
   funcs.push({
     id:uid(),nome:nome,area:area,
-    tempoEstimado:60,servicos:[],responsaveis:[],
+    tempoMin:tempo,tipoTempo:'por_servico',pctServicos:100,
+    servicos:[],responsaveis:[],
     descricao:'',created:new Date().toISOString()
   });
   lss('funcoes_v8',funcs);
   saveAll();
   toast('✅ Função "'+nome+'" criada!');
-  // Marcar a nova função como selecionada
+  // Marcar a nova função como selecionada com 100% dedicação
   window._wizardData.funcoes.push(nome);
+  if(!window._wizardData.funcoesDedicacao) window._wizardData.funcoesDedicacao={};
+  window._wizardData.funcoesDedicacao[nome]=100;
   _renderWizardStep(!!window._wizardData.id);
+}
+
+// Toggle de visibilidade do campo de % quando marca/desmarca função
+function wzToggleFunc(cb){
+  var nome=cb.dataset.nome;
+  var wrapId='wz-pct-wrap-'+nome.replace(/\s/g,'_');
+  var wrap=document.getElementById(wrapId);
+  if(wrap){
+    if(cb.checked){wrap.style.opacity='1';wrap.style.pointerEvents='auto';}
+    else{wrap.style.opacity='.3';wrap.style.pointerEvents='none';}
+  }
 }
 
 // ── Compartilhar seletivo ────────────────────────────────────
