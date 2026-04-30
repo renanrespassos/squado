@@ -240,6 +240,17 @@ function renderCompetencias(){
     +'</div>';
   });
 
+  // Categorias customizadas
+  var customCats=ls('comp_custom_categorias',[]);
+  customCats.forEach(function(cc){
+    if(ativas.indexOf(cc.key)<0) return;
+    var items=perfil[cc.key]||[];
+    secoesHtml+='<div class="card" style="padding:16px;margin-bottom:10px">'
+      +'<div style="font-size:13px;font-weight:700;color:'+(cc.cor||'#888')+';margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid '+(cc.cor||'#888')+'">'+cc.label+'</div>'
+      +(items.length?'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px">'+items.map(function(c){return compCard(c);}).join('')+'</div>':'<div style="text-align:center;padding:14px;color:var(--txt3);font-size:12px">Sem dados. Use "✏️ Editar" pra adicionar.</div>')
+    +'</div>';
+  });
+
   var niveisHtml='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">'
     +perfil.niveis.map(function(n){var ns=NIVEL_STYLE[n]||{cor:'#888',bg:'#eee'};return '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:'+ns.bg+';color:'+ns.cor+'">'+n+'</span>';}).join('')
   +'</div>';
@@ -248,7 +259,7 @@ function renderCompetencias(){
     // Card header com botões
     +'<div class="card" style="padding:16px;margin-bottom:12px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'
-        +'<div style="font-size:12px;color:var(--txt3)">'+ativas.length+' seções ativas · '+perfis.length+' cargos</div>'
+        +'<div style="font-size:12px;color:var(--txt3)">'+ativas.length+' seções ativas · '+perfis.length+' cargos · <span style="color:var(--txt2);cursor:pointer;text-decoration:underline" onclick="editarCompetencias()">Editar seções visíveis</span></div>'
         +'<div style="display:flex;gap:8px">'
           +'<button class="btn btn-sm" onclick="abrirCompetenciasIA()" style="border-color:#534AB7;color:#534AB7">🤖 Criar com IA</button>'
           +'<button class="btn btn-sm" onclick="editarCompetencias()" style="border-color:#854F0B;color:#854F0B">✏️ Editar</button>'
