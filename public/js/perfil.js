@@ -778,16 +778,34 @@ function _renderWizardStep(isEdit){
       +'<div class="field-group form-full"><div class="field-label">Cargo / Título (opcional)</div><input id="wz-cargo" value="'+esc(d.cargo)+'" placeholder="Ex: Técnico de Ensaios"/></div>'
       +'<div class="field-group"><div class="field-label">Status</div><select id="wz-status">'+['Ativo','Férias','Afastado','Inativo','Desligado'].map(function(s){return '<option value="'+s+'"'+(d.status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></div>'
     +'</div>'
+    // Botões de criação inline
     +'<div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border)">'
-      +'<button class="btn btn-sm" onclick="openModal(\'Novo Nível\',\'<input id=nn-nome placeholder=Nome\\ do\\ nível style=width:100%;margin-bottom:8px><button class=btn\\ btn-primary\\ btn-sm onclick=adicionarNivelRapido()>Criar</button>\');document.getElementById(\'modal\').style.display=\'flex\'">+ Novo nível</button>'
-      +'<button class="btn btn-sm" onclick="toast(\'Vá em Níveis e Áreas pra criar novas áreas\')">+ Nova área</button>'
+      +'<button class="btn btn-sm" onclick="document.getElementById(\'wz-novo-nivel\').style.display=document.getElementById(\'wz-novo-nivel\').style.display===\'none\'?\'block\':\'none\'" style="border-color:#0F6E56;color:#0F6E56">+ Novo nível</button>'
+      +'<button class="btn btn-sm" onclick="document.getElementById(\'wz-nova-area\').style.display=document.getElementById(\'wz-nova-area\').style.display===\'none\'?\'block\':\'none\'" style="border-color:#185FA5;color:#185FA5">+ Nova área</button>'
+    +'</div>'
+    // Form inline: Novo nível
+    +'<div id="wz-novo-nivel" style="display:none;margin-top:10px;padding:12px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">'
+      +'<div style="font-size:12px;font-weight:600;margin-bottom:8px;color:#0F6E56">Criar novo nível</div>'
+      +'<div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">'
+        +'<div style="flex:1;min-width:120px"><div style="font-size:10px;color:var(--txt3);margin-bottom:3px">Nome *</div><input id="wz-nn-nome" placeholder="Ex: Analista Sr" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;background:var(--bg);color:var(--txt)"/></div>'
+        +'<div style="width:60px"><div style="font-size:10px;color:var(--txt3);margin-bottom:3px">Ordem</div><input id="wz-nn-ordem" type="number" value="'+(niveis.length+1)+'" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;background:var(--bg);color:var(--txt)"/></div>'
+        +'<button onclick="wzCriarNivel()" class="btn btn-primary btn-sm" style="padding:6px 14px;background:#0F6E56">Criar</button>'
+      +'</div>'
+    +'</div>'
+    // Form inline: Nova área
+    +'<div id="wz-nova-area" style="display:none;margin-top:10px;padding:12px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">'
+      +'<div style="font-size:12px;font-weight:600;margin-bottom:8px;color:#185FA5">Criar nova área</div>'
+      +'<div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">'
+        +'<div style="flex:1;min-width:150px"><div style="font-size:10px;color:var(--txt3);margin-bottom:3px">Nome da área *</div><input id="wz-na-nome" placeholder="Ex: Engenharia" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;background:var(--bg);color:var(--txt)"/></div>'
+        +'<button onclick="wzCriarArea()" class="btn btn-primary btn-sm" style="padding:6px 14px;background:#185FA5">Criar</button>'
+      +'</div>'
     +'</div>';
   } else if(step===3){
     var funcoesDisp=ls('funcoes_v8',[]);
     content='<div style="font-size:12px;color:var(--txt2);margin-bottom:10px">Selecione as funções que este colaborador executa (opcional):</div>'
-      +'<div style="max-height:200px;overflow-y:auto">';
+      +'<div style="max-height:180px;overflow-y:auto;margin-bottom:10px">';
     if(funcoesDisp.length===0){
-      content+='<div style="text-align:center;padding:20px;color:var(--txt3);font-size:12px">Nenhuma função cadastrada no sistema de Capacidade.<br>Pule este passo ou configure funções em Capacidade.</div>';
+      content+='<div style="text-align:center;padding:16px;color:var(--txt3);font-size:12px">Nenhuma função cadastrada ainda.</div>';
     } else {
       funcoesDisp.forEach(function(f,fi){
         var checked=d.funcoes.indexOf(f.nome)>=0?'checked':'';
@@ -797,7 +815,18 @@ function _renderWizardStep(isEdit){
         +'</label>';
       });
     }
-    content+='</div>';
+    content+='</div>'
+    // Botão criar função inline
+    +'<button class="btn btn-sm" onclick="document.getElementById(\'wz-nova-func\').style.display=document.getElementById(\'wz-nova-func\').style.display===\'none\'?\'block\':\'none\'" style="border-color:#854F0B;color:#854F0B;margin-bottom:8px">+ Nova função</button>'
+    // Form inline: Nova função
+    +'<div id="wz-nova-func" style="display:none;padding:12px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">'
+      +'<div style="font-size:12px;font-weight:600;margin-bottom:8px;color:#854F0B">Criar nova função</div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">'
+        +'<div style="flex:1;min-width:140px"><div style="font-size:10px;color:var(--txt3);margin-bottom:3px">Nome da função *</div><input id="wz-nf-nome" placeholder="Ex: Calibração de Equipamentos" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;background:var(--bg);color:var(--txt)"/></div>'
+        +'<div style="width:120px"><div style="font-size:10px;color:var(--txt3);margin-bottom:3px">Área</div><select id="wz-nf-area" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg);color:var(--txt)"><option value="">—</option>'+Object.keys(typeof AREA_COLORS!=='undefined'?AREA_COLORS:{}).map(function(a){return '<option value="'+a+'">'+a+'</option>';}).join('')+'</select></div>'
+        +'<button onclick="wzCriarFuncao()" class="btn btn-primary btn-sm" style="padding:6px 14px;background:#854F0B">Criar</button>'
+      +'</div>'
+    +'</div>';
   } else {
     // Passo 4: Revisão
     content='<div style="background:var(--bg2);border-radius:10px;padding:16px;margin-bottom:12px">'
@@ -879,6 +908,69 @@ function wizardSave(id){
   if(id){var i=colaboradores.findIndex(x=>x.id===id);if(i>=0)colaboradores[i]=obj;}
   else colaboradores.push(obj);
   saveAll();closeModal();toast(id?'Colaborador atualizado!':'✅ Colaborador cadastrado!');render(currentPage);
+}
+
+// ── Criação inline no wizard ─────────────────────────────────
+function wzCriarNivel(){
+  var nome=((document.getElementById('wz-nn-nome')||{}).value||'').trim();
+  if(!nome){toast('Digite o nome do nível');return;}
+  // Verificar se já existe
+  if(niveis.find(function(n){return n.nome.toLowerCase()===nome.toLowerCase();})){toast('Nível já existe');return;}
+  var ordem=parseInt((document.getElementById('wz-nn-ordem')||{}).value)||niveis.length+1;
+  var cores=['#0F6E56','#185FA5','#534AB7','#854F0B','#A32D2D','#3B6D11','#8B5CF6','#0891B2'];
+  var bgCores=['#E1F5EE','#E6F1FB','#F3F0FF','#FAEEDA','#FCEBEB','#E8F5E0','#EDE9FE','#E0F7FA'];
+  var idx=niveis.length%cores.length;
+  var novoNivel={id:uid(),nome:nome,ordem:ordem,cor:cores[idx],bg:bgCores[idx]};
+  niveis.push(novoNivel);
+  niveis.sort(function(a,b){return a.ordem-b.ordem;});
+  // Criar perguntas padrão pro novo nível
+  if(!perguntas[nome]){
+    var primeiroNivel=Object.keys(perguntas)[0];
+    perguntas[nome]=primeiroNivel?JSON.parse(JSON.stringify(perguntas[primeiroNivel])):{};
+  }
+  saveAll();
+  toast('✅ Nível "'+nome+'" criado!');
+  // Atualizar o wizard mantendo os dados
+  window._wizardData.nivel=nome;
+  _renderWizardStep(!!window._wizardData.id);
+}
+
+function wzCriarArea(){
+  var nome=((document.getElementById('wz-na-nome')||{}).value||'').trim();
+  if(!nome){toast('Digite o nome da área');return;}
+  if(AREA_COLORS[nome]){toast('Área já existe');return;}
+  // Paleta de cores pra áreas
+  var paleta=[
+    {cor:'#0F6E56',bg:'#E1F5EE'},{cor:'#185FA5',bg:'#E6F1FB'},{cor:'#854F0B',bg:'#FAEEDA'},
+    {cor:'#534AB7',bg:'#F3F0FF'},{cor:'#A32D2D',bg:'#FCEBEB'},{cor:'#3B6D11',bg:'#E8F5E0'},
+    {cor:'#0891B2',bg:'#E0F7FA'},{cor:'#9333EA',bg:'#F3E8FF'}
+  ];
+  var idx=Object.keys(AREA_COLORS).length%paleta.length;
+  AREA_COLORS[nome]=paleta[idx];
+  lss('areas_config',AREA_COLORS);
+  saveAll();
+  toast('✅ Área "'+nome+'" criada!');
+  window._wizardData.area=nome;
+  _renderWizardStep(!!window._wizardData.id);
+}
+
+function wzCriarFuncao(){
+  var nome=((document.getElementById('wz-nf-nome')||{}).value||'').trim();
+  if(!nome){toast('Digite o nome da função');return;}
+  var area=(document.getElementById('wz-nf-area')||{}).value||'';
+  var funcs=ls('funcoes_v8',[]);
+  if(funcs.find(function(f){return f.nome.toLowerCase()===nome.toLowerCase();})){toast('Função já existe');return;}
+  funcs.push({
+    id:uid(),nome:nome,area:area,
+    tempoEstimado:60,servicos:[],responsaveis:[],
+    descricao:'',created:new Date().toISOString()
+  });
+  lss('funcoes_v8',funcs);
+  saveAll();
+  toast('✅ Função "'+nome+'" criada!');
+  // Marcar a nova função como selecionada
+  window._wizardData.funcoes.push(nome);
+  _renderWizardStep(!!window._wizardData.id);
 }
 
 // ── Compartilhar seletivo ────────────────────────────────────
