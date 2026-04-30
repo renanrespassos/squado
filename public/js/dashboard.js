@@ -12,7 +12,11 @@ function renderDashboard(){
   const mediaGeral = avaliacoes.length ? Math.round(avaliacoes.reduce((a,av)=>a+av.mediaGeral,0)/avaliacoes.length*10)/10 : 0;
   const _metas = ls('metas_v2',[]);
   const metasAtivas = _metas.filter(m => m.status !== 'Concluída' && m.status !== 'Cancelada');
-  const metasProgresso = metasAtivas.length ? Math.round(metasAtivas.reduce((a,m) => a + (m.progresso||0), 0) / metasAtivas.length) : 0;
+  const metasProgresso = metasAtivas.length ? Math.round(metasAtivas.reduce(function(a,m){
+    var prog = m.progresso || 0;
+    if(!prog && m.keyResults && m.keyResults.length) prog = Math.round(m.keyResults.reduce(function(s,kr){return s+(kr.progresso||0);},0)/m.keyResults.length);
+    return a + prog;
+  }, 0) / metasAtivas.length) : 0;
   const _pdis = typeof getPDIs==='function' ? getPDIs() : [];
   const pdisAtivos = _pdis.filter(p => p.status === 'Em andamento');
   const pdisAtrasados = _pdis.filter(p => p.status==='Em andamento' && p.dataProxRevisao && new Date(p.dataProxRevisao) < hoje);
@@ -105,11 +109,14 @@ function renderDashboard(){
   } else {
     topMetas.forEach(m=>{
       var prog=m.progresso||0;
+      if(!prog && m.keyResults && m.keyResults.length) prog=Math.round(m.keyResults.reduce(function(s,kr){return s+(kr.progresso||0);},0)/m.keyResults.length);
       var corP=prog>=70?'#0F6E56':prog>=40?'#185FA5':'#A32D2D';
-      var col=colaboradores.find(c=>c.id===m.colaboradorId);
+      var col=colaboradores.find(c=>c.id===(m.colId||m.colaboradorId));
+      var nomeCol=m.colaborador||(col?col.nome:'')||(m.tipo==='okr'?'OKR':'—');
+      var tipoTag=m.tipo==='okr'?'OKR':'Meta';
       metasHtml+='<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--border);font-size:11px">'
-        +'<div style="flex:1;min-width:0"><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(m.titulo||m.descricao||'Meta')+'</div>'
-        +'<div style="font-size:9px;color:var(--txt3)">'+(col?col.nome:'—')+'</div></div>'
+        +'<div style="flex:1;min-width:0"><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(m.titulo||m.descricao||m.objetivo||'Meta')+'</div>'
+        +'<div style="font-size:9px;color:var(--txt3)">'+tipoTag+' · '+nomeCol+'</div></div>'
         +'<div style="width:50px"><div style="height:5px;background:var(--bg2);border-radius:3px;overflow:hidden"><div style="height:100%;border-radius:3px;background:'+corP+';width:'+prog+'%"></div></div></div>'
         +'<span style="font-size:10px;font-weight:600;color:'+corP+';width:28px;text-align:right">'+prog+'%</span></div>';
     });
