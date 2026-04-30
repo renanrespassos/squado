@@ -451,7 +451,7 @@ function renderValores(){
   bolhasHtml+='</div>';
 
   // Botões de ação
-  var acoesHtml='<div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:16px" class="no-print">'
+  var acoesHtml='<div style="display:flex;gap:8px" class="no-print">'
     +'<button class="btn btn-sm" onclick="abrirValoresIA()" style="border-color:#534AB7;color:#534AB7">🤖 Criar com IA</button>'
     +'<button class="btn btn-sm" onclick="editarValores()" style="border-color:#854F0B;color:#854F0B">✏️ Editar</button>'
     +'<button class="btn btn-sm" onclick="imprimirValores()" style="border-color:#185FA5;color:#185FA5">🖨 Imprimir</button>'
@@ -470,14 +470,14 @@ function renderValores(){
   function renderCards(items,cor,tipo){
     if(!items||!items.length)return '<div style="text-align:center;padding:20px;color:var(--txt3);font-size:12px">Nenhum item cadastrado. Clique em "Editar" pra adicionar.</div>';
     if(tipo==='nn'){
-      return '<div style="background:#FCEBEB;border:0.5px solid rgba(163,45,45,.2);border-radius:12px;padding:20px;margin-bottom:32px">'
+      return '<div style="background:#FCEBEB;border:0.5px solid rgba(163,45,45,.2);border-radius:12px;padding:20px;margin-bottom:0">'
         +'<div style="display:flex;flex-direction:column;gap:10px">'
         +items.map(function(n){return '<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:rgba(255,255,255,.6);border-radius:8px">'
           +'<div style="font-size:12.5px;color:#374151;line-height:1.6"><span style="font-weight:700;color:#A32D2D">Não negociamos </span>'+(n.text||n.desc||'')+'</div>'
         +'</div>';}).join('')+'</div></div>';
     }
     if(tipo==='pilares'){
-      return '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:32px">'
+      return '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:0">'
         +items.map(function(p){
           return '<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid '+cor+'">'
             +'<div style="font-size:13px;font-weight:800;color:'+cor+';margin-bottom:6px">'+p.nome+'</div>'
@@ -486,7 +486,7 @@ function renderValores(){
           +'</div>';
         }).join('')+'</div>';
     }
-    return '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:32px">'
+    return '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:0">'
       +items.map(function(v){return '<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:16px;border-left:3px solid '+cor+'">'
         +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:4px">'+(v.nome||'')+'</div>'
         +'<div style="font-size:11.5px;color:var(--txt2);line-height:1.5">'+(v.desc||'')+'</div>'
@@ -496,12 +496,26 @@ function renderValores(){
   categorias.forEach(function(cat){
     if(ativas.indexOf(cat.key)<0) return;
     var tipo=cat.key==='naoNegociamos'?'nn':cat.key==='pilares'?'pilares':'cards';
-    secoesHtml+=secTitle(cat.label,cat.sub,cat.cor)+renderCards(dados[cat.key],cat.cor,tipo);
+    secoesHtml+='<div class="card" style="padding:20px;margin-bottom:12px">'
+      +secTitle(cat.label,cat.sub,cat.cor)
+      +renderCards(dados[cat.key],cat.cor,tipo)
+    +'</div>';
   });
 
   if(!secoesHtml) secoesHtml='<div style="text-align:center;padding:40px;color:var(--txt3)"><div style="font-size:40px;margin-bottom:8px">⭐</div><div style="font-size:14px;font-weight:600;margin-bottom:6px">Selecione as categorias acima</div><div style="font-size:12px">Clique nos balões para ativar as seções que deseja exibir.</div></div>';
 
-  return '<div style="max-width:900px">'+bolhasHtml+acoesHtml+secoesHtml+'</div>';
+  return '<div style="max-width:900px">'
+    // Card de categorias
+    +'<div class="card" style="padding:16px;margin-bottom:12px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+        +'<div style="font-size:12px;color:var(--txt3)">Selecione as categorias que deseja exibir:</div>'
+        +acoesHtml
+      +'</div>'
+      +bolhasHtml
+    +'</div>'
+    // Conteúdo
+    +secoesHtml
+  +'</div>';
 }
 
 // ── Toggle categoria de valores ──────────────────────────────
@@ -544,7 +558,10 @@ function abrirValoresIA(){
       +'<button class="btn btn-primary" onclick="gerarValoresIA()" style="background:#534AB7;border-color:#534AB7">🤖 Gerar com IA</button>'
     +'</div>';
 
-  openModal('🤖 Criar Valores com IA',html);
+  document.getElementById('modal-title').textContent='🤖 Criar Valores com IA';
+  document.getElementById('modal-box').classList.remove('modal-lg');
+  document.getElementById('modal-body').innerHTML=html;
+  document.getElementById('modal').style.display='flex';
 }
 
 async function gerarValoresIA(){
