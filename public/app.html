@@ -421,7 +421,7 @@ select:focus{border-bottom-color:#0F6E56;outline:none}
   /* ── Main ── */
   .main{margin-left:0!important}
   /* Padding bottom = altura nav (64px) + safe area + folga */
-  .content{padding:12px 12px calc(80px + env(safe-area-inset-bottom,0px))}
+  .content{padding:12px 12px calc(100px + env(safe-area-inset-bottom,0px))}
   .content-inner{min-width:0!important}
 
   /* ── Topbar — sem deslocamento pelo hambúrguer ── */
@@ -629,7 +629,7 @@ select:focus{border-bottom-color:#0F6E56;outline:none}
 .modal-tabs{display:flex;border-bottom:0.5px solid var(--border);margin:-22px -22px 16px;padding:0 8px;overflow-x:auto;background:var(--bg2)}
 .modal-tabs::-webkit-scrollbar{height:3px}.modal-tabs::-webkit-scrollbar-thumb{background:var(--border2)}
 
-@media(max-width:640px){.tbl td:nth-child(5),.tbl th:nth-child(5),.tbl td:nth-child(6),.tbl th:nth-child(6),.tbl td:nth-child(7),.tbl th:nth-child(7){display:none}.content{padding:12px 10px}.tbl{font-size:12px}}
+@media(max-width:640px){.tbl td:nth-child(5),.tbl th:nth-child(5),.tbl td:nth-child(6),.tbl th:nth-child(6),.tbl td:nth-child(7),.tbl th:nth-child(7){display:none}.content{padding:12px 10px calc(100px + env(safe-area-inset-bottom,0px))}.tbl{font-size:12px}}
 .nav-svg{width:16px!important;height:16px!important;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}
 
 .sq-login-ticker{background:#0E0E0E;color:#FCFCFA;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:8px 0;overflow:hidden;white-space:nowrap;flex-shrink:0}
