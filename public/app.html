@@ -420,9 +420,11 @@ select:focus{border-bottom-color:#0F6E56;outline:none}
 
   /* ── Main ── */
   .main{margin-left:0!important}
-  /* Padding bottom = altura nav (64px) + safe area + folga */
-  .content{padding:12px 12px calc(100px + env(safe-area-inset-bottom,0px))}
+  /* Padding bottom = altura nav (60px) + safe area + folga extra */
+  .content{padding:12px 12px calc(120px + env(safe-area-inset-bottom,0px))}
   .content-inner{min-width:0!important}
+  /* Toast acima da barra nav */
+  .toast{bottom:calc(80px + env(safe-area-inset-bottom,0px))!important;right:12px!important;left:12px!important;text-align:center}
 
   /* ── Topbar — sem deslocamento pelo hambúrguer ── */
   .topbar{padding:0 14px;gap:8px;height:52px}
@@ -560,7 +562,6 @@ select:focus{border-bottom-color:#0F6E56;outline:none}
 
   /* Avaliação: seções de perguntas */
   [style*="display:grid;grid-template-columns:repeat(3"]{grid-template-columns:1fr!important}
-  [style*="display:grid;grid-template-columns:repeat(4"]{grid-template-columns:repeat(2,1fr)!important}
 
   /* Metas: barras de progresso */
   [style*="display:flex;align-items:center;gap:8px;padding:5px 0"]{font-size:11px!important}
@@ -580,10 +581,35 @@ select:focus{border-bottom-color:#0F6E56;outline:none}
   /* Search bar no topo */
   .topbar .search-trigger{display:none!important}
 
-  /* Tabela de colaboradores: esconder colunas */
+  /* Tabela de colaboradores: esconder colunas extras */
   .tbl td:nth-child(5),.tbl th:nth-child(5),
   .tbl td:nth-child(6),.tbl th:nth-child(6),
   .tbl td:nth-child(7),.tbl th:nth-child(7){display:none}
+
+  /* Modal: ajustar pra não ficar atrás da barra */
+  .modal{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))!important;max-height:calc(100vh - 60px)!important}
+
+  /* Content inner sem min-height forçado */
+  .content-inner{min-height:auto!important}
+
+  /* Stat cards: 2 colunas no mobile */
+  .stat-grid{grid-template-columns:repeat(2,1fr)!important}
+
+  /* Organograma: scroll horizontal */
+  .org-container{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+
+  /* Pendências card: garantir visibilidade */
+  .card{overflow:visible!important}
+
+  /* Tabela wrapper: scroll horizontal */
+  .table-wrap{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+
+  /* Notas textarea menor */
+  .notes-raw{min-height:80px!important}
+
+  /* Avaliação seções inline */
+  [style*="display:flex;gap:12px;margin-bottom:12px"]{flex-direction:column!important}
+  [style*="display:flex;gap:10px;margin-bottom:10px"]{flex-direction:column!important}
 }
 @media(max-width:768px){
   /* Sair mais visível no mobile */
@@ -629,7 +655,7 @@ select:focus{border-bottom-color:#0F6E56;outline:none}
 .modal-tabs{display:flex;border-bottom:0.5px solid var(--border);margin:-22px -22px 16px;padding:0 8px;overflow-x:auto;background:var(--bg2)}
 .modal-tabs::-webkit-scrollbar{height:3px}.modal-tabs::-webkit-scrollbar-thumb{background:var(--border2)}
 
-@media(max-width:640px){.tbl td:nth-child(5),.tbl th:nth-child(5),.tbl td:nth-child(6),.tbl th:nth-child(6),.tbl td:nth-child(7),.tbl th:nth-child(7){display:none}.content{padding:12px 10px calc(100px + env(safe-area-inset-bottom,0px))}.tbl{font-size:12px}}
+@media(max-width:640px){.tbl td:nth-child(5),.tbl th:nth-child(5),.tbl td:nth-child(6),.tbl th:nth-child(6),.tbl td:nth-child(7),.tbl th:nth-child(7){display:none}.content{padding:12px 10px calc(120px + env(safe-area-inset-bottom,0px))!important}.tbl{font-size:12px}}
 .nav-svg{width:16px!important;height:16px!important;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}
 
 .sq-login-ticker{background:#0E0E0E;color:#FCFCFA;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:8px 0;overflow:hidden;white-space:nowrap;flex-shrink:0}
@@ -2230,23 +2256,23 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
 </script>
 
 <!-- Módulos JS extraídos -->
-<script src="js/admin.js?v=1777597427"></script>
-<script src="js/dashboard.js?v=1777597427"></script>
-<script src="js/colaboradores.js?v=1777597427"></script>
-<script src="js/organograma.js?v=1777597427"></script>
-<script src="js/avaliacao.js?v=1777597427"></script>
-<script src="js/pdi.js?v=1777597427"></script>
-<script src="js/ninebox.js?v=1777597427"></script>
-<script src="js/competencias.js?v=1777597427"></script>
-<script src="js/config.js?v=1777597427"></script>
-<script src="js/perfil.js?v=1777597427"></script>
-<script src="js/notas-particulares.js?v=1777597427"></script>
-<script src="js/suporte.js?v=1777597427"></script>
-<script src="js/metas.js?v=1777597427"></script>
-<script src="js/okr.js?v=1777597427"></script>
-<script src="js/ia.js?v=1777597427"></script>
-<script src="js/notas.js?v=1777597427"></script>
-<script src="js/capacidade.js?v=1777597427"></script>
+<script src="js/admin.js?v=1777608033"></script>
+<script src="js/dashboard.js?v=1777608033"></script>
+<script src="js/colaboradores.js?v=1777608033"></script>
+<script src="js/organograma.js?v=1777608033"></script>
+<script src="js/avaliacao.js?v=1777608033"></script>
+<script src="js/pdi.js?v=1777608033"></script>
+<script src="js/ninebox.js?v=1777608033"></script>
+<script src="js/competencias.js?v=1777608033"></script>
+<script src="js/config.js?v=1777608033"></script>
+<script src="js/perfil.js?v=1777608033"></script>
+<script src="js/notas-particulares.js?v=1777608033"></script>
+<script src="js/suporte.js?v=1777608033"></script>
+<script src="js/metas.js?v=1777608033"></script>
+<script src="js/okr.js?v=1777608033"></script>
+<script src="js/ia.js?v=1777608033"></script>
+<script src="js/notas.js?v=1777608033"></script>
+<script src="js/capacidade.js?v=1777608033"></script>
 
 <script>
 // ══════════════════════════════════════════
