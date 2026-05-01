@@ -72,7 +72,7 @@ function renderPerfilAba(id, aba){
 
     conteudo=
       // Stats resumidos (header já mostra nome/avatar/badges)
-      '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px">'
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-bottom:14px">'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800">'+avsC.length+'</div><div style="font-size:10px;color:var(--txt2)">Avaliações</div></div>'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800">'+(c.historico||[]).length+'</div><div style="font-size:10px;color:var(--txt2)">Movimentações</div></div>'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--blue)">'+metas.filter(function(m){return m.colId===id;}).length+'</div><div style="font-size:10px;color:var(--txt2)">Metas</div></div>'
@@ -280,7 +280,7 @@ function renderPerfilAba(id, aba){
 
     conteudo=
       // Stats rápidos
-      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">'
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:16px">'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center">'
           +'<div style="font-size:20px;font-weight:800;color:var(--blue)">'+minhasFuncs.length+'</div>'
           +'<div style="font-size:10px;color:var(--txt2)">Funções</div>'
@@ -319,7 +319,7 @@ function renderPerfilAba(id, aba){
     var pct=ativo?Math.round((ativo.acoes||[]).reduce(function(a,ac){return a+(ac.progresso||0);},0)/Math.max((ativo.acoes||[]).length,1)):0;
     var corP=pct>=80?'var(--green)':pct>=50?'#854F0B':'var(--blue)';
     conteudo=
-      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">'
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:16px">'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--blue)">'+pdisCol.length+'</div><div style="font-size:10px;color:var(--txt2)">PDIs</div></div>'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--green)">'+(ativo?(ativo.acoes||[]).length:0)+'</div><div style="font-size:10px;color:var(--txt2)">Ações ativas</div></div>'
         +'<div style="background:'+(ativo?'var(--green-bg)':'var(--bg2)')+';border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:'+corP+'">'+pct+'%</div><div style="font-size:10px;color:var(--txt2)">Progresso</div></div>'
@@ -410,7 +410,7 @@ function renderPerfilAba(id, aba){
     }
 
     conteudo=
-      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">'
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:14px">'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--blue)">'+totalMetas+'</div><div style="font-size:10px;color:var(--txt2)">Metas</div></div>'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--green)">'+concluidas+'</div><div style="font-size:10px;color:var(--txt2)">Concluídas</div></div>'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:#854F0B">'+pctGeral+'%</div><div style="font-size:10px;color:var(--txt2)">Progresso</div></div>'
@@ -505,7 +505,7 @@ function renderPerfilAba(id, aba){
         +'<span style="font-size:16px;font-weight:800;color:'+c2.cor+'">'+( c.area||'Sem área')+'</span>'
         +'<span style="font-size:11px;color:var(--txt2)">OKRs da área de '+c.nome.split(' ')[0]+'</span>'
       +'</div>'
-      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:14px">'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--blue)">'+totalOkrs+'</div><div style="font-size:10px;color:var(--txt2)">OKRs</div></div>'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800">'+totalKrs+'</div><div style="font-size:10px;color:var(--txt2)">Key Results</div></div>'
         +'<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:'+(pctMed>=70?'var(--green)':'#854F0B')+'">'+pctMed+'%</div><div style="font-size:10px;color:var(--txt2)">Progresso</div></div>'

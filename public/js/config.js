@@ -977,7 +977,7 @@ function imprimirValores(){
     +'</div>'
     // PUCRS
     +'<h2 style="color:#185FA5;border-bottom:2px solid #dbeafe">Valores Institucionais</h2>'
-    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:24px">'
       +pucrs.map(v=>'<div style="border:1px solid #dbeafe;border-radius:10px;padding:12px;border-left:3px solid #185FA5">'
         
         +'<div style="font-size:12px;font-weight:700;margin-bottom:3px">'+v.nome+'</div>'
@@ -986,7 +986,7 @@ function imprimirValores(){
     +'</div>'
     // LABELO
     +'<h2 style="color:#0F6E56;border-bottom:2px solid #E1F5EE">Valores da Empresa</h2>'
-    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:24px">'
       +labelo.map(v=>'<div style="border:1px solid #E1F5EE;border-radius:10px;padding:14px;text-align:center;border-top:3px solid #0F6E56">'
         
         +'<div style="font-size:13px;font-weight:800;margin-bottom:4px">'+v.nome+'</div>'
@@ -1003,7 +1003,7 @@ function imprimirValores(){
     +'</div>'
     // Pilares
     +'<h2 style="color:#854F0B;border-bottom:2px solid #FAEEDA">Responsabilidades</h2>'
-    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px">'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:24px">'
       +[
         {icon:'🧹',nome:'Organização do Laboratório',desc:'Bancadas, equipamentos e áreas comuns organizados e limpos.'},
         {icon:'🦺',nome:'Jaleco e EPI',desc:'Utilizar jaleco e equipamentos de proteção conforme exigido.'},
@@ -1018,7 +1018,7 @@ function imprimirValores(){
       +'</div>').join('')
     +'</div>'
     +'<h2 style="color:#534AB7;border-bottom:2px solid #EEEDFE">Pilares</h2>'
-    +'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:24px">'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:24px">'
       +pilares.map(p=>'<div style="border:1px solid '+p.cor+'33;border-radius:10px;padding:12px;border-top:3px solid '+p.cor+'">'
         
         +'<div style="font-size:12px;font-weight:800;color:'+p.cor+';margin-bottom:6px">'+p.nome+'</div>'

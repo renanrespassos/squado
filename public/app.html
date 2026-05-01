@@ -525,6 +525,66 @@ select:focus{border-bottom-color:#0F6E56;outline:none}
   .btn{font-size:11px;padding:5px 9px}
   .modal{padding:16px 12px 20px}
 }
+
+/* ═══ MOBILE UX FIXES ═══ */
+@media(max-width:768px){
+  /* Dashboard: flex rows empilham verticalmente */
+  .flex.gap-12,.flex.gap-10,.flex.gap-8{flex-direction:column!important}
+  .flex.gap-12>div,.flex.gap-10>div,.flex.gap-8>div{flex:none!important;width:100%!important}
+
+  /* Perfil: tabs responsivas */
+  [style*="grid-template-columns:repeat(5"]{grid-template-columns:repeat(3,1fr)!important}
+  [style*="grid-template-columns:repeat(4"]{grid-template-columns:repeat(2,1fr)!important}
+
+  /* Cards de ação/botões: wrap em mobile */
+  [style*="display:flex;justify-content:space-between"]{flex-wrap:wrap!important;gap:8px!important}
+  [style*="display:flex;justify-content:flex-end"]{flex-wrap:wrap!important}
+
+  /* Escolaridade grid */
+  [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
+
+  /* Trial banner empilha */
+  [style*="Trial Squado"]{flex-direction:column!important;text-align:center;gap:8px!important}
+
+  /* Saudação menor */
+  [style*="font-size:18px;font-weight:700"]{font-size:16px!important}
+
+  /* Competências: tabs scroll horizontal */
+  [style*="border-radius:8px;overflow:hidden;margin-bottom"]{overflow-x:auto!important;width:100%!important}
+
+  /* Bolhas: scroll horizontal quando muitas */
+  [style*="display:flex;flex-wrap:wrap;gap:6px"]{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap!important;padding-bottom:4px}
+
+  /* Wizard steps */
+  .form-grid{grid-template-columns:1fr!important}
+
+  /* Avaliação: seções de perguntas */
+  [style*="display:grid;grid-template-columns:repeat(3"]{grid-template-columns:1fr!important}
+  [style*="display:grid;grid-template-columns:repeat(4"]{grid-template-columns:repeat(2,1fr)!important}
+
+  /* Metas: barras de progresso */
+  [style*="display:flex;align-items:center;gap:8px;padding:5px 0"]{font-size:11px!important}
+
+  /* Notas: botões empilham */
+  .flex.gap-8.mt-10{flex-wrap:wrap!important}
+
+  /* PDI cards */
+  [style*="display:flex;gap:8px;margin-top:8px;padding-top:8px"] > div{min-width:60px!important}
+
+  /* Editar competências: grid de inputs */
+  [style*="grid-template-columns:2fr 1fr 2fr auto"]{grid-template-columns:1fr!important;gap:4px!important}
+
+  /* Perfil header */
+  [style*="display:flex;gap:16px;align-items"]{flex-direction:column!important}
+
+  /* Search bar no topo */
+  .topbar .search-trigger{display:none!important}
+
+  /* Tabela de colaboradores: esconder colunas */
+  .tbl td:nth-child(5),.tbl th:nth-child(5),
+  .tbl td:nth-child(6),.tbl th:nth-child(6),
+  .tbl td:nth-child(7),.tbl th:nth-child(7){display:none}
+}
 @media(max-width:768px){
   /* Sair mais visível no mobile */
   #btn-sair-sidebar{
@@ -2170,23 +2230,23 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
 </script>
 
 <!-- Módulos JS extraídos -->
-<script src="js/admin.js?v=1777544814"></script>
-<script src="js/dashboard.js?v=1777548581"></script>
-<script src="js/colaboradores.js?v=1777544814"></script>
-<script src="js/organograma.js?v=1777544814"></script>
-<script src="js/avaliacao.js?v=1777544814"></script>
-<script src="js/pdi.js?v=1777544814"></script>
-<script src="js/ninebox.js?v=1777544814"></script>
-<script src="js/competencias.js?v=1777544814"></script>
-<script src="js/config.js?v=1777544814"></script>
-<script src="js/perfil.js?v=1777544814"></script>
-<script src="js/notas-particulares.js?v=1777544814"></script>
-<script src="js/suporte.js?v=1777544814"></script>
-<script src="js/metas.js?v=1777544814"></script>
-<script src="js/okr.js?v=1777544814"></script>
-<script src="js/ia.js?v=1777544814"></script>
-<script src="js/notas.js?v=1777544814"></script>
-<script src="js/capacidade.js?v=1777544814"></script>
+<script src="js/admin.js?v=1777597427"></script>
+<script src="js/dashboard.js?v=1777597427"></script>
+<script src="js/colaboradores.js?v=1777597427"></script>
+<script src="js/organograma.js?v=1777597427"></script>
+<script src="js/avaliacao.js?v=1777597427"></script>
+<script src="js/pdi.js?v=1777597427"></script>
+<script src="js/ninebox.js?v=1777597427"></script>
+<script src="js/competencias.js?v=1777597427"></script>
+<script src="js/config.js?v=1777597427"></script>
+<script src="js/perfil.js?v=1777597427"></script>
+<script src="js/notas-particulares.js?v=1777597427"></script>
+<script src="js/suporte.js?v=1777597427"></script>
+<script src="js/metas.js?v=1777597427"></script>
+<script src="js/okr.js?v=1777597427"></script>
+<script src="js/ia.js?v=1777597427"></script>
+<script src="js/notas.js?v=1777597427"></script>
+<script src="js/capacidade.js?v=1777597427"></script>
 
 <script>
 // ══════════════════════════════════════════
