@@ -570,7 +570,7 @@ function renderPerguntas(){
       <div style="font-size:12px;color:var(--txt2)">Edite as perguntas por nível.</div>
       <button class="btn btn-sm" onclick="abrirCriarPerguntasIA()" style="border-color:#534AB7;color:#534AB7">🤖 Criar com IA</button>
     </div>
-    <div class="tabs" id="perg-tabs">${niveisDisp.map((n,i)=>`<div class="tab${n===ativo?' active':''}" style="display:inline-flex;align-items:center;gap:4px">
+    <div class="tabs" id="perg-tabs">${niveisDisp.map((n,i)=>`<div class="tab${n===ativo?' active':''}" draggable="true" ondragstart="pergDragStart(event,'${n}')" ondragover="event.preventDefault();this.style.borderBottom='2px solid #0F6E56'" ondragleave="this.style.borderBottom=''" ondrop="pergDrop(event,'${n}');this.style.borderBottom=''" style="display:inline-flex;align-items:center;gap:4px;cursor:grab">
         <span onclick="switchPergTab('${n}',this.parentElement)">${n}</span>
         <span onclick="renomearNivel('${n}')" title="Renomear" style="cursor:pointer;opacity:.5;font-size:10px" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.5">✏️</span>
         <span onclick="excluirNivel('${n}')" title="Excluir" style="cursor:pointer;opacity:.5;font-size:10px;color:#A32D2D" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.5">✕</span>
@@ -578,6 +578,31 @@ function renderPerguntas(){
     <div id="perg-content">${renderPergTabContent(ativo)}</div></div>`;
 }
 function switchPergTab(nivel,el){window._pergNivelAtivo=nivel;document.querySelectorAll('#perg-tabs .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById('perg-content').innerHTML=renderPergTabContent(nivel)}
+
+// Drag-and-drop pra reordenar níveis de perguntas
+var _pergDragNivel=null;
+function pergDragStart(e,nivel){_pergDragNivel=nivel;e.dataTransfer.effectAllowed='move';}
+function pergDrop(e,nivelAlvo){
+  e.preventDefault();
+  if(!_pergDragNivel||_pergDragNivel===nivelAlvo)return;
+  // Reordenar o objeto perguntas
+  var keys=Object.keys(perguntas);
+  var fromIdx=keys.indexOf(_pergDragNivel);
+  var toIdx=keys.indexOf(nivelAlvo);
+  if(fromIdx<0||toIdx<0)return;
+  // Remover e inserir na nova posição
+  keys.splice(fromIdx,1);
+  keys.splice(toIdx,0,_pergDragNivel);
+  // Reconstruir objeto na nova ordem
+  var novo={};
+  keys.forEach(function(k){novo[k]=perguntas[k];});
+  perguntas=novo;
+  saveAll();
+  window._pergNivelAtivo=_pergDragNivel;
+  render('perguntas');
+  toast('Ordem atualizada!');
+  _pergDragNivel=null;
+}
 function renderPergTabContent(nivel){
   const secs=perguntas[nivel]||{};
   return`<div>${Object.entries(secs).map(([sec,qs])=>`<div class="eval-section">

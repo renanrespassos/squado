@@ -734,7 +734,12 @@ function gerarRelatorioCapacidade(){
   funcs.forEach(function(f){
     (f.responsaveis||[]).forEach(function(r){
       if(!colOcupacao[r.nome]) colOcupacao[r.nome]={total:0,funcoes:[]};
-      var minMes = (f.tempoMin||0) * qtdServicos * ((f.pctServicos||100)/100) * ((r.pct||100)/100);
+      var minMes;
+      if(f.tipoTempo==='fixo_mes'){
+        minMes = (f.tempoMin||0) * ((r.pct||100)/100);
+      } else {
+        minMes = (f.tempoMin||0) * qtdServicos * ((f.pctServicos||100)/100) * ((r.pct||100)/100);
+      }
       var hMes = Math.round(minMes/60*10)/10;
       colOcupacao[r.nome].total += hMes;
       colOcupacao[r.nome].funcoes.push({nome:f.nome,horas:hMes,pct:r.pct||100});

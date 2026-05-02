@@ -802,24 +802,42 @@ function _renderWizardStep(isEdit){
     +'</div>';
   } else if(step===3){
     var funcoesDisp=ls('funcoes_v8',[]);
-    // Inicializar dedicações se não existir
     if(!d.funcoesDedicacao) d.funcoesDedicacao={};
+    // Agrupar por área, priorizando a área selecionada no passo 2
+    var areaCol=d.area||'';
+    var areasMap={};
+    funcoesDisp.forEach(function(f,fi){
+      var a=f.area||'Sem área';
+      if(!areasMap[a])areasMap[a]=[];
+      areasMap[a].push({f:f,idx:fi});
+    });
+    // Ordenar: área do colaborador primeiro
+    var areasOrdenadas=Object.keys(areasMap).sort(function(a,b){
+      if(a===areaCol)return -1;if(b===areaCol)return 1;return a.localeCompare(b);
+    });
+
     content='<div style="font-size:12px;color:var(--txt2);margin-bottom:10px">Selecione as funções e defina a dedicação (%):</div>'
-      +'<div style="max-height:220px;overflow-y:auto;margin-bottom:10px">';
+      +'<div style="max-height:250px;overflow-y:auto;margin-bottom:10px">';
     if(funcoesDisp.length===0){
       content+='<div style="text-align:center;padding:16px;color:var(--txt3);font-size:12px">Nenhuma função cadastrada ainda.</div>';
     } else {
-      funcoesDisp.forEach(function(f){
-        var checked=d.funcoes.indexOf(f.nome)>=0;
-        var pctVal=d.funcoesDedicacao[f.nome]||100;
-        content+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:0.5px solid var(--border);border-radius:8px;margin-bottom:4px">'
-          +'<input type="checkbox" class="wz-func-check" data-nome="'+esc(f.nome)+'" '+(checked?'checked':'')+' onchange="wzToggleFunc(this)" style="accent-color:#0F6E56;width:16px;height:16px;cursor:pointer;flex-shrink:0">'
-          +'<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600">'+esc(f.nome)+'</div><div style="font-size:10px;color:var(--txt3)">'+(f.area||'')+(f.tempoMin?' · ~'+f.tempoMin+'min':'')+'</div></div>'
-          +'<div style="display:flex;align-items:center;gap:3px;flex-shrink:0;'+(checked?'':'opacity:.3;pointer-events:none')+'" id="wz-pct-wrap-'+esc(f.nome).replace(/\s/g,'_')+'">'
-            +'<input type="number" class="wz-func-pct" data-nome="'+esc(f.nome)+'" value="'+pctVal+'" min="1" max="100" style="width:48px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;text-align:center;background:var(--bg);color:var(--txt)">'
-            +'<span style="font-size:10px;color:var(--txt3)">%</span>'
-          +'</div>'
-        +'</div>';
+      areasOrdenadas.forEach(function(area){
+        var isAreaCol=area===areaCol;
+        content+='<div style="font-size:10px;font-weight:700;color:'+(isAreaCol?'#0F6E56':'var(--txt3)')+';text-transform:uppercase;letter-spacing:.05em;padding:8px 10px 4px;'+(isAreaCol?'background:#E1F5EE;border-radius:6px 6px 0 0;margin-top:4px':'')+'">'
+          +area+(isAreaCol?' ★':'')+'</div>';
+        areasMap[area].forEach(function(item){
+          var f=item.f,fi=item.idx;
+          var checked=d.funcoes.indexOf(f.nome)>=0;
+          var pctVal=d.funcoesDedicacao[f.nome]||100;
+          content+='<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border:0.5px solid var(--border);border-radius:6px;margin-bottom:3px;'+(isAreaCol?'background:#f0fdf4':'')+'">'
+            +'<input type="checkbox" class="wz-func-check" data-nome="'+esc(f.nome)+'" data-idx="'+fi+'" '+(checked?'checked':'')+' onchange="wzToggleFunc('+fi+')" style="accent-color:#0F6E56;width:16px;height:16px;cursor:pointer;flex-shrink:0">'
+            +'<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600">'+esc(f.nome)+'</div><div style="font-size:10px;color:var(--txt3)">'+(f.tipoTempo==='fixo_mes'?'⏱ fixo':'⚡ '+f.pctServicos+'% serviços')+' · '+f.tempoMin+'min</div></div>'
+            +'<div style="display:flex;align-items:center;gap:3px;flex-shrink:0;'+(checked?'':'opacity:.3;pointer-events:none')+'" id="wz-pct-wrap-'+fi+'">'
+              +'<input type="number" class="wz-func-pct" data-nome="'+esc(f.nome)+'" value="'+pctVal+'" min="1" max="100" style="width:48px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;text-align:center;background:var(--bg);color:var(--txt)">'
+              +'<span style="font-size:10px;color:var(--txt3)">%</span>'
+            +'</div>'
+          +'</div>';
+        });
       });
     }
     content+='</div>'
@@ -1015,11 +1033,10 @@ function wzCriarFuncao(){
 }
 
 // Toggle de visibilidade do campo de % quando marca/desmarca função
-function wzToggleFunc(cb){
-  var nome=cb.dataset.nome;
-  var wrapId='wz-pct-wrap-'+nome.replace(/\s/g,'_');
-  var wrap=document.getElementById(wrapId);
-  if(wrap){
+function wzToggleFunc(idx){
+  var wrap=document.getElementById('wz-pct-wrap-'+idx);
+  var cb=document.querySelector('.wz-func-check[data-idx="'+idx+'"]');
+  if(wrap&&cb){
     if(cb.checked){wrap.style.opacity='1';wrap.style.pointerEvents='auto';}
     else{wrap.style.opacity='.3';wrap.style.pointerEvents='none';}
   }
