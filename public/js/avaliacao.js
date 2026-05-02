@@ -1069,53 +1069,94 @@ function abrirColarPerguntas(){
 }
 
 function parsearTextoPerguntas(texto){
-  var linhas=texto.split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;});
+  var linhas=texto.split('\n').map(function(l){return l.replace(/\t/g,'  ');});
   var resultado={};
   var nivelAtual=null;
   var secaoAtual=null;
 
-  // Níveis conhecidos (dos niveis cadastrados + padrões comuns)
-  var niveisConhecidos=new Set();
-  niveis.forEach(function(n){niveisConhecidos.add(n.nome.toLowerCase());});
-  // Adicionar variações comuns
-  ['estagiário','assistente','assistente i','assistente ii','assistente iii',
+  // Construir lista de nomes de níveis conhecidos
+  var niveisConhecidos=[];
+  niveis.forEach(function(n){niveisConhecidos.push(n.nome.toLowerCase());});
+  // Variações comuns
+  ['estagiário','estagiario','assistente','assistente i','assistente ii','assistente iii',
    'analista','analista i','analista ii','analista iii',
    'especialista','coordenador','gerente','diretor','reitor',
-   'supervisor','líder','trainee','júnior','pleno','sênior'].forEach(function(n){niveisConhecidos.add(n);});
+   'supervisor','líder','lider','trainee','júnior','junior','pleno','sênior','senior',
+   'técnico','tecnico','técnico i','técnico ii','técnico iii'].forEach(function(n){
+    if(niveisConhecidos.indexOf(n)<0) niveisConhecidos.push(n);
+  });
 
-  linhas.forEach(function(linha){
-    // Limpar marcadores de lista
-    var limpaSemMarcador=linha.replace(/^[•\-\*\t\u2022]\s*/,'').trim();
-
-    // Verificar se é um nível (linha sem marcador, sem ?)
-    if(!linha.match(/^[•\-\*\t\u2022]/)&&!linha.endsWith('?')&&niveisConhecidos.has(limpaSemMarcador.toLowerCase())){
-      nivelAtual=limpaSemMarcador;
-      secaoAtual=null;
-      if(!resultado[nivelAtual])resultado[nivelAtual]={};
-      return;
+  function ehNivel(txt){
+    var t=txt.toLowerCase().trim();
+    // Match exato
+    if(niveisConhecidos.indexOf(t)>=0) return true;
+    // Match parcial: "Analista I" quando "analista" está na lista
+    for(var i=0;i<niveisConhecidos.length;i++){
+      var n=niveisConhecidos[i];
+      if(t===n) return true;
+      // "analista i" match com "analista"
+      if(t.indexOf(n)===0 && t.length<=n.length+5) return true;
     }
+    return false;
+  }
 
-    // Se não temos nível ainda, tentar detectar
-    if(!nivelAtual&&!linha.match(/^[•\-\*\t\u2022]/)&&!linha.endsWith('?')&&linha.length<40){
-      nivelAtual=limpaSemMarcador;
-      if(!resultado[nivelAtual])resultado[nivelAtual]={};
-      return;
-    }
+  function ehPergunta(linha){
+    var l=linha.trim();
+    // Começa com marcador (•, -, *, tab+texto)
+    if(/^[•\-\*\u2022\u2023\u25E6]/.test(l)) return true;
+    // Começa com tab/espaços seguido de texto
+    if(/^\s{2,}/.test(linha) && l.length>10) return true;
+    // Termina com ?
+    if(l.endsWith('?')) return true;
+    return false;
+  }
 
-    // Verificar se é uma seção (linha sem marcador, sem ?, curta)
-    if(nivelAtual&&!linha.match(/^[•\-\*\t\u2022]/)&&!linha.endsWith('?')&&limpaSemMarcador.length<50){
-      secaoAtual=limpaSemMarcador;
-      if(!resultado[nivelAtual][secaoAtual])resultado[nivelAtual][secaoAtual]=[];
-      return;
-    }
+  function limparMarcador(linha){
+    return linha.trim().replace(/^[•\-\*\u2022\u2023\u25E6]\s*/,'').replace(/^\d+[\.\)]\s*/,'').trim();
+  }
 
-    // É uma pergunta
-    if(nivelAtual){
-      if(!secaoAtual){secaoAtual='Geral';if(!resultado[nivelAtual][secaoAtual])resultado[nivelAtual][secaoAtual]=[];}
-      var pergunta=limpaSemMarcador;
-      if(pergunta.length>5){
-        resultado[nivelAtual][secaoAtual].push(pergunta);
+  linhas.forEach(function(linhaOriginal){
+    var linha=linhaOriginal.trim();
+    if(!linha) return; // Pular linhas vazias
+
+    var limpa=limparMarcador(linha);
+
+    // 1. É uma pergunta? (tem marcador ou termina com ?)
+    if(ehPergunta(linhaOriginal)){
+      if(nivelAtual){
+        if(!secaoAtual){secaoAtual='Geral';if(!resultado[nivelAtual][secaoAtual])resultado[nivelAtual][secaoAtual]=[];}
+        if(limpa.length>3) resultado[nivelAtual][secaoAtual].push(limpa);
       }
+      return;
+    }
+
+    // 2. É um nível? (nome conhecido, sem marcador, sem ?)
+    if(!linha.endsWith('?') && ehNivel(limpa)){
+      nivelAtual=limpa;
+      secaoAtual=null;
+      if(!resultado[nivelAtual]) resultado[nivelAtual]={};
+      return;
+    }
+
+    // 3. Se ainda não temos nível e a linha é curta, pode ser um nível novo
+    if(!nivelAtual && limpa.length<40 && !linha.endsWith('?')){
+      nivelAtual=limpa;
+      secaoAtual=null;
+      if(!resultado[nivelAtual]) resultado[nivelAtual]={};
+      return;
+    }
+
+    // 4. Se temos nível e a linha é curta sem marcador, é uma seção
+    if(nivelAtual && limpa.length<60 && !linha.endsWith('?')){
+      secaoAtual=limpa;
+      if(!resultado[nivelAtual][secaoAtual]) resultado[nivelAtual][secaoAtual]=[];
+      return;
+    }
+
+    // 5. Fallback: tratar como pergunta se temos nível
+    if(nivelAtual && limpa.length>5){
+      if(!secaoAtual){secaoAtual='Geral';if(!resultado[nivelAtual][secaoAtual])resultado[nivelAtual][secaoAtual]=[];}
+      resultado[nivelAtual][secaoAtual].push(limpa);
     }
   });
 
