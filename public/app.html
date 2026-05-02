@@ -2256,23 +2256,23 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
 </script>
 
 <!-- Módulos JS extraídos -->
-<script src="js/admin.js?v=1777687427"></script>
-<script src="js/dashboard.js?v=1777687427"></script>
-<script src="js/colaboradores.js?v=1777687427"></script>
-<script src="js/organograma.js?v=1777687427"></script>
-<script src="js/avaliacao.js?v=1777687427"></script>
-<script src="js/pdi.js?v=1777687427"></script>
-<script src="js/ninebox.js?v=1777687427"></script>
-<script src="js/competencias.js?v=1777687427"></script>
-<script src="js/config.js?v=1777687427"></script>
-<script src="js/perfil.js?v=1777687427"></script>
-<script src="js/notas-particulares.js?v=1777687427"></script>
-<script src="js/suporte.js?v=1777687427"></script>
-<script src="js/metas.js?v=1777687427"></script>
-<script src="js/okr.js?v=1777687427"></script>
-<script src="js/ia.js?v=1777687427"></script>
-<script src="js/notas.js?v=1777687427"></script>
-<script src="js/capacidade.js?v=1777687427"></script>
+<script src="js/admin.js?v=1777699714"></script>
+<script src="js/dashboard.js?v=1777699714"></script>
+<script src="js/colaboradores.js?v=1777699714"></script>
+<script src="js/organograma.js?v=1777699714"></script>
+<script src="js/avaliacao.js?v=1777699714"></script>
+<script src="js/pdi.js?v=1777699714"></script>
+<script src="js/ninebox.js?v=1777699714"></script>
+<script src="js/competencias.js?v=1777699714"></script>
+<script src="js/config.js?v=1777699714"></script>
+<script src="js/perfil.js?v=1777699714"></script>
+<script src="js/notas-particulares.js?v=1777699714"></script>
+<script src="js/suporte.js?v=1777699714"></script>
+<script src="js/metas.js?v=1777699714"></script>
+<script src="js/okr.js?v=1777699714"></script>
+<script src="js/ia.js?v=1777699714"></script>
+<script src="js/notas.js?v=1777699714"></script>
+<script src="js/capacidade.js?v=1777699714"></script>
 
 <script>
 // ══════════════════════════════════════════
@@ -2574,17 +2574,13 @@ async function squadoCarregarDaNuvem() {
       }
       // Avaliações: snapshot tem formato completo — priorizar sobre API legada
       if (cfg.snapshot_avaliacoes && Array.isArray(cfg.snapshot_avaliacoes) && cfg.snapshot_avaliacoes.length > 0) {
-        // SEGURANÇA: filtrar apenas avaliações cujo colaboradorId existe neste tenant
-        const colIds = new Set((cfg.snapshot_cols || colaboradores).map(c => c.id));
-        avaliacoes = cfg.snapshot_avaliacoes.filter(a => colIds.has(a.colaboradorId));
-        if (avaliacoes.length < cfg.snapshot_avaliacoes.length) {
-          console.warn('[Squado Load] Filtradas', cfg.snapshot_avaliacoes.length - avaliacoes.length, 'avaliações órfãs (colaboradorId não encontrado neste tenant)');
-        }
+        // Carregar todas as avaliações da nuvem (sem filtrar por colId — IDs podem mudar)
+        avaliacoes = cfg.snapshot_avaliacoes;
         lss('avaliacoes', avaliacoes);
-      } else {
-        // Nenhuma avaliação na nuvem — garantir que local está vazio
-        avaliacoes = [];
-        lss('avaliacoes', []);
+      } else if(!cfg.snapshot_avaliacoes) {
+        // Nuvem não tem avaliações — manter locais se existirem
+        var localAvals = ls('avaliacoes', []);
+        if(localAvals.length > 0) { avaliacoes = localAvals; }
       }
       if (cfg.snapshot_metas && Array.isArray(cfg.snapshot_metas) && cfg.snapshot_metas.length > 0) {
         metas = cfg.snapshot_metas;

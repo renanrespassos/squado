@@ -240,7 +240,7 @@ function verAvaliacao(id){
         var secao=entry[0],qs=entry[1];
         var mediaSec=a.secaoMedias[secao]||0;
         detalhePerguntasHtml+='<div style="margin-bottom:16px"><div style="font-size:12px;font-weight:700;color:'+sc(mediaSec)+';padding:6px 10px;background:'+sb(mediaSec)+';border-radius:6px;margin-bottom:6px">'+secao+' — '+mediaSec+'</div>'
-          +'<table style="font-size:11px;margin-bottom:4px"><tbody>';
+          +'<table style="width:100%;font-size:11px;margin-bottom:4px"><tbody>';
         qs.forEach(function(q,qi){
           var key=secao+'__'+qi;
           var nota=a.respostas[key];
@@ -248,6 +248,29 @@ function verAvaliacao(id){
           var corNota=sc(nota);
           detalhePerguntasHtml+='<tr><td style="padding:4px 10px;border-bottom:0.5px solid #f3f4f6;width:75%">'+q+'</td>'
             +'<td style="padding:4px 10px;border-bottom:0.5px solid #f3f4f6;text-align:center;font-weight:700;color:'+corNota+'">'+nota+'</td></tr>';
+        });
+        detalhePerguntasHtml+='</tbody></table></div>';
+      });
+    } else if(a.respostas && Object.keys(a.respostas).length>0){
+      // Fallback: reconstruir seções a partir das respostas
+      detalhePerguntasHtml='<div style="font-size:14px;font-weight:800;margin:20px 0 8px">Detalhamento por Pergunta</div>';
+      var secFromResp={};
+      Object.entries(a.respostas).forEach(function(e){
+        var parts=e[0].split('__');
+        var sec=parts[0];
+        if(!secFromResp[sec])secFromResp[sec]=[];
+        secFromResp[sec].push({idx:parseInt(parts[1])||0,nota:e[1]});
+      });
+      Object.entries(secFromResp).forEach(function(entry){
+        var secao=entry[0],items=entry[1];
+        var mediaSec=a.secaoMedias[secao]||0;
+        items.sort(function(x,y){return x.idx-y.idx;});
+        detalhePerguntasHtml+='<div style="margin-bottom:16px"><div style="font-size:12px;font-weight:700;color:'+sc(mediaSec)+';padding:6px 10px;background:'+sb(mediaSec)+';border-radius:6px;margin-bottom:6px">'+secao+' — '+mediaSec+'</div>'
+          +'<table style="width:100%;font-size:11px;margin-bottom:4px"><tbody>';
+        items.forEach(function(item){
+          var corNota=sc(item.nota);
+          detalhePerguntasHtml+='<tr><td style="padding:4px 10px;border-bottom:0.5px solid #f3f4f6;width:75%">Pergunta '+(item.idx+1)+'</td>'
+            +'<td style="padding:4px 10px;border-bottom:0.5px solid #f3f4f6;text-align:center;font-weight:700;color:'+corNota+'">'+item.nota+'</td></tr>';
         });
         detalhePerguntasHtml+='</tbody></table></div>';
       });

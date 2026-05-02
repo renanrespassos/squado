@@ -1170,7 +1170,7 @@ function delCol(id){
 function desligarCol(id){
   const i=colaboradores.findIndex(x=>x.id===id);if(i<0)return;
   const col=colaboradores[i];
-  const nomeCol=col.nome;
+  const nomeCol=(col.nome||'').trim();
   if(!col.historico)col.historico=[];
   col.historico.push({
     data:new Date().toISOString().slice(0,10),
@@ -1183,9 +1183,10 @@ function desligarCol(id){
   if(funcoesV8&&funcoesV8.length){
     funcoesV8=funcoesV8.map(f=>({
       ...f,
-      responsaveis:(f.responsaveis||[]).filter(r=>
-        r.nome!==nomeCol && r.nome.toLowerCase()!==nomeCol.toLowerCase()
-      )
+      responsaveis:(f.responsaveis||[]).filter(r=>{
+        var rNome=(r.nome||'').trim().toLowerCase();
+        return rNome!==nomeCol.toLowerCase();
+      })
     }));
     lss('funcoes_v8',funcoesV8);
   }
@@ -1224,21 +1225,22 @@ function excluirColPermanente(id){
   if(!confirm('Excluir PERMANENTEMENTE? Esta ação não pode ser desfeita.'))return;
   const col=colaboradores.find(x=>x.id===id);
   if(!col)return;
-  const nomeCol=col.nome;
+  const nomeCol=(col.nome||'').trim();
   // Remover do array de colaboradores
   colaboradores=colaboradores.filter(x=>x.id!==id);
   // Remover de avaliações, notas, PDIs
   avaliacoes=avaliacoes.filter(a=>a.colaboradorId!==id);
-  notas=notas.filter(n=>n.colId!==id);
+  notas=notas.filter(n=>n.colId!==id&&n.colNome!==nomeCol);
   const pdis=getPDIs().filter(p=>p.colId!==id);savePDIs(pdis);
-  // Remover de todas as funções de capacidade (funcoes_v8)
+  // Remover de TODAS as funções de capacidade (funcoes_v8)
   let funcoesV8=ls('funcoes_v8',null);
   if(funcoesV8&&funcoesV8.length){
     funcoesV8=funcoesV8.map(f=>({
       ...f,
-      responsaveis:(f.responsaveis||[]).filter(r=>
-        r.nome!==nomeCol && r.nome.toLowerCase()!==nomeCol.toLowerCase()
-      )
+      responsaveis:(f.responsaveis||[]).filter(r=>{
+        var rNome=(r.nome||'').trim().toLowerCase();
+        return rNome!==nomeCol.toLowerCase();
+      })
     }));
     lss('funcoes_v8',funcoesV8);
   }
