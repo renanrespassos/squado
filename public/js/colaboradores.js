@@ -161,7 +161,7 @@ function atualizarTabelaCols(search){
       +'<td>'+areaBadge(c.area)+'</td>'
       +'<td style="font-size:11px;color:#6B7370">'+(c.gestor||'—')+'</td>'
       +'<td style="text-align:center">'+(lastAv?'<span style="font-weight:700;color:'+(lastAv.mediaGeral>=7?'#0F6E56':lastAv.mediaGeral>=5?'#854F0B':'#A32D2D')+'">'+lastAv.mediaGeral+'</span>':'—')+'</td>'
-      +'<td style="text-align:center">'+((c.historico||[]).length?'<span class="badge badge-blue">'+(c.historico||[]).length+'</span>':'<span style="color:#9BA09E">—</span>')+'</td>'
+      +'<td style="text-align:center">'+((c.historico||[]).length?(function(){var h=(c.historico||[]).slice().sort(function(a,b){return(b.data||'').localeCompare(a.data||'');})[0];return '<span class="badge badge-blue">'+(c.historico||[]).length+'</span>'+(h&&h.data?'<div style="font-size:8px;color:var(--txt3);margin-top:2px">'+h.data.split('-').reverse().join('/')+'</div>':'');}()):(c.dataAdmissao||c.perfil&&c.perfil.dataAdmissao?'<div style="font-size:9px;color:#0F6E56">Admissão<br>'+((c.dataAdmissao||c.perfil.dataAdmissao)||'').split('-').reverse().join('/')+'</div>':'<span style="color:#9BA09E">—</span>'))+'</td>'
       +'<td><span class="badge" style="background:#E1F5EE;color:#0F6E56">'+c.status+'</span></td>'
     +'</tr>';
   }).join('');

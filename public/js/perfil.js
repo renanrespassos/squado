@@ -154,7 +154,7 @@ function renderPerfilAba(id, aba){
 
   // ── ABA MOVIMENTAÇÕES ───────────────────────────────────────
   else if(aba==='historico'){
-    const hist=(c.historico||[]).slice().reverse();
+    const hist=(c.historico||[]).slice().sort(function(a,b){return (b.data||'').localeCompare(a.data||'');});
     const tiposMovim=['Promoção','Treinamento','Advertência','Elogio','Aumento','Transferência de Área','Mudança de Cargo','Licença','Outro'];
     var dataAdm = c.dataAdmissao || (c.perfil && c.perfil.dataAdmissao) || '';
     conteudo=
@@ -190,7 +190,7 @@ function renderPerfilAba(id, aba){
               'Advertência':'#A32D2D','Licença':'#854F0B','Outro':'#5F5E5A'
             };
             const cor=tipoColors[h.tipo]||'#888';
-            const realIdx=(c.historico||[]).length-1-i;
+            const realIdx=(c.historico||[]).findIndex(function(x){return x.data===h.data&&x.tipo===h.tipo&&x.descricao===h.descricao;});
             return '<div style="display:flex;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:0.5px solid var(--border)">'
               +'<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">'
                 +'<div style="width:32px;height:32px;border-radius:50%;background:'+(cor+'22')+';border:2px solid '+cor+';display:flex;align-items:center;justify-content:center;font-size:13px">'
@@ -202,7 +202,8 @@ function renderPerfilAba(id, aba){
                 +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">'
                   +'<span style="font-size:10px;font-weight:700;padding:1px 8px;border-radius:20px;background:'+(cor+'22')+';color:'+cor+'">'+h.tipo+'</span>'
                   +'<span style="font-size:11px;color:var(--txt3)">'+h.data+'</span>'
-                  +'<button class="btn btn-xs btn-danger" style="margin-left:auto" onclick="delMovimentacao(\''+id+'\','+realIdx+')">×</button>'
+                  +'<button class="btn btn-xs" style="margin-left:auto;font-size:9px" onclick="editMovimentacao(\''+id+'\','+realIdx+')">✏️</button>'
+                  +'<button class="btn btn-xs btn-danger" onclick="delMovimentacao(\''+id+'\','+realIdx+')">×</button>'
                 +'</div>'
                 +'<div style="font-size:13px;color:var(--txt);line-height:1.5">'+h.descricao+'</div>'
               +'</div>'
@@ -225,7 +226,27 @@ function renderPerfilAba(id, aba){
     const byArea={};
     minhasFuncs.forEach(f=>{if(!byArea[f.area])byArea[f.area]=[];byArea[f.area].push(f);});
 
-    const funcCards=Object.entries(byArea).map(([area,funcs])=>{
+    // Calcular ocupação total do colaborador
+    const _diasU=parseInt(ls('cap_dias_uteis',22))||22;
+    const _qtdS=parseInt(ls('qtdServicos',100))||100;
+    var totalMinCol=0;
+    minhasFuncs.forEach(function(f){
+      var resp=(f.responsaveis||[]).find(r=>r.nome===c.nome||r.nome.toLowerCase()===c.nome.toLowerCase());
+      var pct=resp?resp.pct:100;
+      totalMinCol+=calcCargaFuncao(f,_qtdS)*(pct/100);
+    });
+    var totalHorasCol=Math.round(totalMinCol/60*10)/10;
+    var maxHoras=8*_diasU;
+    var pctOcupCol=Math.round(totalMinCol/(maxHoras*60)*100);
+    var corOcup=pctOcupCol>=100?'#A32D2D':pctOcupCol>=80?'#854F0B':'#0F6E56';
+    var bgOcup=pctOcupCol>=100?'#FCEBEB':pctOcupCol>=80?'#FAEEDA':'#E1F5EE';
+
+    const funcCards=('<div style="background:'+bgOcup+';border:1px solid '+corOcup+'30;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">'
+      +'<div><div style="font-size:11px;font-weight:600;color:'+corOcup+'">Ocupação total</div>'
+      +'<div style="font-size:10px;color:'+corOcup+'">'+minhasFuncs.length+' funções · '+totalHorasCol+'h / '+maxHoras+'h por mês</div></div>'
+      +'<div style="font-size:24px;font-weight:800;color:'+corOcup+'">'+pctOcupCol+'%</div>'
+    +'</div>')
+    +Object.entries(byArea).map(([area,funcs])=>{
       const c2=AREA_COLORS[area]||{cor:'#888',bg:'#eee'};
       return '<div style="margin-bottom:14px">'
         +'<div style="font-size:11px;font-weight:700;color:'+c2.cor+';text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:flex;align-items:center;gap:6px">'
@@ -1530,3 +1551,34 @@ function enviarCompartilhar(colId){
   toast('📧 Email aberto no Gmail! (conteúdo também copiado)');
 }
 
+
+function editMovimentacao(id,idx){
+  var i=colaboradores.findIndex(function(x){return x.id===id;});
+  if(i<0)return;
+  var h=colaboradores[i].historico[idx];
+  if(!h)return;
+  var tiposMovim=['Promoção','Treinamento','Advertência','Elogio','Aumento','Transferência de Área','Mudança de Cargo','Licença','Outro'];
+  document.getElementById('modal-title').textContent='Editar Movimentação';
+  document.getElementById('modal-box').classList.remove('modal-lg');
+  document.getElementById('modal-body').innerHTML=
+    '<div class="form-grid">'
+      +'<div class="field-group"><div class="field-label">Tipo</div><select id="edit-mov-tipo">'+tiposMovim.map(function(t){return '<option'+(t===h.tipo?' selected':'')+'>'+t+'</option>';}).join('')+'</select></div>'
+      +'<div class="field-group"><div class="field-label">Data</div><input type="date" id="edit-mov-data" value="'+(h.data||'')+'"/></div>'
+      +'<div class="field-group form-full"><div class="field-label">Descrição</div><input id="edit-mov-desc" value="'+(h.descricao||'').replace(/"/g,'&quot;')+'"/></div>'
+    +'</div>'
+    +'<div style="display:flex;gap:8px;margin-top:12px">'
+      +'<button class="btn btn-primary btn-sm" onclick="salvarEditMovimentacao(\''+id+'\','+idx+')">Salvar</button>'
+      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
+    +'</div>';
+  document.getElementById('modal').style.display='flex';
+}
+function salvarEditMovimentacao(id,idx){
+  var i=colaboradores.findIndex(function(x){return x.id===id;});
+  if(i<0)return;
+  colaboradores[i].historico[idx]={
+    data:(document.getElementById('edit-mov-data')||{}).value||'',
+    tipo:(document.getElementById('edit-mov-tipo')||{}).value||'Outro',
+    descricao:(document.getElementById('edit-mov-desc')||{}).value||''
+  };
+  saveAll();closeModal();toast('Movimentação atualizada!');renderPerfilAba(id,'historico');
+}

@@ -197,7 +197,20 @@ function renderCapacidade() {
   });
   const pessoas_todos = Object.keys(cargaPessoa);
   // Cards de pessoas — ordenadas por ocupação decrescente
-  const pessoasOrdenadas = pessoas_todos.sort((a,b) => cargaPessoa[b] - cargaPessoa[a]);
+  const pessoasOrdenadas = pessoas_todos.sort((a,b) => cargaPessoa[b] - cargaPessoa[a])
+    .filter(nome => {
+      if(window._capFiltroArea){
+        const col = colaboradores.find(c => c.nome === nome);
+        if(!col || col.area !== window._capFiltroArea) return false;
+      }
+      if(window._capFiltroOcup){
+        const pctF = pctOcu(cargaPessoa[nome]);
+        if(window._capFiltroOcup === 'over' && pctF < 100) return false;
+        if(window._capFiltroOcup === 'high' && (pctF < 80 || pctF >= 100)) return false;
+        if(window._capFiltroOcup === 'low' && pctF >= 80) return false;
+      }
+      return true;
+    });
 
   const pessoaCards = pessoasOrdenadas.map(nome => {
     const min = cargaPessoa[nome];
@@ -221,7 +234,7 @@ function renderCapacidade() {
       + '</div>'
       + '<div style="text-align:right">'
         + '<div style="font-size:18px;font-weight:800;color:'+cor+'">'+pct+'%</div>'
-        + '<div style="font-size:9px;color:var(--txt3);white-space:nowrap">'+horas(min)+' / 160h</div>'
+        + '<div style="font-size:9px;color:var(--txt3);white-space:nowrap">'+horas(min)+' / '+(8*_diasUteis)+'h</div>'
       + '</div>'
     + '</div>';
 
@@ -293,7 +306,7 @@ function renderCapacidade() {
         + '<td style="padding:7px 10px;font-size:11px;color:var(--txt2);text-align:center">'
           + (f.tipoTempo==='fixo_mes'
               ? '<span style="background:#EEEDFE;color:#534AB7;padding:1px 6px;border-radius:10px;font-size:10px">fixo</span>'
-              : f.pctServicos+'% dos serviços')
+              : f.pctServicos+'%<span style="font-size:9px;color:var(--txt3)"> (~'+Math.round(amostras*f.pctServicos/100)+' serv)</span>')
         + '</td>'
         + '<td style="padding:7px 10px;font-size:11px;color:var(--txt2);text-align:center">'
           + (f.tipoTempo==='fixo_mes' ? horas(f.tempoMin)+'/mês' : f.tempoMin+'min/serviço')
@@ -457,8 +470,13 @@ function renderCapacidade() {
     + '</div>'
     + '<button class="btn btn-sm btn-danger" id="btn-excluir-selecionadas" onclick="excluirFuncoesSelecionadas()" style="display:none">🗑 Excluir selecionadas</button>'
     + '<button class="btn btn-sm" onclick="render(\'capacidade\')" style="display:flex;align-items:center;gap:5px;border-color:var(--green);color:var(--green)">🔄 Atualizar</button>'
+    + '<button class="btn btn-primary btn-sm" onclick="openFuncForm()">+ Nova Função</button>'
   + '</div>'
 
+  + '<div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap">'
+    + '<select id="cap-filtro-area" onchange="window._capFiltroArea=this.value;render(\'capacidade\')" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:11px;background:var(--bg);color:var(--txt)"><option value="">Todas as áreas</option>'+Object.keys(typeof AREA_COLORS!=="undefined"?AREA_COLORS:{}).map(function(a){return '<option value="'+a+'"'+(window._capFiltroArea===a?' selected':'')+'>'+a+'</option>';}).join('')+'</select>'
+    + '<select id="cap-filtro-ocup" onchange="window._capFiltroOcup=this.value;render(\'capacidade\')" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:11px;background:var(--bg);color:var(--txt)"><option value=""'+(!(window._capFiltroOcup)?' selected':'')+'>Todos</option><option value="over"'+((window._capFiltroOcup)==="over"?' selected':'')+'>Acima 100%</option><option value="high"'+((window._capFiltroOcup)==="high"?' selected':'')+'>80-100%</option><option value="low"'+((window._capFiltroOcup)==="low"?' selected':'')+'>Abaixo 80%</option></select>'
+  + '</div>'
   + '<div id="cap-panel-pessoas" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">'
     + pessoaCards
   + '</div>'
