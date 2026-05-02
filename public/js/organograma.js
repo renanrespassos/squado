@@ -604,51 +604,80 @@ setTimeout(()=>{if(currentPage==='organograma'){centerOrg();}},100);
 // ══════════════════════════════════════════
 
 function exportarOrganograma(){
-  toast('📄 Gerando PDF do organograma...');
   var dataHoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
   var areas=[...new Set(colaboradores.filter(c=>c.area&&c.status!=='Desligado').map(c=>c.area))].sort();
+  var totalAtivos=colaboradores.filter(c=>c.status!=='Desligado').length;
 
+  // Gerar cards visuais por área (replicando a tela)
   var secoesHtml='';
   areas.forEach(function(area){
     var corArea=(AREA_COLORS[area]||{}).cor||'#185FA5';
-    var cols=colaboradores.filter(c=>c.area===area&&c.status!=='Desligado').sort(function(a,b){
-      var oa=(niveis.find(n=>n.nome===a.nivel)||{}).ordem||99;
-      var ob=(niveis.find(n=>n.nome===b.nivel)||{}).ordem||99;
-      return oa-ob;
-    });
-    secoesHtml+='<div style="margin-bottom:20px;page-break-inside:avoid">'
-      +'<h3 style="font-size:14px;font-weight:700;color:'+corArea+';padding:8px 12px;background:'+corArea+'10;border-left:3px solid '+corArea+';border-radius:0 6px 6px 0;margin:0 0 8px 0">'+area+' <span style="font-weight:400;font-size:11px;color:#666">('+cols.length+')</span></h3>'
-      +'<table style="width:100%;border-collapse:collapse;font-size:12px">'
-      +'<tr style="background:#f4f4f0"><th style="text-align:left;padding:6px 10px;border:1px solid #ddd">Nome</th><th style="padding:6px 10px;border:1px solid #ddd;width:120px">Nível</th><th style="padding:6px 10px;border:1px solid #ddd;width:120px">Gestor</th></tr>';
+    var bgArea=(AREA_COLORS[area]||{}).bg||'#E6F1FB';
+    var cols=colaboradores.filter(c=>c.area===area&&c.status!=='Desligado');
+
+    // Agrupar por nível (ordenado por hierarquia)
+    var porNivel={};
     cols.forEach(function(c){
-      secoesHtml+='<tr><td style="padding:5px 10px;border:1px solid #ddd;font-weight:500">'+c.nome+'</td>'
-        +'<td style="padding:5px 10px;border:1px solid #ddd;text-align:center;font-size:11px">'+(c.nivel||'—')+'</td>'
-        +'<td style="padding:5px 10px;border:1px solid #ddd;font-size:11px;color:#555">'+(c.gestor||'—')+'</td></tr>';
+      var n=c.nivel||'Sem nível';
+      if(!porNivel[n])porNivel[n]=[];
+      porNivel[n].push(c);
     });
-    secoesHtml+='</table></div>';
+    var niveisOrdenados=Object.keys(porNivel).sort(function(a,b){
+      var oa=(niveis.find(function(n){return n.nome===a;})||{}).ordem||99;
+      var ob=(niveis.find(function(n){return n.nome===b;})||{}).ordem||99;
+      return ob-oa;
+    });
+
+    // Gerar HTML da área
+    secoesHtml+='<div style="margin-bottom:24px;page-break-inside:avoid">';
+    secoesHtml+='<div style="background:'+bgArea+';border-left:4px solid '+corArea+';border-radius:0 8px 8px 0;padding:10px 16px;margin-bottom:12px">';
+    secoesHtml+='<span style="font-size:16px;font-weight:800;color:'+corArea+'">'+area+'</span>';
+    secoesHtml+='<span style="font-size:12px;color:'+corArea+';opacity:.7;margin-left:8px">'+cols.length+' pessoas</span>';
+    secoesHtml+='</div>';
+
+    niveisOrdenados.forEach(function(nivel){
+      var pessoasNivel=porNivel[nivel];
+      var nObj=niveis.find(function(n){return n.nome===nivel;})||{cor:'#888',bg:'#eee'};
+
+      secoesHtml+='<div style="margin-bottom:12px;padding-left:12px">';
+      // Badge do nível
+      secoesHtml+='<div style="margin-bottom:6px"><span style="display:inline-block;font-size:10px;font-weight:700;padding:2px 10px;border-radius:4px;border:1.5px solid '+nObj.cor+';color:'+nObj.cor+';background:'+nObj.bg+'">'+nivel+'</span></div>';
+      // Grid de cards
+      secoesHtml+='<div style="display:flex;flex-wrap:wrap;gap:8px">';
+      pessoasNivel.forEach(function(c){
+        var initials=c.nome.split(' ').map(function(w){return w[0];}).slice(0,2).join('').toUpperCase();
+        secoesHtml+='<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:#fff;border:1px solid #E0E2E0;border-radius:8px;border-top:3px solid '+nObj.cor+';min-width:180px;max-width:240px">';
+        secoesHtml+='<div style="width:36px;height:36px;border-radius:8px;background:'+nObj.bg+';border:2px solid '+nObj.cor+';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:'+nObj.cor+';flex-shrink:0">'+initials+'</div>';
+        secoesHtml+='<div><div style="font-size:12px;font-weight:700;color:#1A1F1D">'+c.nome+'</div>';
+        if(c.gestor) secoesHtml+='<div style="font-size:9px;color:#9BA09E">↑ '+c.gestor+'</div>';
+        secoesHtml+='</div></div>';
+      });
+      secoesHtml+='</div></div>';
+    });
+
+    secoesHtml+='</div>';
   });
 
-  var totalAtivos=colaboradores.filter(c=>c.status!=='Desligado').length;
-  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Organograma</title>'
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Organograma — Squado</title>'
     +'<style>*{margin:0;padding:0;box-sizing:border-box}'
-    +'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111;background:#fff;padding:40px}'
-    +'@media print{body{padding:0}.np{display:none!important}@page{margin:16mm;size:A4}}'
+    +'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1A1F1D;background:#fff;padding:32px}'
+    +'@media print{body{padding:12px}.np{display:none!important}@page{margin:10mm;size:A4 landscape}}'
     +'</style></head><body>'
     +'<div class="np" style="position:fixed;top:0;left:0;right:0;background:#0F6E56;padding:10px 24px;display:flex;align-items:center;gap:12px;z-index:999">'
-      +'<span style="color:#fff;font-weight:700;font-size:14px;flex:1">Organograma</span>'
+      +'<span style="color:#fff;font-weight:700;font-size:14px;flex:1">Organograma — Squado</span>'
       +'<button onclick="window.print()" style="background:#fff;color:#0F6E56;border:none;padding:7px 20px;border-radius:7px;font-weight:700;cursor:pointer">🖨 Imprimir / PDF</button>'
       +'<button onclick="window.close()" style="background:rgba(255,255,255,.2);color:#fff;border:none;padding:7px 12px;border-radius:7px;cursor:pointer">×</button>'
     +'</div><div class="np" style="height:52px"></div>'
-    +'<div style="text-align:center;padding-bottom:16px;border-bottom:3px solid #0F6E56;margin-bottom:24px">'
+    +'<div style="text-align:center;margin-bottom:24px">'
       +'<div style="font-size:9px;font-weight:700;color:#0F6E56;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px">Squado</div>'
-      +'<div style="font-size:24px;font-weight:900;margin-bottom:4px">Organograma</div>'
-      +'<div style="font-size:11px;color:#666">'+totalAtivos+' colaboradores ativos · '+areas.length+' áreas · '+dataHoje+'</div>'
+      +'<div style="font-size:22px;font-weight:900;margin-bottom:4px">Organograma</div>'
+      +'<div style="font-size:11px;color:#6B7370">'+totalAtivos+' colaboradores ativos · '+areas.length+' áreas · '+dataHoje+'</div>'
     +'</div>'
     +secoesHtml
-    +'<div style="margin-top:24px;padding-top:12px;border-top:1px solid #ddd;font-size:9px;color:#999;text-align:center">Gerado pelo Squado · squado.com.br · '+dataHoje+'</div>'
+    +'<div style="margin-top:20px;padding-top:10px;border-top:1px solid #E0E2E0;font-size:9px;color:#9BA09E;text-align:center">Squado · squado.com.br · '+dataHoje+'</div>'
     +'</body></html>';
 
-  var w=window.open('','_blank','width=900,height=800');
+  var w=window.open('','_blank','width=1200,height=900');
   if(w){w.document.write(html);w.document.close();}
   else toast('Permita pop-ups para gerar o PDF.');
 }
