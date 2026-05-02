@@ -70,7 +70,13 @@ function renderPDI(search){
     return html;
   }
   return '<div>'
-    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">'
+      +'<div style="font-size:12px;color:var(--txt3)">'+totalPDIs+' PDIs · '+emAndamento+' em andamento · '+semPDI+' sem PDI</div>'
+      +'<div style="display:flex;gap:8px">'
+        +'<button class="btn btn-sm" onclick="gerarPDIIA()" style="border-color:#534AB7;color:#534AB7">🤖 Sugerir PDI com IA</button>'
+      +'</div>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:16px">'
       +'<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:var(--blue)">'+totalPDIs+'</div><div style="font-size:10px;color:var(--txt2)">PDIs Criados</div></div>'
       +'<div style="background:var(--green-bg);border:0.5px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:var(--green)">'+emAndamento+'</div><div style="font-size:10px;color:var(--txt2)">Em Andamento</div></div>'
       +'<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:#854F0B">'+semPDI+'</div><div style="font-size:10px;color:var(--txt2)">Sem PDI</div></div>'
@@ -543,4 +549,87 @@ function gerarPDFPDI(pdiId){
   var w=window.open('','_blank','width=1000,height=780');
   if(!w){alert('Permita pop-ups.');return;}
   w.document.write(html);w.document.close();
+}
+
+// ═══ IA para PDI ═══
+async function gerarPDIIA(){
+  var col=colaboradores.filter(function(c){return c.status!=='Desligado';});
+  if(!col.length){toast('Cadastre colaboradores primeiro.');return;}
+
+  document.getElementById('modal-title').textContent='🤖 Sugerir PDI com IA';
+  document.getElementById('modal-box').classList.remove('modal-lg');
+  document.getElementById('modal-body').innerHTML=
+    '<div style="margin-bottom:12px;font-size:12px;color:var(--txt2)">A IA vai analisar o colaborador e sugerir ações de desenvolvimento personalizadas.</div>'
+    +'<div class="field-group"><div class="field-label">Colaborador *</div>'
+      +'<select id="ia-pdi-col"><option value="">Selecione...</option>'
+        +col.map(function(c){var avsC=avaliacoes.filter(function(a){return a.colaboradorId===c.id;});var lastAv=avsC.length?avsC[avsC.length-1]:null;return '<option value="'+c.id+'">'+c.nome+' ('+c.nivel+')'+(lastAv?' — nota '+lastAv.mediaGeral:'')+'</option>';}).join('')
+      +'</select></div>'
+    +'<div class="field-group"><div class="field-label">Foco do desenvolvimento</div>'
+      +'<select id="ia-pdi-foco"><option value="">Geral</option><option>Técnico</option><option>Comportamental</option><option>Liderança</option><option>Gestão</option><option>Comunicação</option></select></div>'
+    +'<div class="field-group"><div class="field-label">Contexto adicional (opcional)</div>'
+      +'<input id="ia-pdi-ctx" placeholder="Ex: Preparar para promoção, melhorar gestão de tempo..."/></div>'
+    +'<div style="display:flex;gap:8px;margin-top:12px">'
+      +'<button class="btn btn-purple btn-sm" onclick="executarGeracaoPDIIA()">🤖 Gerar PDI</button>'
+      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
+    +'</div>';
+  document.getElementById('modal').style.display='flex';
+}
+
+async function executarGeracaoPDIIA(){
+  var colId=(document.getElementById('ia-pdi-col')||{}).value;
+  if(!colId){toast('Selecione um colaborador.');return;}
+  var foco=(document.getElementById('ia-pdi-foco')||{}).value||'geral';
+  var ctx=(document.getElementById('ia-pdi-ctx')||{}).value||'';
+  var col=colaboradores.find(function(c){return c.id===colId;});
+  if(!col)return;
+
+  var avsC=avaliacoes.filter(function(a){return a.colaboradorId===colId;});
+  var lastAv=avsC.length?avsC[avsC.length-1]:null;
+
+  closeModal();
+  toast('🤖 Gerando PDI com IA para '+col.nome+'...');
+
+  var prompt='Gere um PDI (Plano de Desenvolvimento Individual) para:\n';
+  prompt+='Nome: '+col.nome+'\nNível: '+col.nivel+'\nÁrea: '+(col.area||'geral')+'\n';
+  if(lastAv) prompt+='Última avaliação: nota '+lastAv.mediaGeral+'\n';
+  if(lastAv&&lastAv.secaoMedias) prompt+='Notas por seção: '+JSON.stringify(lastAv.secaoMedias)+'\n';
+  prompt+='Foco: '+foco+'\n';
+  if(ctx) prompt+='Contexto: '+ctx+'\n';
+  prompt+='\nRetorne JSON: {\"objetivo\":\"objetivo geral do PDI\",\"competencias\":[\"comp1\",\"comp2\"],\"acoes\":[{\"descricao\":\"...\",\"tipo\":\"Treinamento|Mentoria|Projeto|Leitura|Curso\",\"prazo\":\"2026-06-30\",\"progresso\":0}]}\n';
+  prompt+='Gere 4-6 ações concretas e realistas. Sem markdown. Apenas JSON.';
+
+  try{
+    var token=squadoGetToken();
+    var r=await fetch(SQUADO_API+'/api/ai/chat',{
+      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({messages:[
+        {role:'system',content:'Responda SOMENTE com JSON válido. Gere PDIs concretos e realistas baseados no nível e avaliação do colaborador. Português brasileiro.'},
+        {role:'user',content:prompt}
+      ],max_tokens:2000})
+    });
+    var d=await r.json();
+    var resposta=(d.content||'').replace(/```json/g,'').replace(/```/g,'').trim();
+    var match=resposta.match(/\{[\s\S]*\}/);
+    if(!match){toast('⚠️ IA não retornou JSON válido');return;}
+    var sugestao=JSON.parse(match[0]);
+
+    var pdis=getPDIs();
+    pdis.push({
+      id:uid(),colId:colId,colNome:col.nome,
+      objetivo:sugestao.objetivo||'PDI — '+col.nome,
+      status:'Em andamento',ciclo:'Semestral',
+      competencias:sugestao.competencias||[],
+      acoes:(sugestao.acoes||[]).map(function(a){
+        return{id:uid(),descricao:a.descricao||'',tipo:a.tipo||'Treinamento',prazo:a.prazo||'',progresso:0};
+      }),
+      dataCriacao:new Date().toISOString().slice(0,10),
+      dataProxRevisao:new Date(Date.now()+30*86400000).toISOString().slice(0,10)
+    });
+    savePDIs(pdis);
+    saveAll();
+    toast('✅ PDI gerado para '+col.nome+'!');
+    render('pdi');
+  }catch(e){
+    toast('⚠️ Erro: '+e.message);
+  }
 }

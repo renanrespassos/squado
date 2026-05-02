@@ -129,7 +129,14 @@ function renderOKR(search){
   }
 
   return '<div>'
-    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">'
+      +'<div style="font-size:12px;color:var(--txt3)">'+totalOkrs+' objetivos · '+totalKrs+' key results · '+areas.length+' áreas</div>'
+      +'<div style="display:flex;gap:8px">'
+        +'<button class="btn btn-primary btn-sm" onclick="openOKRForm()">+ Novo OKR</button>'
+        +'<button class="btn btn-sm" onclick="gerarOKRsIA()" style="border-color:#534AB7;color:#534AB7">🤖 Sugerir com IA</button>'
+      +'</div>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:18px">'
       +'<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:14px;text-align:center">'
         +'<div style="font-size:28px;font-weight:900;color:var(--blue)">'+totalOkrs+'</div>'
         +'<div style="font-size:11px;color:var(--txt2)">Objectives</div>'
@@ -147,7 +154,7 @@ function renderOKR(search){
         +'<div style="font-size:11px;color:var(--txt2)">Áreas sem OKR</div>'
       +'</div>'
     +'</div>'
-    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">'
       +areasFiltradas.map(cardArea).join('')
     +'</div>'
   +'</div>';
@@ -308,4 +315,77 @@ function salvarKRs(okrId,count){
   okr.progresso=calcPct;
   if(okr.dbId){apiCall('PUT','/api/metas/'+okr.dbId,{tipo:'okr',titulo:okr.titulo||'',objetivo:okr.objetivo||'',area:okr.area||'',periodo:okr.periodo||'',key_results:okr.keyResults||[],status:okr.status||'Pendente',progresso:calcPct}).catch(function(e){console.warn('sync KR err',e);});}
   closeModal();toast('Key Results atualizados!');render('okr');
+}
+
+// ═══ IA para OKR ═══
+async function gerarOKRsIA(){
+  var areasDisp=[...new Set(colaboradores.filter(function(c){return c.area&&c.status!=='Desligado';}).map(function(c){return c.area;}))];
+  if(!areasDisp.length){toast('Cadastre áreas primeiro.');return;}
+
+  document.getElementById('modal-title').textContent='🤖 Sugerir OKRs com IA';
+  document.getElementById('modal-box').classList.remove('modal-lg');
+  document.getElementById('modal-body').innerHTML=
+    '<div style="margin-bottom:12px;font-size:12px;color:var(--txt2)">A IA vai gerar objetivos com key results mensuráveis para cada área.</div>'
+    +'<div class="field-group"><div class="field-label">Área</div>'
+      +'<select id="ia-okr-area"><option value="">— Todas as áreas —</option>'
+        +areasDisp.map(function(a){return '<option value="'+a+'">'+a+'</option>';}).join('')
+      +'</select></div>'
+    +'<div class="field-group"><div class="field-label">Período</div>'
+      +'<select id="ia-okr-periodo"><option>Q2 2026</option><option>Q3 2026</option><option>2026</option><option>Semestre 1</option><option>Semestre 2</option></select></div>'
+    +'<div class="field-group"><div class="field-label">Foco / Contexto (opcional)</div>'
+      +'<input id="ia-okr-ctx" placeholder="Ex: Qualidade, produtividade, certificação, inovação..."/></div>'
+    +'<div style="display:flex;gap:8px;margin-top:12px">'
+      +'<button class="btn btn-purple btn-sm" onclick="executarGeracaoOKRIA()">🤖 Gerar OKRs</button>'
+      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
+    +'</div>';
+  document.getElementById('modal').style.display='flex';
+}
+
+async function executarGeracaoOKRIA(){
+  var area=(document.getElementById('ia-okr-area')||{}).value;
+  var periodo=(document.getElementById('ia-okr-periodo')||{}).value||'Q2 2026';
+  var ctx=(document.getElementById('ia-okr-ctx')||{}).value||'';
+
+  closeModal();
+  toast('🤖 Gerando OKRs com IA...');
+
+  var areasGerar=area?[area]:[...new Set(colaboradores.filter(function(c){return c.area&&c.status!=='Desligado';}).map(function(c){return c.area;}))];
+  var prompt='Gere OKRs para as seguintes áreas: '+areasGerar.join(', ')+'.\n';
+  prompt+='Período: '+periodo+'\n';
+  if(ctx) prompt+='Foco: '+ctx+'\n';
+  prompt+='Retorne JSON: [{\"area\":\"...\",\"objetivo\":\"...\",\"keyResults\":[{\"titulo\":\"...\",\"alvo\":100,\"unidade\":\"...\"},{\"titulo\":\"...\",\"alvo\":100,\"unidade\":\"...\"}]}]\n';
+  prompt+='Cada OKR deve ter 2-3 key results com alvos numéricos concretos.\nSem markdown. Apenas JSON.';
+
+  try{
+    var token=squadoGetToken();
+    var r=await fetch(SQUADO_API+'/api/ai/chat',{
+      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({messages:[
+        {role:'system',content:'Responda SOMENTE com JSON válido. Gere OKRs concretos e mensuráveis. Português brasileiro.'},
+        {role:'user',content:prompt}
+      ],max_tokens:2000})
+    });
+    var d=await r.json();
+    var resposta=(d.content||'').replace(/```json/g,'').replace(/```/g,'').trim();
+    var match=resposta.match(/\[[\s\S]*\]/);
+    if(!match){toast('⚠️ IA não retornou JSON válido');return;}
+    var sugestoes=JSON.parse(match[0]);
+
+    var okrs=ls('okrs',[])||[];
+    sugestoes.forEach(function(s){
+      okrs.push({
+        id:uid(),area:s.area||areasGerar[0],objetivo:s.objetivo||'Objetivo',
+        periodo:periodo,status:'Em andamento',
+        keyResults:(s.keyResults||[]).map(function(kr){
+          return{id:uid(),titulo:kr.titulo||'KR',alvo:kr.alvo||100,atual:0,unidade:kr.unidade||'%'};
+        })
+      });
+    });
+    lss('okrs',okrs);
+    saveAll();
+    toast('✅ '+sugestoes.length+' OKRs gerados!');
+    render('okr');
+  }catch(e){
+    toast('⚠️ Erro: '+e.message);
+  }
 }

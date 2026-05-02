@@ -92,7 +92,14 @@ function renderMetas(search){
   }
 
   return '<div>'
-    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">'
+      +'<div style="font-size:12px;color:var(--txt3)">'+totalSmart+' metas · '+colaboradores.filter(function(c){return c.status!=="Desligado";}).length+' colaboradores</div>'
+      +'<div style="display:flex;gap:8px">'
+        +'<button class="btn btn-primary btn-sm" onclick="openMetaForm()">+ Nova Meta</button>'
+        +'<button class="btn btn-sm" onclick="gerarMetasIA()" style="border-color:#534AB7;color:#534AB7">🤖 Sugerir com IA</button>'
+      +'</div>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:18px">'
       +'<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:14px;text-align:center">'
         +'<div style="font-size:28px;font-weight:900;color:var(--blue)">'+totalSmart+'</div>'
         +'<div style="font-size:11px;color:var(--txt2)">Metas criadas</div>'
@@ -110,7 +117,7 @@ function renderMetas(search){
         +'<div style="font-size:11px;color:var(--txt2)">Em andamento</div>'
       +'</div>'
     +'</div>'
-    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">'
       +colsFiltrados.map(cardCol).join('')
     +'</div>'
   +'</div>';
@@ -221,4 +228,75 @@ function delMeta(id){
   var dbId=(meta&&(meta.dbId||meta.id));
   if(dbId) apiCall('DELETE','/api/metas/'+dbId).catch(function(e){console.warn('del meta err',e);});
   closeModal();toast('Meta excluída!');render('metas');
+}
+
+// ═══ IA para Metas SMART ═══
+async function gerarMetasIA(){
+  var col=colaboradores.filter(function(c){return c.status!=='Desligado';});
+  if(!col.length){toast('Cadastre colaboradores primeiro.');return;}
+
+  // Modal de seleção
+  document.getElementById('modal-title').textContent='🤖 Sugerir Metas com IA';
+  document.getElementById('modal-box').classList.remove('modal-lg');
+  document.getElementById('modal-body').innerHTML=
+    '<div style="margin-bottom:12px;font-size:12px;color:var(--txt2)">A IA vai analisar seus colaboradores e sugerir metas SMART personalizadas.</div>'
+    +'<div class="field-group"><div class="field-label">Colaborador</div>'
+      +'<select id="ia-meta-col"><option value="">— Toda a equipe —</option>'
+        +col.map(function(c){return '<option value="'+c.id+'">'+c.nome+' ('+c.nivel+')</option>';}).join('')
+      +'</select></div>'
+    +'<div class="field-group"><div class="field-label">Contexto adicional (opcional)</div>'
+      +'<input id="ia-meta-ctx" placeholder="Ex: Foco em produtividade, certificação ISO, liderança..."/></div>'
+    +'<div class="field-group"><div class="field-label">Quantidade de metas</div>'
+      +'<select id="ia-meta-qtd"><option value="1">1 meta</option><option value="2">2 metas</option><option value="3" selected>3 metas</option></select></div>'
+    +'<div style="display:flex;gap:8px;margin-top:12px">'
+      +'<button class="btn btn-purple btn-sm" onclick="executarGeracaoMetasIA()">🤖 Gerar Sugestões</button>'
+      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
+    +'</div>';
+  document.getElementById('modal').style.display='flex';
+}
+
+async function executarGeracaoMetasIA(){
+  var colId=(document.getElementById('ia-meta-col')||{}).value;
+  var ctx=(document.getElementById('ia-meta-ctx')||{}).value||'';
+  var qtd=parseInt((document.getElementById('ia-meta-qtd')||{}).value)||3;
+  var col=colId?colaboradores.find(function(c){return c.id===colId;}):null;
+
+  closeModal();
+  toast('🤖 Gerando metas com IA...');
+
+  var prompt='Gere '+qtd+' metas SMART'+(col?' para '+col.nome+' ('+col.nivel+', área: '+(col.area||'geral')+')':', uma para cada área da equipe')+'.\n';
+  if(ctx) prompt+='Contexto: '+ctx+'\n';
+  prompt+='Equipe: '+colaboradores.filter(function(c){return c.status!=="Desligado";}).map(function(c){return c.nome+' ('+c.nivel+')';}).join(', ')+'\n';
+  prompt+='\nRetorne JSON puro: [{\"titulo\":\"...\",\"especifica\":\"...\",\"mensuravel\":\"...\",\"atingivel\":\"...\",\"relevante\":\"...\",\"temporal\":\"...\"}]\nSem markdown. Sem backticks. Apenas JSON.';
+
+  try{
+    var token=squadoGetToken();
+    var r=await fetch(SQUADO_API+'/api/ai/chat',{
+      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({messages:[
+        {role:'system',content:'Responda SOMENTE com JSON válido. Sem markdown. Gere metas SMART concretas, mensuráveis e com prazos realistas. Português brasileiro.'},
+        {role:'user',content:prompt}
+      ],max_tokens:2000})
+    });
+    var d=await r.json();
+    var resposta=(d.content||'').replace(/```json/g,'').replace(/```/g,'').trim();
+    var match=resposta.match(/\[[\s\S]*\]/);
+    if(!match){toast('⚠️ IA não retornou JSON válido');return;}
+    var sugestoes=JSON.parse(match[0]);
+
+    sugestoes.forEach(function(s){
+      metas.push({
+        id:uid(),tipo:'smart',titulo:s.titulo||'Meta sugerida',
+        colId:colId||null,colaborador:col?col.nome:'',
+        prazo:'',status:'Pendente',progresso:0,
+        especifica:s.especifica||'',mensuravel:s.mensuravel||'',
+        atingivel:s.atingivel||'',relevante:s.relevante||'',temporal:s.temporal||''
+      });
+    });
+    saveAll();
+    toast('✅ '+sugestoes.length+' metas sugeridas!');
+    render('metas');
+  }catch(e){
+    toast('⚠️ Erro: '+e.message);
+  }
 }
