@@ -287,6 +287,16 @@ function renderCapacidade() {
     const deficit_area = pessoasIdeaisInt > pessoasReais;
 
     const nomesAtivosSet = new Set(colaboradores.filter(c=>c.status==='Ativo').map(c=>c.nome));
+    // Aplicar ordenação
+    if(typeof _capSortField !== 'undefined' && _capSortField){
+      funcs.sort(function(a,b){
+        var va,vb;
+        if(_capSortField==='nome'){va=a.nome.toLowerCase();vb=b.nome.toLowerCase();return _capSortDir==='asc'?va.localeCompare(vb):vb.localeCompare(va);}
+        if(_capSortField==='tempo'){va=a.tempoMin||0;vb=b.tempoMin||0;}
+        else{va=calcCargaFuncao(a,amostras);vb=calcCargaFuncao(b,amostras);}
+        return _capSortDir==='asc'?va-vb:vb-va;
+      });
+    }
     const rows = funcs.map(f => {
       const cF = calcCargaFuncao(f, amostras);
       // Pessoas ideais por função individual
@@ -317,11 +327,11 @@ function renderCapacidade() {
         + '</td>'
         + '<td style="padding:7px 10px;font-size:11px;color:var(--txt2)">'+respStr+'</td>'
         + (function(){
-            var somaR=(f.responsaveis||[]).reduce(function(a,r){return a+r.pct;},0);
+            var somaR=respAtivos.reduce(function(a,r){return a+r.pct;},0);
             var ok=somaR===100, mais=somaR>100;
-            var cor=ok?'var(--green)':mais?'#A32D2D':'#854F0B';
-            var bg=ok?'#E1F5EE':mais?'#FCEBEB':'#FAEEDA';
-            var icon=ok?'✅ ':mais?'⬆️ ':'⬇️ ';
+            var cor=ok?'var(--green)':mais?'#A32D2D':(somaR===0?'var(--txt3)':'#854F0B');
+            var bg=ok?'#E1F5EE':mais?'#FCEBEB':(somaR===0?'var(--bg2)':'#FAEEDA');
+            var icon=ok?'✅ ':mais?'⬆️ ':(somaR===0?'⚪ ':'⬇️ ');
             return '<td style="padding:7px 10px;text-align:center">'
               +'<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:'+bg+';color:'+cor+'" title="Soma das dedicações dos responsáveis">'
               +icon+somaR+'%</span></td>';
@@ -840,4 +850,33 @@ function gerarRelatorioCapacidade(){
   var w = window.open('','_blank','width=1100,height=800');
   if(w){w.document.write(html);w.document.close();}
   else{toast('Permita pop-ups para gerar o relatório.');}
+}
+
+// ═══ NOVA FUNÇÃO (botão no topo) ═══
+function openFuncForm(){
+  var newFunc = {
+    id: 'new_'+Date.now(),
+    nome: '',
+    area: Object.keys(typeof AREA_COLORS!=='undefined'?AREA_COLORS:{})[0]||'',
+    tempoMin: 30,
+    tipoTempo: 'por_servico',
+    pctServicos: 100,
+    responsaveis: [],
+    servicos: [],
+    descricao: ''
+  };
+  _showFuncCapModal(newFunc, true);
+}
+
+// ═══ ORDENAR FUNÇÕES POR COLUNA ═══
+var _capSortField = 'total';
+var _capSortDir = 'desc';
+function sortAreaFuncs(field){
+  if(_capSortField === field){
+    _capSortDir = _capSortDir === 'desc' ? 'asc' : 'desc';
+  } else {
+    _capSortField = field;
+    _capSortDir = field === 'nome' ? 'asc' : 'desc';
+  }
+  render('capacidade');
 }
