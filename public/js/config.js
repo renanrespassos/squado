@@ -134,8 +134,23 @@ function openNivelForm(id=null){
 function updateNivelPreview(){const nome=document.getElementById('nl-nome').value||'Nível';const cor=document.getElementById('nl-cor').value;const bg=document.getElementById('nl-bg').value;document.getElementById('nl-prev').innerHTML=`<span class="nivel-pill" style="color:${cor};background:${bg};border-color:${cor}40">${nome}</span>`}
 function saveNivel(id){
   const nome=((document.getElementById('nl-nome')||{}).value||'').trim();if(!nome)return;
-  const obj={id:id||uid(),nome,ordem:parseInt(document.getElementById('nl-ordem').value)||niveis.length+1,cor:document.getElementById('nl-cor').value,bg:document.getElementById('nl-bg').value};
-  if(id){const i=niveis.findIndex(x=>x.id===id);niveis[i]=obj}else{niveis.push(obj);if(!perguntas[nome])perguntas[nome]={...perguntas['Estagiário']}}
+  const novaOrdem=parseInt(document.getElementById('nl-ordem').value)||niveis.length+1;
+  const obj={id:id||uid(),nome,ordem:novaOrdem,cor:document.getElementById('nl-cor').value,bg:document.getElementById('nl-bg').value};
+  if(id){
+    const i=niveis.findIndex(x=>x.id===id);
+    const ordemAnterior=niveis[i].ordem;
+    niveis[i]=obj;
+    // Se mudou de posição, empurrar os outros
+    if(novaOrdem!==ordemAnterior){
+      niveis.filter(n=>n.id!==id&&n.ordem>=novaOrdem).forEach(n=>n.ordem++);
+    }
+  } else {
+    // Novo nível: empurrar existentes na mesma posição pra baixo
+    niveis.filter(n=>n.ordem>=novaOrdem).forEach(n=>n.ordem++);
+    niveis.push(obj);
+    if(!perguntas[nome]){var primeiro=Object.keys(perguntas)[0];perguntas[nome]=primeiro?JSON.parse(JSON.stringify(perguntas[primeiro])):{}}
+  }
+  // Renumerar sequencialmente
   niveis.sort((a,b)=>a.ordem-b.ordem).forEach((n,i)=>n.ordem=i+1);
   saveAll();closeModal();toast('Nível salvo!');render(currentPage);
 }
@@ -256,7 +271,6 @@ function renderAreas(){
     const colsN = colaboradores.filter(c=>c.area===nome).length;
     const funcsN = ls('funcoes_v8',[]).filter(f=>f.area===nome).length;
     const enc = encodeURIComponent(nome);
-    const podeExcluir = colsN===0 && funcsN===0;
     return `<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border)">
       <div style="width:28px;height:28px;border-radius:7px;background:${s.bg};border:2px solid ${s.cor};flex-shrink:0"></div>
       <div style="flex:1;min-width:0">
@@ -268,9 +282,7 @@ function renderAreas(){
         <span style="font-size:10px;color:var(--txt3);font-family:monospace">${s.cor}</span>
       </div>
       <button class="btn btn-xs" onclick="editarArea('${enc}')">✏️ Editar</button>
-      ${podeExcluir
-        ? `<button class="btn btn-xs btn-danger" onclick="excluirArea('${enc}')">🗑</button>`
-        : `<button class="btn btn-xs" disabled style="opacity:.3" title="Área em uso">🗑</button>`}
+      <button class="btn btn-xs btn-danger" onclick="excluirArea('${enc}')">🗑</button>
     </div>`;
   }).join('');
 
@@ -300,16 +312,23 @@ function editarArea(nomeEncoded){
 
 function excluirArea(nomeEncoded){
   const nome = decodeURIComponent(nomeEncoded);
-  const colsNaArea = colaboradores.filter(c => c.area === nome).length;
+  const colsNaArea = colaboradores.filter(c => c.area === nome && c.status !== 'Desligado').length;
   const funcsNaArea = ls('funcoes_v8',[]).filter(f => f.area === nome).length;
-  if (colsNaArea > 0 || funcsNaArea > 0) {
-    toast('Área em uso — não pode excluir'); return;
+  var msg = 'Excluir área "'+nome+'"?';
+  if(colsNaArea > 0 || funcsNaArea > 0){
+    msg += '\n\n⚠️ Atenção: esta área está em uso por '+colsNaArea+' colaborador(es) e '+funcsNaArea+' função(ões).\nA área será removida desses itens.';
   }
-  if (!confirm('Excluir área "'+nome+'"?')) return;
+  if (!confirm(msg)) return;
+  // Limpar referências
+  colaboradores.forEach(function(c){ if(c.area === nome) c.area = ''; });
+  var funcsAll = ls('funcoes_v8',[]);
+  funcsAll.forEach(function(f){ if(f.area === nome) f.area = ''; });
+  lss('funcoes_v8', funcsAll);
+  // Remover área
   const novas = {...AREA_COLORS};
   delete novas[nome];
   salvarAreas(novas);
-  toast('Área excluída!');
+  toast('Área "'+nome+'" excluída!');
   render('areas');
 }
 

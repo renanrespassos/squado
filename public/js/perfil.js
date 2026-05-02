@@ -831,7 +831,9 @@ function _renderWizardStep(isEdit){
       +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">'
         +'<div style="flex:1;min-width:140px"><div style="font-size:10px;color:var(--txt3);margin-bottom:3px">Nome da função *</div><input id="wz-nf-nome" placeholder="Ex: Calibração de Equipamentos" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;background:var(--bg);color:var(--txt)"/></div>'
         +'<div style="width:90px"><div style="font-size:10px;color:var(--txt3);margin-bottom:3px">Área</div><select id="wz-nf-area" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg);color:var(--txt)"><option value="">—</option>'+Object.keys(typeof AREA_COLORS!=='undefined'?AREA_COLORS:{}).map(function(a){return '<option value="'+a+'">'+a+'</option>';}).join('')+'</select></div>'
-        +'<div style="width:70px"><div style="font-size:10px;color:var(--txt3);margin-bottom:3px">Tempo (min)</div><input id="wz-nf-tempo" type="number" value="30" min="1" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;background:var(--bg);color:var(--txt)"/></div>'
+        +'<div style="width:90px"><div style="font-size:10px;color:var(--txt3);margin-bottom:3px">Tipo tempo</div><select id="wz-nf-tipo" onchange="var p=document.getElementById(\'wz-nf-pct-wrap\');if(p)p.style.display=this.value===\'por_servico\'?\'block\':\'none\'" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg);color:var(--txt)"><option value="por_servico">Por serviço</option><option value="fixo_mes">Fixo/mês</option></select></div>'
+        +'<div style="width:60px"><div style="font-size:10px;color:var(--txt3);margin-bottom:3px">Tempo (min)</div><input id="wz-nf-tempo" type="number" value="30" min="1" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;background:var(--bg);color:var(--txt)"/></div>'
+        +'<div id="wz-nf-pct-wrap" style="width:60px"><div style="font-size:10px;color:var(--txt3);margin-bottom:3px">% Serviços</div><input id="wz-nf-pct" type="number" value="100" min="1" max="100" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;background:var(--bg);color:var(--txt)"/></div>'
         +'<button onclick="wzCriarFuncao()" class="btn btn-primary btn-sm" style="padding:6px 14px;background:#854F0B">Criar</button>'
       +'</div>'
     +'</div>';
@@ -991,11 +993,14 @@ function wzCriarFuncao(){
   if(!nome){toast('Digite o nome da função');return;}
   var area=(document.getElementById('wz-nf-area')||{}).value||'';
   var tempo=parseInt((document.getElementById('wz-nf-tempo')||{}).value)||30;
+  var tipoTempo=(document.getElementById('wz-nf-tipo')||{}).value||'por_servico';
+  var pctServicos=parseInt((document.getElementById('wz-nf-pct')||{}).value)||100;
+  if(tipoTempo==='fixo_mes') pctServicos=100;
   var funcs=ls('funcoes_v8',[]);
   if(funcs.find(function(f){return f.nome.toLowerCase()===nome.toLowerCase();})){toast('Função já existe');return;}
   funcs.push({
     id:uid(),nome:nome,area:area,
-    tempoMin:tempo,tipoTempo:'por_servico',pctServicos:100,
+    tempoMin:tempo,tipoTempo:tipoTempo,pctServicos:pctServicos,
     servicos:[],responsaveis:[],
     descricao:'',created:new Date().toISOString()
   });
