@@ -199,14 +199,13 @@ function openOKRForm(id, preArea){
 
 // ── KR helpers ─────────────────────────────────────────────────
 function renderKRRow(kr,i){
-  return '<div style="background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto;gap:8px" id="kr-row-'+i+'">'
-    +'<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:6px;align-items:center">'
-      +'<input placeholder="Descrição do Key Result *" data-kr-titulo="'+i+'" value="'+(kr&&kr.titulo||'')+'" style="font-size:12px"/>'
-      +'<input placeholder="Meta alvo" data-kr-alvo="'+i+'" type="number" value="'+(kr&&kr.alvo||'')+'" style="font-size:12px"/>'
-      +'<input placeholder="Atual" data-kr-atual="'+i+'" type="number" value="'+(kr&&kr.atual||'')+'" style="font-size:12px"/>'
-      +'<input placeholder="Unidade" data-kr-unidade="'+i+'" value="'+(kr&&kr.unidade||'')+'" style="font-size:12px"/>'
-    +'</div>'
-    +'<button class="btn btn-xs btn-danger" onclick="this.closest(\'[id^=kr-row]\').remove()" style="align-self:center">×</button>'
+  return '<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;gap:8px;align-items:center" id="kr-row-'+i+'">'
+    +'<span style="width:20px;height:20px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">'+(typeof i==="number"?i+1:'?')+'</span>'
+    +'<input placeholder="KR *" data-kr-titulo="'+i+'" value="'+(kr&&kr.titulo||'')+'" style="font-size:12px;flex:2;min-width:0"/>'
+    +'<input placeholder="Alvo" data-kr-alvo="'+i+'" type="number" value="'+(kr&&kr.alvo||'')+'" style="font-size:12px;width:65px"/>'
+    +'<input placeholder="Atual" data-kr-atual="'+i+'" type="number" value="'+(kr&&kr.atual||'')+'" style="font-size:12px;width:60px"/>'
+    +'<input placeholder="Un." data-kr-unidade="'+i+'" value="'+(kr&&kr.unidade||'')+'" style="font-size:12px;width:50px"/>'
+    +'<button class="btn btn-xs btn-danger" onclick="this.parentElement.remove()" style="flex-shrink:0">00d7</button>'
   +'</div>';
 }
 

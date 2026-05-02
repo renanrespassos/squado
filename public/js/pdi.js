@@ -566,6 +566,7 @@ async function gerarPDIIA(){
       +'</select></div>'
     +'<div class="field-group"><div class="field-label">Foco do desenvolvimento</div>'
       +'<select id="ia-pdi-foco"><option value="">Geral</option><option>Técnico</option><option>Comportamental</option><option>Liderança</option><option>Gestão</option><option>Comunicação</option></select></div>'
+    +'<div class="field-group"><div class="field-label" style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="ia-pdi-aval" checked style="accent-color:var(--green);width:16px;height:16px"> Considerar dados da avaliação</div><div style="font-size:10px;color:var(--txt3);margin-top:2px">A IA usará notas por seção para identificar pontos a desenvolver</div></div>'
     +'<div class="field-group"><div class="field-label">Contexto adicional (opcional)</div>'
       +'<input id="ia-pdi-ctx" placeholder="Ex: Preparar para promoção, melhorar gestão de tempo..."/></div>'
     +'<div style="display:flex;gap:8px;margin-top:12px">'
@@ -589,10 +590,28 @@ async function executarGeracaoPDIIA(){
   closeModal();
   toast('🤖 Gerando PDI com IA para '+col.nome+'...');
 
+  var usarAval=(document.getElementById('ia-pdi-aval')||{}).checked!==false;
   var prompt='Gere um PDI (Plano de Desenvolvimento Individual) para:\n';
   prompt+='Nome: '+col.nome+'\nNível: '+col.nivel+'\nÁrea: '+(col.area||'geral')+'\n';
-  if(lastAv) prompt+='Última avaliação: nota '+lastAv.mediaGeral+'\n';
-  if(lastAv&&lastAv.secaoMedias) prompt+='Notas por seção: '+JSON.stringify(lastAv.secaoMedias)+'\n';
+  if(lastAv&&usarAval){
+    prompt+='Última avaliação: nota '+lastAv.mediaGeral+'\n';
+    if(lastAv.secaoMedias){
+      prompt+='Notas por seção: ';
+      Object.entries(lastAv.secaoMedias).forEach(function(e){prompt+=e[0]+': '+e[1]+', ';});
+      prompt+='\n';
+      var fracos=Object.entries(lastAv.secaoMedias).filter(function(e){return e[1]<4;}).map(function(e){return e[0]+' ('+e[1]+')';});
+      if(fracos.length) prompt+='⚠️ PRIORIDADE — Pontos a desenvolver (nota <4): '+fracos.join(', ')+'\n';
+      var fortes=Object.entries(lastAv.secaoMedias).filter(function(e){return e[1]>=4.5;}).map(function(e){return e[0]+' ('+e[1]+')';});
+      if(fortes.length) prompt+='✅ Pontos fortes: '+fortes.join(', ')+'\n';
+    }
+  }
+  // Contexto cruzado: OKRs e Metas da área
+  if(col.area){
+    var okrsArea=(ls('okrs',[])||[]).filter(function(o){return o.area===col.area;});
+    if(okrsArea.length) prompt+='OKRs da área: '+okrsArea.map(function(o){return o.objetivo;}).join('; ')+'\n';
+    var metasCol=metas.filter(function(m){return m.colId===colId&&m.tipo==='smart';});
+    if(metasCol.length) prompt+='Metas existentes: '+metasCol.map(function(m){return m.titulo;}).join('; ')+'\n';
+  }
   prompt+='Foco: '+foco+'\n';
   if(ctx) prompt+='Contexto: '+ctx+'\n';
   prompt+='\nRetorne JSON: {\"objetivo\":\"objetivo geral do PDI\",\"competencias\":[\"comp1\",\"comp2\"],\"acoes\":[{\"descricao\":\"...\",\"tipo\":\"Treinamento|Mentoria|Projeto|Leitura|Curso\",\"prazo\":\"2026-06-30\",\"progresso\":0}]}\n';

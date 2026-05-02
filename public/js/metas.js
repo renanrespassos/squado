@@ -136,49 +136,125 @@ function openMetaForm(id, preColId){
   id=id||null;
   var m=id?metas.find(function(x){return x.id===id;}):null;
   var isNew=!id;
-  var statuses=['Pendente','Em andamento','No prazo','Em risco','Atrasada','Concluída','Cancelada'];
-
-  document.getElementById('modal-title').textContent=isNew?'✅ Nova Meta SMART':'✅ Editar Meta SMART';
-  document.getElementById('modal-box').classList.add('modal-lg');
-
+  var statuses=['Pendente','Em andamento','No prazo','Em risco','Atrasada','Conclu\u00EDda','Cancelada'];
   var selColId = (m && m.colId) || preColId || '';
 
+  // Buscar OKRs da \u00e1rea do colaborador selecionado (contexto cruzado)
+  var colSel=selColId?colaboradores.find(function(c){return c.id===selColId;}):null;
+  var okrsArea=[];
+  if(colSel&&colSel.area){
+    var allOkrs=ls('okrs',[])||[];
+    okrsArea=allOkrs.filter(function(o){return o.area===colSel.area;});
+  }
+  var okrCtxHtml=okrsArea.length
+    ?'<div style="background:#F3F0FF;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#534AB7">'
+      +'\u{1F3AF} <strong>OKRs da \u00e1rea '+(colSel?colSel.area:'')+':</strong> '
+      +okrsArea.map(function(o){return o.objetivo;}).join(' \u2022 ')
+    +'</div>':'';
+
+  document.getElementById('modal-title').textContent=isNew?'\u2705 Nova Meta SMART':'\u2705 Editar Meta';
+  document.getElementById('modal-box').classList.add('modal-lg');
   document.getElementById('modal-body').innerHTML=
-    '<div style="background:var(--blue-bg);border-radius:8px;padding:10px 13px;margin-bottom:14px;font-size:12px;color:var(--blue)">'
-      +'<strong>Método SMART:</strong> Específica · Mensurável · Atingível · Relevante · Temporal'
+    '<div style="display:flex;gap:8px;margin-bottom:14px">'
+      +'<div style="flex:1;background:var(--blue-bg);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--blue)">'
+        +'<strong>SMART:</strong> Espec\u00edfica \u00b7 Mensur\u00e1vel \u00b7 Ating\u00edvel \u00b7 Relevante \u00b7 Temporal'
+      +'</div>'
+      +(isNew?'<button class="btn btn-sm" onclick="preencherMetaComIA()" style="border-color:#534AB7;color:#534AB7;white-space:nowrap">\u{1F916} Preencher com IA</button>':'')
     +'</div>'
-    +'<div class="form-grid mb-12">'
-      +'<div class="field-group form-full"><div class="field-label">Título da Meta *</div>'
-        +'<input id="sm-titulo" value="'+(m&&m.titulo||'')+'" placeholder="Ex: Reduzir tempo médio de emissão de relatórios em 30%"/></div>'
+    +okrCtxHtml
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">'
       +'<div class="field-group"><div class="field-label">Colaborador</div>'
-        +'<select id="sm-col"><option value="">— Toda a equipe —</option>'
-          +colaboradores.map(function(c){return'<option value="'+c.id+'"'+(selColId===c.id?' selected':'')+'>'+c.nome+'</option>';}).join('')
+        +'<select id="sm-col" onchange="atualizarOKRCtxMeta()"><option value="">\u2014 Toda a equipe \u2014</option>'
+          +colaboradores.filter(function(c){return c.status!=="Desligado";}).map(function(c){return'<option value="'+c.id+'"'+(selColId===c.id?' selected':'')+'>'+c.nome+' ('+c.nivel+')</option>';}).join('')
         +'</select></div>'
-      +'<div class="field-group"><div class="field-label">Prazo</div>'
-        +'<input id="sm-prazo" type="date" value="'+(m&&m.prazo||'')+'" /></div>'
       +'<div class="field-group"><div class="field-label">Status</div>'
         +'<select id="sm-status">'+statuses.map(function(s){return'<option'+(m&&m.status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></div>'
-      +'<div class="field-group form-full"><div class="field-label">🎯 Específica — O que exatamente?</div>'
-        +'<textarea id="sm-esp" placeholder="Descreva com clareza o que deve ser atingido">'+(m&&m.especifica||'')+'</textarea></div>'
-      +'<div class="field-group form-full"><div class="field-label">📏 Mensurável — Como vamos medir?</div>'
-        +'<input id="sm-men" value="'+(m&&m.mensuravel||'')+'" placeholder="Ex: Tempo médio < 48h, NPS > 4.5"/></div>'
-      +'<div class="field-group form-full"><div class="field-label">💪 Atingível — É realista?</div>'
-        +'<input id="sm-ati" value="'+(m&&m.atingivel||'')+'" placeholder="Ex: Temos os recursos e treinamento necessários"/></div>'
-      +'<div class="field-group form-full"><div class="field-label">⭐ Relevante — Por que importa?</div>'
-        +'<input id="sm-rel" value="'+(m&&m.relevante||'')+'" placeholder="Ex: Impacta na satisfação do cliente e acreditação"/></div>'
-      +'<div class="field-group form-full"><div class="field-label">📅 Temporal — Quando?</div>'
-        +'<input id="sm-tem" value="'+(m&&m.temporal||'')+'" placeholder="Ex: Até final do Q2 2025, com revisão mensal"/></div>'
-      +'<div class="field-group form-full"><div class="field-label">Progresso: <span id="sm-pv">'+(m&&m.progresso||0)+'</span>%</div>'
-        +'<input type="range" min="0" max="100" value="'+(m&&m.progresso||0)+'" id="sm-prog" oninput="document.getElementById(\'sm-pv\').textContent=this.value"/></div>'
     +'</div>'
-    +'<div class="flex gap-8 mt-4 justify-between">'
+    +'<div class="field-group" style="margin-bottom:12px"><div class="field-label">\u{1F3AF} T\u00edtulo da Meta *</div>'
+      +'<input id="sm-titulo" value="'+(m&&m.titulo||'')+'" placeholder="Ex: Reduzir tempo m\u00e9dio de emiss\u00e3o de relat\u00f3rios em 30%" style="font-size:14px;font-weight:600;padding:10px 14px"/></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">'
+      +'<div class="field-group"><div class="field-label">\u{1F4C5} Prazo</div>'
+        +'<input id="sm-prazo" type="date" value="'+(m&&m.prazo||'')+'"/></div>'
+      +'<div class="field-group"><div class="field-label">Progresso: <span id="sm-pv" style="font-weight:700;color:var(--green)">'+(m&&m.progresso||0)+'</span>%</div>'
+        +'<input type="range" min="0" max="100" value="'+(m&&m.progresso||0)+'" id="sm-prog" oninput="document.getElementById(\'sm-pv\').textContent=this.value" style="accent-color:var(--green)"/></div>'
+    +'</div>'
+    +'<div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px">'
+      +'<div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Detalhamento SMART</div>'
+      +'<div class="field-group" style="margin-bottom:8px"><div class="field-label">\u{1F3AF} Espec\u00edfica \u2014 O que exatamente?</div>'
+        +'<textarea id="sm-esp" rows="2" placeholder="Descreva com clareza o que deve ser atingido" style="font-size:12px">'+(m&&m.especifica||'')+'</textarea></div>'
+      +'<div class="field-group" style="margin-bottom:8px"><div class="field-label">\u{1F4CF} Mensur\u00e1vel \u2014 Como vamos medir?</div>'
+        +'<input id="sm-men" value="'+(m&&m.mensuravel||'')+'" placeholder="Ex: Tempo m\u00e9dio < 48h, NPS > 4.5" style="font-size:12px"/></div>'
+      +'<div class="field-group" style="margin-bottom:8px"><div class="field-label">\u{1F4AA} Ating\u00edvel \u2014 \u00c9 realista?</div>'
+        +'<input id="sm-ati" value="'+(m&&m.atingivel||'')+'" placeholder="Ex: Temos os recursos e treinamento necess\u00e1rios" style="font-size:12px"/></div>'
+      +'<div class="field-group" style="margin-bottom:8px"><div class="field-label">\u2B50 Relevante \u2014 Por que importa?</div>'
+        +'<input id="sm-rel" value="'+(m&&m.relevante||'')+'" placeholder="Ex: Impacta na satisfa\u00e7\u00e3o do cliente e acredita\u00e7\u00e3o" style="font-size:12px"/></div>'
+      +'<div class="field-group"><div class="field-label">\u{1F4C5} Temporal \u2014 Quando?</div>'
+        +'<input id="sm-tem" value="'+(m&&m.temporal||'')+'" placeholder="Ex: At\u00e9 final do Q2 2026, com revis\u00e3o mensal" style="font-size:12px"/></div>'
+    +'</div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">'
       +(id?'<button class="btn btn-danger btn-sm" onclick="delMeta(\''+id+'\')">Excluir</button>':'<div></div>')
-      +'<div class="flex gap-8">'
+      +'<div style="display:flex;gap:8px">'
         +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
-        +'<button class="btn btn-purple btn-sm" onclick="salvarMetaSMART(\''+(id||'')+'\')">💾 Salvar Meta</button>'
+        +'<button class="btn btn-primary btn-sm" onclick="salvarMetaSMART(\''+(id||'')+'\')">\u{1F4BE} Salvar</button>'
       +'</div>'
     +'</div>';
   document.getElementById('modal').style.display='flex';
+}
+
+function atualizarOKRCtxMeta(){
+  // Reabrir o form com o col selecionado pra mostrar OKRs da \u00e1rea
+  var colId=(document.getElementById('sm-col')||{}).value;
+  // Salvar valores atuais
+  var titulo=(document.getElementById('sm-titulo')||{}).value||'';
+  openMetaForm(null, colId);
+  setTimeout(function(){
+    var el=document.getElementById('sm-titulo');
+    if(el&&titulo)el.value=titulo;
+  },50);
+}
+
+async function preencherMetaComIA(){
+  var colId=(document.getElementById('sm-col')||{}).value;
+  var col=colId?colaboradores.find(function(c){return c.id===colId;}):null;
+  toast('\u{1F916} Gerando meta com IA...');
+
+  var prompt='Gere UMA meta SMART'+(col?' para '+col.nome+' ('+col.nivel+', \u00e1rea: '+(col.area||'geral')+')':' para a equipe')+'.\n';
+  // Contexto cruzado: usar OKRs da \u00e1rea
+  if(col&&col.area){
+    var okrs=ls('okrs',[])||[];
+    var okrsArea=okrs.filter(function(o){return o.area===col.area;});
+    if(okrsArea.length) prompt+='OKRs da \u00e1rea: '+okrsArea.map(function(o){return o.objetivo;}).join('; ')+'\n';
+  }
+  // Contexto: avalia\u00e7\u00e3o
+  if(col){
+    var avsC=avaliacoes.filter(function(a){return a.colaboradorId===colId;});
+    var lastAv=avsC.length?avsC[avsC.length-1]:null;
+    if(lastAv) prompt+='Nota avalia\u00e7\u00e3o: '+lastAv.mediaGeral+'\n';
+  }
+  prompt+='Retorne JSON: {"titulo":"...","especifica":"...","mensuravel":"...","atingivel":"...","relevante":"...","temporal":"..."}\nSem markdown. Apenas JSON.';
+
+  try{
+    var token=squadoGetToken();
+    var r=await fetch(SQUADO_API+'/api/ai/chat',{
+      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({messages:[
+        {role:'system',content:'Responda SOMENTE com JSON v\u00e1lido. Gere meta SMART concreta. Portugu\u00eas brasileiro.'},
+        {role:'user',content:prompt}
+      ],max_tokens:800})
+    });
+    var d=await r.json();
+    var txt=(d.content||'').replace(/```json/g,'').replace(/```/g,'').trim();
+    var match=txt.match(/\{[\s\S]*\}/);
+    if(!match){toast('\u26A0\uFE0F IA n\u00e3o retornou JSON');return;}
+    var s=JSON.parse(match[0]);
+    if(s.titulo)document.getElementById('sm-titulo').value=s.titulo;
+    if(s.especifica)document.getElementById('sm-esp').value=s.especifica;
+    if(s.mensuravel)document.getElementById('sm-men').value=s.mensuravel;
+    if(s.atingivel)document.getElementById('sm-ati').value=s.atingivel;
+    if(s.relevante)document.getElementById('sm-rel').value=s.relevante;
+    if(s.temporal)document.getElementById('sm-tem').value=s.temporal;
+    toast('\u2705 Meta preenchida! Revise e salve.');
+  }catch(e){toast('\u26A0\uFE0F '+e.message);}
 }
 
 function salvarMetaSMART(id){
