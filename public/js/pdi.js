@@ -614,6 +614,7 @@ async function executarGeracaoPDIIA(){
       if(fracos.length) prompt+='⚠️ PRIORIDADE — Pontos a desenvolver (nota <4): '+fracos.join(', ')+'\n';
       var fortes=Object.entries(lastAv.secaoMedias).filter(function(e){return e[1]>=4.5;}).map(function(e){return e[0]+' ('+e[1]+')';});
       if(fortes.length) prompt+='✅ Pontos fortes: '+fortes.join(', ')+'\n';
+      prompt+='INSTRUÇÃO CRÍTICA: O PDI DEVE conter ações específicas para CADA ponto fraco (nota<4). Pelo menos 1 ação por ponto fraco. As competências do PDI devem mapear diretamente os pontos fracos.\n';
     }
   }
   if(usarOKR&&col.area){

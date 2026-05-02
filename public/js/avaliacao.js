@@ -610,7 +610,10 @@ function renderPerguntas(){
   return`<div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <div style="font-size:12px;color:var(--txt2)">Edite as perguntas por nível.</div>
-      <button class="btn btn-sm" onclick="abrirCriarPerguntasIA()" style="border-color:#534AB7;color:#534AB7">🤖 Criar com IA</button>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="abrirColarPerguntas()" style="border-color:#185FA5;color:#185FA5">📋 Colar Perguntas</button>
+        <button class="btn btn-sm" onclick="abrirCriarPerguntasIA()" style="border-color:#534AB7;color:#534AB7">🤖 Criar com IA</button>
+      </div>
     </div>
     <div class="tabs" id="perg-tabs">${niveisDisp.map((n,i)=>`<div class="tab${n===ativo?' active':''}" draggable="true" ondragstart="pergDragStart(event,'${n}')" ondragover="event.preventDefault();this.style.borderBottom='2px solid #0F6E56'" ondragleave="this.style.borderBottom=''" ondrop="pergDrop(event,'${n}');this.style.borderBottom=''" style="display:inline-flex;align-items:center;gap:4px;cursor:grab">
         <span onclick="switchPergTab('${n}',this.parentElement)">${n}</span>
@@ -627,18 +630,19 @@ function pergDragStart(e,nivel){_pergDragNivel=nivel;e.dataTransfer.effectAllowe
 function pergDrop(e,nivelAlvo){
   e.preventDefault();
   if(!_pergDragNivel||_pergDragNivel===nivelAlvo)return;
-  // Reordenar o objeto perguntas
   var keys=Object.keys(perguntas);
   var fromIdx=keys.indexOf(_pergDragNivel);
   var toIdx=keys.indexOf(nivelAlvo);
   if(fromIdx<0||toIdx<0)return;
-  // Remover e inserir na nova posição
   keys.splice(fromIdx,1);
   keys.splice(toIdx,0,_pergDragNivel);
   // Reconstruir objeto na nova ordem
   var novo={};
   keys.forEach(function(k){novo[k]=perguntas[k];});
-  perguntas=novo;
+  // Atualizar variável global E salvar explicitamente
+  for(var k in perguntas) delete perguntas[k];
+  keys.forEach(function(k){perguntas[k]=novo[k];});
+  lss('perguntas_v3', perguntas);
   saveAll();
   window._pergNivelAtivo=_pergDragNivel;
   render('perguntas');
@@ -1026,5 +1030,148 @@ function iaPergsAplicar(){
   saveAll();
   closeModal();
   toast('✅ '+qtdPergs+' perguntas criadas em '+qtdNiveis+' nível(is)!');
+  render('perguntas');
+}
+
+// ═══ COLAR PERGUNTAS EM TEXTO ═══
+function abrirColarPerguntas(){
+  document.getElementById('modal-title').textContent='📋 Colar Perguntas';
+  document.getElementById('modal-box').classList.add('modal-lg');
+  document.getElementById('modal-body').innerHTML=
+    '<div style="margin-bottom:10px;font-size:12px;color:var(--txt2)">'
+      +'Cole o texto com os níveis e perguntas. O sistema vai identificar automaticamente.'
+    +'</div>'
+    +'<div style="background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:11px;color:var(--txt3)">'
+      +'<strong>Formato esperado:</strong><br>'
+      +'<code style="font-size:10px;line-height:1.6">'
+      +'Analista I<br>'
+      +'Versatilidade<br>'
+      +'• Pergunta 1?<br>'
+      +'• Pergunta 2?<br>'
+      +'Responsabilidade<br>'
+      +'• Pergunta 1?<br>'
+      +'...<br>'
+      +'Analista II<br>'
+      +'...'
+      +'</code>'
+    +'</div>'
+    +'<div class="field-group"><div class="field-label">Ação ao encontrar níveis existentes</div>'
+      +'<select id="colar-modo"><option value="substituir">Substituir perguntas existentes</option><option value="mesclar">Mesclar (adicionar novas seções)</option></select></div>'
+    +'<div class="field-group" style="margin-top:8px"><div class="field-label">Cole o texto aqui:</div>'
+      +'<textarea id="colar-texto" rows="12" style="font-size:12px;font-family:monospace;line-height:1.6" placeholder="Cole aqui todo o texto com níveis, seções e perguntas..."></textarea></div>'
+    +'<div id="colar-preview" style="margin-top:8px"></div>'
+    +'<div style="display:flex;gap:8px;margin-top:10px">'
+      +'<button class="btn btn-sm" onclick="previewColarPerguntas()">👁 Pré-visualizar</button>'
+      +'<button class="btn btn-primary btn-sm" onclick="executarColarPerguntas()">✅ Aplicar</button>'
+      +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
+    +'</div>';
+  document.getElementById('modal').style.display='flex';
+}
+
+function parsearTextoPerguntas(texto){
+  var linhas=texto.split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;});
+  var resultado={};
+  var nivelAtual=null;
+  var secaoAtual=null;
+
+  // Níveis conhecidos (dos niveis cadastrados + padrões comuns)
+  var niveisConhecidos=new Set();
+  niveis.forEach(function(n){niveisConhecidos.add(n.nome.toLowerCase());});
+  // Adicionar variações comuns
+  ['estagiário','assistente','assistente i','assistente ii','assistente iii',
+   'analista','analista i','analista ii','analista iii',
+   'especialista','coordenador','gerente','diretor','reitor',
+   'supervisor','líder','trainee','júnior','pleno','sênior'].forEach(function(n){niveisConhecidos.add(n);});
+
+  linhas.forEach(function(linha){
+    // Limpar marcadores de lista
+    var limpaSemMarcador=linha.replace(/^[•\-\*\t\u2022]\s*/,'').trim();
+
+    // Verificar se é um nível (linha sem marcador, sem ?)
+    if(!linha.match(/^[•\-\*\t\u2022]/)&&!linha.endsWith('?')&&niveisConhecidos.has(limpaSemMarcador.toLowerCase())){
+      nivelAtual=limpaSemMarcador;
+      secaoAtual=null;
+      if(!resultado[nivelAtual])resultado[nivelAtual]={};
+      return;
+    }
+
+    // Se não temos nível ainda, tentar detectar
+    if(!nivelAtual&&!linha.match(/^[•\-\*\t\u2022]/)&&!linha.endsWith('?')&&linha.length<40){
+      nivelAtual=limpaSemMarcador;
+      if(!resultado[nivelAtual])resultado[nivelAtual]={};
+      return;
+    }
+
+    // Verificar se é uma seção (linha sem marcador, sem ?, curta)
+    if(nivelAtual&&!linha.match(/^[•\-\*\t\u2022]/)&&!linha.endsWith('?')&&limpaSemMarcador.length<50){
+      secaoAtual=limpaSemMarcador;
+      if(!resultado[nivelAtual][secaoAtual])resultado[nivelAtual][secaoAtual]=[];
+      return;
+    }
+
+    // É uma pergunta
+    if(nivelAtual){
+      if(!secaoAtual){secaoAtual='Geral';if(!resultado[nivelAtual][secaoAtual])resultado[nivelAtual][secaoAtual]=[];}
+      var pergunta=limpaSemMarcador;
+      if(pergunta.length>5){
+        resultado[nivelAtual][secaoAtual].push(pergunta);
+      }
+    }
+  });
+
+  return resultado;
+}
+
+function previewColarPerguntas(){
+  var texto=(document.getElementById('colar-texto')||{}).value||'';
+  if(!texto.trim()){toast('Cole o texto primeiro.');return;}
+  var parsed=parsearTextoPerguntas(texto);
+  var niveis=Object.keys(parsed);
+  if(!niveis.length){toast('Não foi possível identificar níveis no texto.');return;}
+
+  var html='<div style="background:var(--bg2);border-radius:8px;padding:10px 12px;font-size:11px;max-height:200px;overflow-y:auto">';
+  html+='<div style="font-weight:700;color:var(--green);margin-bottom:6px">✅ '+niveis.length+' níveis identificados:</div>';
+  niveis.forEach(function(nivel){
+    var secoes=Object.keys(parsed[nivel]);
+    var totalP=secoes.reduce(function(a,s){return a+parsed[nivel][s].length;},0);
+    html+='<div style="margin-bottom:4px"><strong>'+nivel+'</strong> — '+secoes.length+' seções, '+totalP+' perguntas';
+    html+='<div style="color:var(--txt3);margin-left:12px">'+secoes.join(' · ')+'</div></div>';
+  });
+  html+='</div>';
+  document.getElementById('colar-preview').innerHTML=html;
+}
+
+function executarColarPerguntas(){
+  var texto=(document.getElementById('colar-texto')||{}).value||'';
+  if(!texto.trim()){toast('Cole o texto primeiro.');return;}
+  var parsed=parsearTextoPerguntas(texto);
+  var niveisNovos=Object.keys(parsed);
+  if(!niveisNovos.length){toast('Não foi possível identificar níveis.');return;}
+
+  var modo=(document.getElementById('colar-modo')||{}).value||'substituir';
+  var count=0;
+  niveisNovos.forEach(function(nivel){
+    if(modo==='substituir'||!perguntas[nivel]){
+      perguntas[nivel]=parsed[nivel];
+    } else {
+      // Mesclar: adicionar seções novas
+      Object.keys(parsed[nivel]).forEach(function(sec){
+        if(!perguntas[nivel][sec]){
+          perguntas[nivel][sec]=parsed[nivel][sec];
+        } else {
+          // Adicionar perguntas novas
+          parsed[nivel][sec].forEach(function(p){
+            if(perguntas[nivel][sec].indexOf(p)<0) perguntas[nivel][sec].push(p);
+          });
+        }
+      });
+    }
+    count++;
+  });
+
+  lss('perguntas_v3', perguntas);
+  saveAll();
+  closeModal();
+  toast('✅ '+count+' níveis importados com sucesso!');
   render('perguntas');
 }

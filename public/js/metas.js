@@ -229,7 +229,16 @@ async function preencherMetaComIA(){
   if(col){
     var avsC=avaliacoes.filter(function(a){return a.colaboradorId===colId;});
     var lastAv=avsC.length?avsC[avsC.length-1]:null;
-    if(lastAv) prompt+='Nota avalia\u00e7\u00e3o: '+lastAv.mediaGeral+'\n';
+    if(lastAv){
+      prompt+="Última avaliação: nota geral "+lastAv.mediaGeral+"\n";
+      if(lastAv.secaoMedias){
+        var fracos=Object.entries(lastAv.secaoMedias).filter(function(e){return e[1]<4;}).sort(function(a,b){return a[1]-b[1];});
+        var fortes=Object.entries(lastAv.secaoMedias).filter(function(e){return e[1]>=4.5;});
+        if(fracos.length) prompt+="⚠️ IMPORTANTE: Pontos FRACOS que a meta DEVE abordar: "+fracos.map(function(e){return e[0]+" ("+e[1]+")";}).join(", ")+"\n";
+        if(fortes.length) prompt+="Pontos fortes: "+fortes.map(function(e){return e[0]+" ("+e[1]+")";}).join(", ")+"\n";
+        prompt+="A meta DEVE focar em melhorar os pontos fracos identificados.\n";
+      }
+    }
   }
   prompt+='Retorne JSON: {"titulo":"...","especifica":"...","mensuravel":"...","atingivel":"...","relevante":"...","temporal":"..."}\nSem markdown. Apenas JSON.';
 
@@ -360,7 +369,18 @@ async function executarGeracaoMetasIA(){
   }
   if(usarAval){
     var avsCtx=col?avaliacoes.filter(function(a){return a.colaboradorId===colId;}):avaliacoes.slice(-5);
-    if(avsCtx.length) prompt+='Avalia\u00e7\u00f5es: '+avsCtx.map(function(a){return a.colaborador+' nota '+a.mediaGeral;}).join('; ')+'\n';
+    if(avsCtx.length){
+      prompt+="Avaliações:\n";
+      avsCtx.forEach(function(a){
+        prompt+=a.colaborador+" nota "+a.mediaGeral;
+        if(a.secaoMedias){
+          var fracos=Object.entries(a.secaoMedias).filter(function(e){return e[1]<4;}).sort(function(x,y){return x[1]-y[1];});
+          if(fracos.length) prompt+=" ⚠️ PONTOS FRACOS: "+fracos.map(function(e){return e[0]+"("+e[1]+")";}).join(",");
+        }
+        prompt+="\n";
+      });
+      prompt+="INSTRUÇÃO: As metas DEVEM priorizar os pontos fracos (nota<4) identificados nas avaliações.\n";
+    }
   }
   if(usarPDI){
     var pdis=typeof getPDIs==='function'?getPDIs():[];
