@@ -59,7 +59,7 @@ function renderColaboradores(search=''){
       '<td>'+areaBadge(c.area)+'</td>',
       '<td style="color:var(--txt2);font-size:12px">'+(c.gestor||'—')+'</td>',
       '<td>'+(lastAv ? '<span class="badge badge-green">'+lastAv.mediaGeral+'</span>' : '<span style="font-size:10px;color:var(--txt3)">—</span>')+'</td>',
-      '<td>'+((c.historico||[]).length?'<span class="badge badge-blue">'+(c.historico||[]).length+'</span>':'<span style="color:#9BA09E">—</span>')+'</td>',
+      '<td style="text-align:center">'+((c.historico||[]).length?(function(){var h=(c.historico||[]).slice().sort(function(a,b){return(b.data||'').localeCompare(a.data||'');})[0];return '<span class="badge badge-blue">'+(c.historico||[]).length+'</span>'+(h&&h.data?'<div style="font-size:8px;color:var(--txt3);margin-top:2px">'+h.data.split('-').reverse().join('/')+'</div>':'');}()):(c.dataAdmissao||(c.perfil&&c.perfil.dataAdmissao)?'<div style="font-size:9px;color:#0F6E56">Admissão<br>'+((c.dataAdmissao||(c.perfil&&c.perfil.dataAdmissao))||'').split('-').reverse().join('/')+'</div>':'<span style="color:#9BA09E">—</span>'))+'</td>',
       '<td>',
         '<span style="font-size:11px;padding:2px 8px;border-radius:20px;',
         'background:'+(c.status==='Ativo'?'var(--green-bg)':'var(--bg2)')+';',
