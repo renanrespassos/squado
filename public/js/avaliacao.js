@@ -243,26 +243,10 @@ function verAvaliacao(id){
       var nivelBase=a.nivel.replace(/\s+(I{1,3}|IV|V|VI{0,3}|[0-9]+)$/,'').trim();
       if(nivelBase!==a.nivel && perguntas[nivelBase]) perguntasNivel=perguntas[nivelBase];
     }
-    if(Object.keys(perguntasNivel).length>0 && a.respostas && Object.keys(a.respostas).length>0){
+    // Gerar detalhamento SEMPRE a partir das respostas (fonte de verdade)
+    if(a.respostas && Object.keys(a.respostas).length>0){
       detalhePerguntasHtml='<div style="font-size:14px;font-weight:800;margin:20px 0 8px">Detalhamento por Pergunta</div>';
-      Object.entries(perguntasNivel).forEach(function(entry){
-        var secao=entry[0],qs=entry[1];
-        var mediaSec=a.secaoMedias[secao]||0;
-        detalhePerguntasHtml+='<div style="margin-bottom:16px"><div style="font-size:12px;font-weight:700;color:'+sc(mediaSec)+';padding:6px 10px;background:'+sb(mediaSec)+';border-radius:6px;margin-bottom:6px">'+secao+' — '+mediaSec+'</div>'
-          +'<table style="width:100%;font-size:11px;margin-bottom:4px"><tbody>';
-        qs.forEach(function(q,qi){
-          var key=secao+'__'+qi;
-          var nota=a.respostas[key];
-          if(nota===undefined) return;
-          var corNota=sc(nota);
-          detalhePerguntasHtml+='<tr><td style="padding:4px 10px;border-bottom:0.5px solid #f3f4f6;width:75%">'+q+'</td>'
-            +'<td style="padding:4px 10px;border-bottom:0.5px solid #f3f4f6;text-align:center;font-weight:700;color:'+corNota+'">'+nota+'</td></tr>';
-        });
-        detalhePerguntasHtml+='</tbody></table></div>';
-      });
-    } else if(a.respostas && Object.keys(a.respostas).length>0){
-      // Fallback: reconstruir seções a partir das respostas
-      detalhePerguntasHtml='<div style="font-size:14px;font-weight:800;margin:20px 0 8px">Detalhamento por Pergunta</div>';
+      // Agrupar respostas por seção
       var secFromResp={};
       Object.entries(a.respostas).forEach(function(e){
         var parts=e[0].split('__');
@@ -274,11 +258,14 @@ function verAvaliacao(id){
         var secao=entry[0],items=entry[1];
         var mediaSec=a.secaoMedias[secao]||0;
         items.sort(function(x,y){return x.idx-y.idx;});
+        // Tentar pegar textos das perguntas atuais
+        var qTexts=perguntasNivel[secao]||[];
         detalhePerguntasHtml+='<div style="margin-bottom:16px"><div style="font-size:12px;font-weight:700;color:'+sc(mediaSec)+';padding:6px 10px;background:'+sb(mediaSec)+';border-radius:6px;margin-bottom:6px">'+secao+' — '+mediaSec+'</div>'
           +'<table style="width:100%;font-size:11px;margin-bottom:4px"><tbody>';
         items.forEach(function(item){
           var corNota=sc(item.nota);
-          detalhePerguntasHtml+='<tr><td style="padding:4px 10px;border-bottom:0.5px solid #f3f4f6;width:75%">Pergunta '+(item.idx+1)+'</td>'
+          var qText=qTexts[item.idx]||('Pergunta '+(item.idx+1));
+          detalhePerguntasHtml+='<tr><td style="padding:4px 10px;border-bottom:0.5px solid #f3f4f6;width:75%">'+qText+'</td>'
             +'<td style="padding:4px 10px;border-bottom:0.5px solid #f3f4f6;text-align:center;font-weight:700;color:'+corNota+'">'+item.nota+'</td></tr>';
         });
         detalhePerguntasHtml+='</tbody></table></div>';
