@@ -231,6 +231,27 @@ function verAvaliacao(id){
         +'<span style="font-size:12px;font-weight:700;color:'+sc(v)+'">'+v+'</span></div></td>'
         +'<td style="padding:8px 12px;text-align:center"><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:'+sb(v)+';color:'+sc(v)+'">'+sl(v)+'</span></td></tr>';
     }).join('');
+    // Detalhamento individual de perguntas
+    var detalhePerguntasHtml='';
+    var perguntasNivel=perguntas[a.nivel]||{};
+    if(Object.keys(perguntasNivel).length>0 && a.respostas && Object.keys(a.respostas).length>0){
+      detalhePerguntasHtml='<div style="font-size:14px;font-weight:800;margin:20px 0 8px">Detalhamento por Pergunta</div>';
+      Object.entries(perguntasNivel).forEach(function(entry){
+        var secao=entry[0],qs=entry[1];
+        var mediaSec=a.secaoMedias[secao]||0;
+        detalhePerguntasHtml+='<div style="margin-bottom:16px"><div style="font-size:12px;font-weight:700;color:'+sc(mediaSec)+';padding:6px 10px;background:'+sb(mediaSec)+';border-radius:6px;margin-bottom:6px">'+secao+' — '+mediaSec+'</div>'
+          +'<table style="font-size:11px;margin-bottom:4px"><tbody>';
+        qs.forEach(function(q,qi){
+          var key=secao+'__'+qi;
+          var nota=a.respostas[key];
+          if(nota===undefined) return;
+          var corNota=sc(nota);
+          detalhePerguntasHtml+='<tr><td style="padding:4px 10px;border-bottom:0.5px solid #f3f4f6;width:75%">'+q+'</td>'
+            +'<td style="padding:4px 10px;border-bottom:0.5px solid #f3f4f6;text-align:center;font-weight:700;color:'+corNota+'">'+nota+'</td></tr>';
+        });
+        detalhePerguntasHtml+='</tbody></table></div>';
+      });
+    }
     // Notas do colaborador
     var notasCol=notas.filter(function(n){return n.colNome===a.colaborador;});
     var notasHtml='';
@@ -296,6 +317,8 @@ function verAvaliacao(id){
       // Seções
       +'<div style="font-size:14px;font-weight:800;margin-bottom:8px">Resultados por Seção</div>'
       +'<table style="margin-bottom:24px"><thead><tr><th>Seção</th><th>Nota</th><th style="text-align:center">Classificação</th></tr></thead><tbody>'+secoesRows+'</tbody></table>'
+      // Detalhamento por pergunta
+      +detalhePerguntasHtml
       // Pontos positivos e oportunidades
       +(a.pontosPos?'<div style="background:#E1F5EE;border-radius:10px;padding:14px;margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:#0F6E56;text-transform:uppercase;margin-bottom:6px">Pontos Positivos</div><div style="font-size:12px;color:#374151;line-height:1.7">'+a.pontosPos+'</div></div>':'')
       +(a.oportunidades?'<div style="background:#FAEEDA;border-radius:10px;padding:14px;margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:#854F0B;text-transform:uppercase;margin-bottom:6px">Oportunidades de Melhoria</div><div style="font-size:12px;color:#374151;line-height:1.7">'+a.oportunidades+'</div></div>':'')

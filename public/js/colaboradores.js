@@ -174,7 +174,22 @@ function excluirColsSelecionados(){
   const ids = [...document.querySelectorAll('.col-sel:checked')].map(cb => cb.dataset.id);
   if(!ids.length){ toast('Selecione ao menos um'); return; }
   if(!confirm('Excluir permanentemente '+ids.length+' colaborador(es)?')) return;
+  // Pegar nomes antes de excluir
+  var nomesExcluidos = colaboradores.filter(c => ids.includes(c.id)).map(c => c.nome);
   colaboradores = colaboradores.filter(c => !ids.includes(c.id));
+  // Limpar responsáveis nas funções
+  var funcs = ls('funcoes_v8',[]);
+  var limpou = false;
+  funcs.forEach(function(f){
+    if(!f.responsaveis) return;
+    var antes = f.responsaveis.length;
+    f.responsaveis = f.responsaveis.filter(function(r){ return nomesExcluidos.indexOf(r.nome) < 0; });
+    if(f.responsaveis.length < antes) limpou = true;
+  });
+  if(limpou) lss('funcoes_v8', funcs);
+  // Limpar avaliações
+  avaliacoes = avaliacoes.filter(a => !ids.includes(a.colaboradorId));
+  lss('avaliacoes', avaliacoes);
   saveAll();
   toast('✅ '+ids.length+' colaborador(es) excluído(s)!');
   render('colaboradores');
