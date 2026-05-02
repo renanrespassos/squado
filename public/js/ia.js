@@ -360,16 +360,22 @@ function buildContextoIA(){
   const totalMov=colaboradores.reduce((a,c)=>a+(c.historico||[]).length,0);
   const semAval=colaboradores.filter(c=>!avaliacoes.find(a=>a.colaboradorId===c.id));
   const mediaGeral=avaliacoes.length?Math.round(avaliacoes.reduce((a,av)=>a+av.mediaGeral,0)/avaliacoes.length*10)/10:0;
-  return `Você é um assistente especialista em Gestão de Pessoas para um laboratório industrial de qualidade (EMC e Telecom).
-Ajude o gestor com análises e sugestões práticas. Use português brasileiro, seja objetivo e acionável.
+  const user=squadoGetUser();
+  const empresa=user&&user.empresa?user.empresa:'a empresa';
+  const areasUnicas=[...new Set(colaboradores.filter(c=>c.area).map(c=>c.area))];
+  const _pdis=typeof getPDIs==='function'?getPDIs():[];
+  const _metas=ls('metas_v2',[]);
+  return `Você é um assistente especialista em Gestão de Pessoas e Equipes.
+Ajude o gestor de ${empresa} com análises e sugestões práticas. Use português brasileiro, seja objetivo e acionável.
 
-DADOS DO LABORATÓRIO:
-- Colaboradores: ${colaboradores.length} | Movimentações: ${totalMov} | Avaliações: ${avaliacoes.length} | Média geral: ${mediaGeral}
+DADOS DA EQUIPE:
+- Colaboradores: ${colaboradores.length} | Áreas: ${areasUnicas.join(', ')||'N/A'}
+- Movimentações: ${totalMov} | Avaliações: ${avaliacoes.length} | Média geral: ${mediaGeral||'N/A'}
 - Sem avaliação: ${semAval.length} (${semAval.slice(0,4).map(c=>c.nome.split(' ')[0]).join(', ')}${semAval.length>4?'...':''})
-- Notas registradas: ${notas.length}
+- PDIs: ${_pdis.length} | Metas: ${_metas.length} | Notas: ${notas.length}
 
 EQUIPE:
-${colaboradores.map(c=>{const avsC=avaliacoes.filter(a=>a.colaboradorId===c.id);const lastAv=avsC.length?avsC[avsC.length-1]:null;return `• ${c.nome} | ${c.nivel} | ${c.area} | Mov: ${(c.historico||[]).length} | ${lastAv?'Média: '+lastAv.mediaGeral:'SEM AVALIAÇÃO'}`;}).join('\n')}
+${colaboradores.filter(c=>c.status!=='Desligado').map(c=>{const avsC=avaliacoes.filter(a=>a.colaboradorId===c.id);const lastAv=avsC.length?avsC[avsC.length-1]:null;return `• ${c.nome} | ${c.nivel} | ${c.area||'—'} | Mov: ${(c.historico||[]).length} | ${lastAv?'Média: '+lastAv.mediaGeral:'SEM AVALIAÇÃO'}`;}).join('\n')}
 
 ÚLTIMAS AVALIAÇÕES:
 ${avaliacoes.slice(-5).reverse().map(a=>`• ${a.colaborador} (${a.nivel}): média ${a.mediaGeral} em ${a.data}`).join('\n')||'Nenhuma.'}
@@ -381,68 +387,84 @@ function scrollAiToBottom(){const msgs=document.getElementById('ai-messages');if
 
 function renderAgente(){
   const cfg=getIAConfig();
-  const hasKey=cfg.mode==='cloud'||!!(cfg.mode==='ollama'?cfg.ollamaUrl:cfg.remoteUrl);
   const semAval=colaboradores.filter(c=>!avaliacoes.find(a=>a.colaboradorId===c.id)).length;
+  const _pdis=typeof getPDIs==='function'?getPDIs():[];
+  const pdisAtrasados=_pdis.filter(p=>p.status==='Em andamento'&&p.dataProxRevisao&&new Date(p.dataProxRevisao)<new Date()).length;
+  const areasUnicas=[...new Set(colaboradores.filter(c=>c.area&&c.status!=='Desligado').map(c=>c.area))];
+  const user=squadoGetUser();
+  const nomeUser=user&&user.nome?user.nome.split(' ')[0]:'Gestor';
 
-  // Montar mensagens
   let msgsHtml='';
   if(aiHistory.length===0){
     msgsHtml='<div class="ai-msg"><div class="ai-bot-avatar">\u{1F916}</div>'
-      +'<div class="ai-bubble bot">Ol\u00E1! Sou o Assistente de Gest\u00E3o do Laborat\u00F3rio. '
-      +'Tenho acesso a todos os dados da equipe.\n\nPosso ajudar com:\n'
-      +'\u2022 An\u00E1lise de desempenho\n'
-      +'\u2022 Identificar quem precisa de avalia\u00E7\u00E3o urgente\n'
-      +'\u2022 Sugerir PDI e planos de desenvolvimento\n'
-      +'\u2022 Analisar tend\u00EAncias e movimenta\u00E7\u00F5es\n\n'
-      +'O que deseja saber?</div></div>';
+      +'<div class="ai-bubble bot">Ol\u00E1, '+esc(nomeUser)+'! Sou seu Assistente de Gest\u00E3o. '
+      +'Tenho acesso a todos os dados da sua equipe.\n\n'
+      +'Posso ajudar com:\n'
+      +'\u2022 An\u00E1lise de desempenho e produtividade\n'
+      +'\u2022 Identificar quem precisa de aten\u00E7\u00E3o\n'
+      +'\u2022 Sugerir PDIs e planos de desenvolvimento\n'
+      +'\u2022 Analisar tend\u00EAncias e movimenta\u00E7\u00F5es\n'
+      +'\u2022 Gerar feedbacks e relat\u00F3rios\n\n'
+      +'Use as sugest\u00F5es abaixo ou pergunte o que quiser!</div></div>';
   } else {
     aiHistory.forEach(function(m){
       var side=m.role==='user'?'user-msg':'';
       var bubble=m.role==='user'?'user':'bot';
       var avatar=m.role!=='user'?'<div class="ai-bot-avatar">\u{1F916}</div>':'';
       var txt=(m.content||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      // Markdown básico
       txt=txt.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
       txt=txt.replace(/\*(.*?)\*/g,'<em>$1</em>');
-      txt=txt.replace(/^• /gm,'<span style="color:var(--green)">●</span> ');
-      txt=txt.replace(/^- /gm,'<span style="color:var(--green)">●</span> ');
+      txt=txt.replace(/^• /gm,'<span style="color:var(--green)">\u25CF</span> ');
+      txt=txt.replace(/^- /gm,'<span style="color:var(--green)">\u25CF</span> ');
       txt=txt.split('\n').join('<br>');
       msgsHtml+='<div class="ai-msg '+side+'">'+avatar+'<div class="ai-bubble '+bubble+'">'+txt+'</div></div>';
     });
   }
 
-  // Botões de sugestão
-  var sugs=['Quem precisa de avalia\u00E7\u00E3o urgente?','Analise a equipe de EMC','Estagi\u00E1rios prontos para progress\u00E3o?','Sugira a\u00E7\u00F5es de desenvolvimento','Resumo executivo da equipe'];
+  var sugs=[
+    'Quem precisa de avalia\u00E7\u00E3o urgente?',
+    'Resumo executivo da equipe',
+    'Estagi\u00E1rios prontos para progress\u00E3o?',
+    'Sugira a\u00E7\u00F5es de desenvolvimento',
+    'Quais colaboradores se destacaram?',
+    'Analise a distribui\u00E7\u00E3o de carga da equipe'
+  ];
   var sugBtns='';
-  sugs.forEach(function(q,i){ window['_sq'+i]=q; sugBtns+='<button class="btn btn-xs" onclick="quickAsk(window._sq'+i+')">'+q+'</button>'; });
+  sugs.forEach(function(q,i){ window['_sq'+i]=q; sugBtns+='<button class="btn btn-xs" style="border-radius:20px;padding:4px 12px" onclick="quickAsk(window[\'_sq'+i+'\'])">'+q+'</button>'; });
+
+  var statsHtml='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:10px">'
+    +'<div style="background:var(--bg2);border-radius:8px;padding:8px 10px;text-align:center"><div style="font-size:16px;font-weight:700;color:var(--txt)">'+colaboradores.filter(function(c){return c.status!=='Desligado';}).length+'</div><div style="font-size:9px;color:var(--txt3)">Colaboradores</div></div>'
+    +'<div style="background:var(--bg2);border-radius:8px;padding:8px 10px;text-align:center"><div style="font-size:16px;font-weight:700;color:'+(semAval>0?'#A32D2D':'#0F6E56')+'">'+semAval+'</div><div style="font-size:9px;color:var(--txt3)">Sem avalia\u00E7\u00E3o</div></div>'
+    +'<div style="background:var(--bg2);border-radius:8px;padding:8px 10px;text-align:center"><div style="font-size:16px;font-weight:700;color:#185FA5">'+_pdis.length+'</div><div style="font-size:9px;color:var(--txt3)">PDIs ativos</div></div>'
+    +'<div style="background:var(--bg2);border-radius:8px;padding:8px 10px;text-align:center"><div style="font-size:16px;font-weight:700;color:#854F0B">'+areasUnicas.length+'</div><div style="font-size:9px;color:var(--txt3)">\u00C1reas</div></div>'
+  +'</div>';
+
+  var acoesHtml='';
+  if(semAval>0) acoesHtml+='<button class="ai-ctx-btn" onclick="quickAsk(\''+semAval+' colaboradores sem avalia\u00E7\u00E3o. Quem devo priorizar?\')"><span style="font-size:14px">\u26A0\uFE0F</span> '+semAval+' sem avalia\u00E7\u00E3o</button>';
+  if(pdisAtrasados>0) acoesHtml+='<button class="ai-ctx-btn" onclick="quickAsk(\'Tenho '+pdisAtrasados+' PDIs atrasados. Como resolver?\')"><span style="font-size:14px">\u{1F4CB}</span> '+pdisAtrasados+' PDIs atrasados</button>';
+  acoesHtml+='<button class="ai-ctx-btn" onclick="quickAsk(\'Quais estagi\u00E1rios e assistentes est\u00E3o prontos para progress\u00E3o de n\u00EDvel?\')"><span style="font-size:14px">\u{1F4C8}</span> Progress\u00E3o de n\u00EDvel</button>';
+  acoesHtml+='<button class="ai-ctx-btn" onclick="quickAsk(\'Gere um feedback construtivo para os colaboradores com nota abaixo de 6\')"><span style="font-size:14px">\u{1F4AC}</span> Gerar feedbacks</button>';
+  if(areasUnicas.length>1) acoesHtml+='<button class="ai-ctx-btn" onclick="quickAsk(\'Compare o desempenho entre as \u00E1reas: '+areasUnicas.join(', ')+'\')"><span style="font-size:14px">\u{1F4CA}</span> Comparar \u00E1reas</button>';
+  acoesHtml+='<button class="ai-ctx-btn" onclick="quickAsk(\'Gere um resumo executivo da equipe para apresentar \u00E0 diretoria\')"><span style="font-size:14px">\u{1F4C4}</span> Resumo executivo</button>';
 
   return ''
     +'<div class="ai-wrap">'
       +'<div class="ai-left">'
         +'<div class="ai-messages" id="ai-messages">'+msgsHtml+'</div>'
         +'<div class="ai-input-row">'
-          +'<textarea class="ai-input-field" id="ai-input" placeholder="Pergunte sobre a equipe..." rows="2" id="ai-input-ta"></textarea>'
+          +'<textarea class="ai-input-field" id="ai-input" placeholder="Pergunte sobre a equipe, pe\u00E7a an\u00E1lises, feedbacks..." rows="2"></textarea>'
           +'<button class="btn btn-purple" onclick="sendAiMsg()" id="ai-send-btn" style="align-self:flex-end;padding:9px 16px">Enviar</button>'
         +'</div>'
-        +'<div class="flex gap-6 mt-8 flex-wrap"><span style="font-size:10px;color:var(--txt3)">Sugest\u00F5es:</span>'+sugBtns+'</div>'
+        +'<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;overflow-x:auto;padding-bottom:4px">'+sugBtns+'</div>'
       +'</div>'
       +'<div class="ai-right">'
         +'<div class="ai-ctx-card">'
-          +'<div class="ai-ctx-title">\u{1F4CA} Contexto atual</div>'
-          +'<div style="font-size:12px;color:var(--txt2);line-height:2">'
-            +'<div>\u{1F465} '+colaboradores.length+' colaboradores</div>'
-            +'<div>\u{1F4CB} '+avaliacoes.length+' avalia\u00E7\u00F5es</div>'
-            +'<div>\u{1F4DD} '+notas.length+' notas</div>'
-            +'<div>\u26A0\uFE0F '+semAval+' sem avalia\u00E7\u00E3o</div>'
-          +'</div>'
+          +'<div class="ai-ctx-title">\u{1F4CA} Painel da equipe</div>'
+          +statsHtml
         +'</div>'
         +'<div class="ai-ctx-card">'
           +'<div class="ai-ctx-title">\u{1F3AF} A\u00E7\u00F5es r\u00E1pidas</div>'
-          +'<button class="ai-ctx-btn" onclick="quickAsk(_sq0)">\u26A0\uFE0F Sem avalia\u00E7\u00E3o</button>'
-          +'<button class="ai-ctx-btn" onclick="quickAsk(_sq2)">\u{1F4C8} Progress\u00E3o</button>'
-          +'<button class="ai-ctx-btn" onclick="quickAsk(_sq4)">\u{1F4C4} Resumo executivo</button>'
-          +'<button class="ai-ctx-btn" onclick="quickAsk(\'Quais colaboradores com mais movimenta\u00E7\u00F5es?\')">\u{1F504} Movimenta\u00E7\u00F5es</button>'
-          +'<button class="ai-ctx-btn" onclick="quickAsk(\'Sugira um PDI para a equipe de EMC\')">\u{1F393} PDI para EMC</button>'
+          +acoesHtml
         +'</div>'
         +'<div class="ai-ctx-card">'
           +'<button class="btn btn-sm btn-danger" style="width:100%" onclick="clearAiHistory()">\u{1F5D1} Limpar conversa</button>'
