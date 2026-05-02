@@ -299,45 +299,50 @@ function renderCapacidade() {
     }
     const rows = funcs.map(f => {
       const cF = calcCargaFuncao(f, amostras);
-      // Pessoas ideais por função individual
       const piFunc = cF / MIN_FUNC_MES;
-      // Só mostrar responsáveis que ainda existem e estão ativos
       const respAtivos = (f.responsaveis||[]).filter(r=>nomesAtivosSet.has(r.nome));
       const respStr = respAtivos.map(r => {
         const colR = colaboradores.find(x=>x.nome===r.nome);
-        const nome = r.nome.split(' ')[0]+'('+r.pct+'%)';
+        const nome = r.nome.split(' ')[0]+' ('+r.pct+'%)';
         return colR
           ? '<span onclick="verCol(\''+colR.id+'\')" style="cursor:pointer;color:var(--blue);text-decoration:underline;text-underline-offset:2px">'+nome+'</span>'
           : nome;
-      }).join(', ') || '—';
-      return '<tr>'
-        + '<td style="padding:7px 4px 7px 10px;width:32px"><input type="checkbox" class="func-sel" data-fid="'+encodeURIComponent(f.id)+'" style="cursor:pointer;width:15px;height:15px" onchange="onFuncSelect()" /></td>'
-        + '<td style="padding:7px 10px;font-size:12px;color:var(--txt)">'+f.nome+'</td>'
-        + '<td style="padding:7px 10px;font-size:11px;color:var(--txt2);text-align:center">'
-          + (f.tipoTempo==='fixo_mes'
-              ? '<span style="background:#EEEDFE;color:#534AB7;padding:1px 6px;border-radius:10px;font-size:10px">fixo</span>'
-              : f.pctServicos+'%<span style="font-size:9px;color:var(--txt3)"> (~'+Math.round(amostras*f.pctServicos/100)+' serv)</span>')
-        + '</td>'
-        + '<td style="padding:7px 10px;font-size:11px;color:var(--txt2);text-align:center">'
-          + (f.tipoTempo==='fixo_mes' ? horas(f.tempoMin)+'/mês' : f.tempoMin+'min/serviço')
-        + '</td>'
-        + '<td style="padding:7px 10px;text-align:center">'
-          + '<div style="font-size:13px;font-weight:800;color:var(--green)">'+horas(cF)+'</div>'
-          + '<div style="font-size:9px;color:var(--txt3)">'+(piFunc<0.1?'<0.1':piFunc.toFixed(1))+' pessoa'+(piFunc>=2?'s':'')+'</div>'
-        + '</td>'
-        + '<td style="padding:7px 10px;font-size:11px;color:var(--txt2)">'+respStr+'</td>'
-        + (function(){
-            var somaR=respAtivos.reduce(function(a,r){return a+r.pct;},0);
-            var ok=somaR===100, mais=somaR>100;
-            var cor=ok?'var(--green)':mais?'#A32D2D':(somaR===0?'var(--txt3)':'#854F0B');
-            var bg=ok?'#E1F5EE':mais?'#FCEBEB':(somaR===0?'var(--bg2)':'#FAEEDA');
-            var icon=ok?'✅ ':mais?'⬆️ ':(somaR===0?'⚪ ':'⬇️ ');
-            return '<td style="padding:7px 10px;text-align:center">'
-              +'<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:'+bg+';color:'+cor+'" title="Soma das dedicações dos responsáveis">'
-              +icon+somaR+'%</span></td>';
-          })()
-        + '<td style="padding:7px 10px;text-align:center"><button class="btn btn-xs" data-fid="'+encodeURIComponent(f.id)+'" onclick="editarFuncaoCapacidade(decodeURIComponent(this.dataset.fid))">Editar</button></td>'
-      + '</tr>';
+      }).join(', ') || '<span style="color:var(--txt3);font-style:italic">Sem responsável</span>';
+      var somaR=respAtivos.reduce(function(a,r){return a+r.pct;},0);
+      var corOcup=somaR===100?'#0F6E56':somaR>100?'#A32D2D':(somaR===0?'var(--txt3)':'#854F0B');
+      var bgOcup=somaR===100?'#E1F5EE':somaR>100?'#FCEBEB':(somaR===0?'var(--bg2)':'#FAEEDA');
+      var iconOcup=somaR===100?'✅':somaR>100?'⬆️':(somaR===0?'⚪':'⬇️');
+      var tipoTag=f.tipoTempo==='fixo_mes'
+        ?'<span style="background:#EEEDFE;color:#534AB7;padding:1px 8px;border-radius:10px;font-size:10px;font-weight:500">⏱ fixo</span>'
+        :'<span style="background:#E1F5EE;color:#0F6E56;padding:1px 8px;border-radius:10px;font-size:10px;font-weight:500">⚡ '+f.pctServicos+'% <span style="color:#085041;font-weight:400">(~'+Math.round(amostras*f.pctServicos/100)+')</span></span>';
+
+      return '<div class="card" style="padding:14px 16px;margin-bottom:8px;border-radius:10px;transition:box-shadow .15s" onmouseover="this.style.boxShadow=\'0 2px 8px rgba(0,0,0,.08)\'" onmouseout="this.style.boxShadow=\'\'">'
+        +'<div style="display:flex;align-items:flex-start;gap:12px">'
+          // Checkbox
+          +'<input type="checkbox" class="func-sel" data-fid="'+encodeURIComponent(f.id)+'" style="cursor:pointer;width:15px;height:15px;margin-top:3px;flex-shrink:0" onchange="onFuncSelect()" />'
+          // Info principal
+          +'<div style="flex:1;min-width:0">'
+            +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">'
+              +'<span style="font-size:13px;font-weight:700;color:var(--txt)">'+f.nome+'</span>'
+              +tipoTag
+            +'</div>'
+            +'<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--txt3)">'
+              +'<span>'+(f.tipoTempo==='fixo_mes'?'⏱ '+horas(f.tempoMin)+'/mês':'⏱ '+f.tempoMin+'min/serviço')+'</span>'
+              +'<span style="color:var(--border)">·</span>'
+              +'<span style="font-weight:600;color:var(--green)">'+horas(cF)+'/mês total</span>'
+              +'<span style="color:var(--border)">·</span>'
+              +'<span>'+(piFunc<0.1?'<0.1':piFunc.toFixed(1))+' pessoa'+(piFunc>=2?'s':'')+'</span>'
+            +'</div>'
+            +'<div style="display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap">'
+              +'<span style="font-size:10px;color:var(--txt2)">👤</span>'
+              +'<span style="font-size:11px">'+respStr+'</span>'
+              +'<span style="font-size:10px;font-weight:700;padding:1px 8px;border-radius:12px;background:'+bgOcup+';color:'+corOcup+';margin-left:4px">'+iconOcup+' '+somaR+'%</span>'
+            +'</div>'
+          +'</div>'
+          // Botão editar
+          +'<button class="btn btn-xs" data-fid="'+encodeURIComponent(f.id)+'" onclick="editarFuncaoCapacidade(decodeURIComponent(this.dataset.fid))" style="flex-shrink:0;padding:4px 10px;font-size:11px">✏️ Editar</button>'
+        +'</div>'
+      +'</div>';
     }).join('');
 
     // Badge de pessoas ideais vs reais
@@ -359,22 +364,14 @@ function renderCapacidade() {
         + '<span style="font-size:13px;font-weight:700;color:'+c2.cor+'">'+area+'</span>'
         + '<span style="font-size:11px;color:'+c2.cor+';opacity:.6">'+funcs.length+' funções</span>'
         + badgePessoas
+        + '<span style="flex:1"></span>'
+        + '<div style="display:flex;gap:4px">'
+          + '<button class="btn btn-xs" style="font-size:9px;opacity:.7" onclick="sortAreaFuncs(\'nome\')" title="Ordenar por nome">A-Z ⇅</button>'
+          + '<button class="btn btn-xs" style="font-size:9px;opacity:.7" onclick="sortAreaFuncs(\'tempo\')" title="Ordenar por tempo">⏱ ⇅</button>'
+          + '<button class="btn btn-xs" style="font-size:9px;opacity:.7" onclick="sortAreaFuncs(\'total\')" title="Ordenar por total">Σ ⇅</button>'
+        + '</div>'
       + '</div>'
-      + '<div style="overflow-x:auto;border-radius:8px;border:0.5px solid var(--border)">'
-        + '<table style="width:100%;border-collapse:collapse;min-width:600px">'
-          + '<thead><tr style="background:var(--bg2)">'
-            + '<th style="padding:7px 4px 7px 10px;width:32px"><input type="checkbox" style="cursor:pointer" title="Selecionar todas" onchange="toggleSelectAllFuncs(this)" /></th>'
-            + '<th style="padding:7px 10px;text-align:left;font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;user-select:none" onclick="sortAreaFuncs(\'nome\')">Função ⇅</th>'
-            + '<th style="padding:7px 10px;text-align:center;font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Cobertura</th>'
-            + '<th style="padding:7px 10px;text-align:center;font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;user-select:none" onclick="sortAreaFuncs(\'tempo\')">Tempo Unit. ⇅</th>'
-            + '<th style="padding:7px 10px;text-align:center;font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;user-select:none" onclick="sortAreaFuncs(\'total\')">Total/mês ↓</th>'
-            + '<th style="padding:7px 10px;text-align:left;font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Responsáveis</th>'
-            + '<th style="padding:7px 10px;text-align:center;font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Cobertura</th>'
-            + '<th style="padding:7px 10px;width:60px"></th>'
-          + '</tr></thead>'
-          + '<tbody>'+rows+'</tbody>'
-        + '</table>'
-      + '</div>'
+      + rows
     + '</div>';
   }).join('');
 
@@ -483,12 +480,16 @@ function renderCapacidade() {
     + '<button class="btn btn-primary btn-sm" onclick="openFuncForm()">+ Nova Função</button>'
   + '</div>'
 
-  + '<div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap">'
-    + '<select id="cap-filtro-area" onchange="window._capFiltroArea=this.value;render(\'capacidade\')" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:11px;background:var(--bg);color:var(--txt)"><option value="">Todas as áreas</option>'+Object.keys(typeof AREA_COLORS!=="undefined"?AREA_COLORS:{}).map(function(a){return '<option value="'+a+'"'+(window._capFiltroArea===a?' selected':'')+'>'+a+'</option>';}).join('')+'</select>'
-    + '<select id="cap-filtro-ocup" onchange="window._capFiltroOcup=this.value;render(\'capacidade\')" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:11px;background:var(--bg);color:var(--txt)"><option value=""'+(!(window._capFiltroOcup)?' selected':'')+'>Todos</option><option value="over"'+((window._capFiltroOcup)==="over"?' selected':'')+'>Acima 100%</option><option value="high"'+((window._capFiltroOcup)==="high"?' selected':'')+'>80-100%</option><option value="low"'+((window._capFiltroOcup)==="low"?' selected':'')+'>Abaixo 80%</option></select>'
-  + '</div>'
-  + '<div id="cap-panel-pessoas" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">'
-    + pessoaCards
+  + '<div id="cap-panel-pessoas">'
+    + '<div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap">'
+      + '<select id="cap-filtro-area" onchange="window._capFiltroArea=this.value;render(\'capacidade\')" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:11px;background:var(--bg);color:var(--txt)"><option value="">Todas as áreas</option>'+Object.keys(typeof AREA_COLORS!=="undefined"?AREA_COLORS:{}).map(function(a){return '<option value="'+a+'"'+(window._capFiltroArea===a?' selected':'')+'>'+a+'</option>';}).join('')+'</select>'
+      + '<select id="cap-filtro-ocup" onchange="window._capFiltroOcup=this.value;render(\'capacidade\')" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:11px;background:var(--bg);color:var(--txt)"><option value=""'+(!(window._capFiltroOcup)?' selected':'')+'>Todos</option><option value="over"'+((window._capFiltroOcup)==="over"?' selected':'')+'>Acima 100%</option><option value="high"'+((window._capFiltroOcup)==="high"?' selected':'')+'>80-100%</option><option value="low"'+((window._capFiltroOcup)==="low"?' selected':'')+'>Abaixo 80%</option></select>'
+      + (window._capFiltroArea||window._capFiltroOcup?'<button onclick="window._capFiltroArea=\'\';window._capFiltroOcup=\'\';render(\'capacidade\')" style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;font-size:10px;color:var(--txt3);background:var(--bg);cursor:pointer">✕ Limpar</button>':'')
+      + '<span style="flex:1"></span><span style="font-size:11px;color:var(--txt3)">'+pessoasOrdenadas.length+' colaboradores</span>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">'
+      + pessoaCards
+    + '</div>'
   + '</div>'
 
   + '<div id="cap-panel-areas" style="display:none">'
@@ -497,9 +498,9 @@ function renderCapacidade() {
 }
 
 function switchCapTab(tab) {
-  _capTab = tab; // salvar aba ativa globalmente
+  _capTab = tab;
   const isPessoas = tab === 'pessoas';
-  document.getElementById('cap-panel-pessoas').style.display = isPessoas ? 'grid' : 'none';
+  document.getElementById('cap-panel-pessoas').style.display = isPessoas ? '' : 'none';
   document.getElementById('cap-panel-areas').style.display  = isPessoas ? 'none' : 'block';
   document.getElementById('tab-cap-pessoas').style.background = isPessoas ? 'var(--green)' : 'var(--bg2)';
   document.getElementById('tab-cap-pessoas').style.color = isPessoas ? '#fff' : 'var(--txt2)';

@@ -27,6 +27,13 @@ function renderColaboradores(search=''){
       va = avsA.length ? avsA[avsA.length-1].mediaGeral : 0;
       vb = avsB.length ? avsB[avsB.length-1].mediaGeral : 0;
     }
+    if(sortCol === 'movim'){
+      // Ordenar por data da última movimentação (mais recente primeiro)
+      var hA = (a.historico||[]).slice().sort(function(x,y){return(y.data||'').localeCompare(x.data||'');})[0];
+      var hB = (b.historico||[]).slice().sort(function(x,y){return(y.data||'').localeCompare(x.data||'');})[0];
+      va = hA ? hA.data : (a.dataAdmissao||a.perfil&&a.perfil.dataAdmissao||'');
+      vb = hB ? hB.data : (b.dataAdmissao||b.perfil&&b.perfil.dataAdmissao||'');
+    }
     return sortDir==='asc' ? (va>vb?1:va<vb?-1:0) : (va<vb?1:va>vb?-1:0);
   });
 
@@ -109,8 +116,8 @@ function renderColaboradores(search=''){
       '<th style="cursor:pointer" '+sortClick('nivel')+'>Nível '+sortIcon('nivel')+'</th>',
       '<th style="cursor:pointer" '+sortClick('area')+'>Área '+sortIcon('area')+'</th>',
       '<th>Gestor</th>',
-      '<th>Últ. Aval.</th>',
-      '<th>Movim.</th>',
+      '<th style="cursor:pointer" '+sortClick('ultimaAval')+'>Últ. Aval. '+sortIcon('ultimaAval')+'</th>',
+      '<th style="cursor:pointer" '+sortClick('movim')+'>Movim. '+sortIcon('movim')+'</th>',
       '<th>Status</th>',
     '</tr></thead>',
     '<tbody>'+rows+'</tbody>',
