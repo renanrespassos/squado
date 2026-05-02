@@ -60,11 +60,13 @@ function onColChange(colId){
 function renderPerguntasForm(){
   const p=(()=>{
     const niv=avalState.nivel;
-    return perguntas[niv]
-      ||(niv==='Assistente'?perguntas['Assistente I']:null)
-      ||(niv==='Assistente III'?perguntas['Analista I']:null)
-      ||(niv==='Analista III'?perguntas['Especialista']:null)
-      ||perguntas['Estagiário']||{};
+    if(perguntas[niv]) return perguntas[niv];
+    // Fuzzy: "Assistente II" → "Assistente"
+    var base=(niv||'').replace(/\s+(I{1,3}|IV|V|VI{0,3}|[0-9]+)$/,'').trim();
+    if(base!==niv && perguntas[base]) return perguntas[base];
+    // Fallback: primeiro nível disponível
+    var keys=Object.keys(perguntas);
+    return keys.length?perguntas[keys[0]]:{};
   })();
   const secEntries = Object.entries(p);
   const totalSecs = secEntries.length;
@@ -95,8 +97,10 @@ function salvarAvaliacao(){
   if(!avalState.colId){alert('Selecione um colaborador');return}
   const c=colaboradores.find(x=>x.id===avalState.colId);
   // Fallback: usar nível mais próximo se o nível exato não existir
-  const _niv=avalState.nivel;
-  const p=perguntas[_niv]||perguntas['Assistente I']||{};
+  var _niv=avalState.nivel;
+  var p=perguntas[_niv]||{};
+  if(Object.keys(p).length===0){var _base=(_niv||'').replace(/\s+(I{1,3}|IV|V|VI{0,3}|[0-9]+)$/,'').trim();if(_base!==_niv&&perguntas[_base])p=perguntas[_base];}
+  if(Object.keys(p).length===0){var _keys=Object.keys(perguntas);if(_keys.length)p=perguntas[_keys[0]];}
   const secaoMedias={};let total=0,count=0;
   Object.entries(p).forEach(([secao,qs])=>{let sm=0;qs.forEach((_,qi)=>{const k=`${secao}__${qi}`;const v=avalState.respostas[k]||5;sm+=v;total+=v;count++;});secaoMedias[secao]=Math.round(sm/qs.length*10)/10;});
   const mediaGeral=count?Math.round(total/count*10)/10:5;
@@ -234,6 +238,11 @@ function verAvaliacao(id){
     // Detalhamento individual de perguntas
     var detalhePerguntasHtml='';
     var perguntasNivel=perguntas[a.nivel]||{};
+    // Fuzzy match: "Assistente II" → tenta "Assistente"
+    if(Object.keys(perguntasNivel).length===0 && a.nivel){
+      var nivelBase=a.nivel.replace(/\s+(I{1,3}|IV|V|VI{0,3}|[0-9]+)$/,'').trim();
+      if(nivelBase!==a.nivel && perguntas[nivelBase]) perguntasNivel=perguntas[nivelBase];
+    }
     if(Object.keys(perguntasNivel).length>0 && a.respostas && Object.keys(a.respostas).length>0){
       detalhePerguntasHtml='<div style="font-size:14px;font-weight:800;margin:20px 0 8px">Detalhamento por Pergunta</div>';
       Object.entries(perguntasNivel).forEach(function(entry){
