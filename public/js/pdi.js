@@ -555,26 +555,35 @@ function gerarPDFPDI(pdiId){
 async function gerarPDIIA(){
   var col=colaboradores.filter(function(c){return c.status!=='Desligado';});
   if(!col.length){toast('Cadastre colaboradores primeiro.');return;}
+  var temAval=avaliacoes.length>0;
+  var temOKR=(ls('okrs',[])||[]).length>0;
+  var temMeta=metas.filter(function(m){return m.tipo==='smart';}).length>0;
 
-  document.getElementById('modal-title').textContent='🤖 Sugerir PDI com IA';
+  document.getElementById('modal-title').textContent='\u{1F916} Sugerir PDI com IA';
   document.getElementById('modal-box').classList.remove('modal-lg');
   document.getElementById('modal-body').innerHTML=
-    '<div style="margin-bottom:12px;font-size:12px;color:var(--txt2)">A IA vai analisar o colaborador e sugerir ações de desenvolvimento personalizadas.</div>'
+    '<div style="margin-bottom:12px;font-size:12px;color:var(--txt2)">A IA vai analisar o colaborador e sugerir a\u00e7\u00f5es de desenvolvimento personalizadas.</div>'
     +'<div class="field-group"><div class="field-label">Colaborador *</div>'
       +'<select id="ia-pdi-col"><option value="">Selecione...</option>'
-        +col.map(function(c){var avsC=avaliacoes.filter(function(a){return a.colaboradorId===c.id;});var lastAv=avsC.length?avsC[avsC.length-1]:null;return '<option value="'+c.id+'">'+c.nome+' ('+c.nivel+')'+(lastAv?' — nota '+lastAv.mediaGeral:'')+'</option>';}).join('')
+        +col.map(function(c){var avsC=avaliacoes.filter(function(a){return a.colaboradorId===c.id;});var lastAv=avsC.length?avsC[avsC.length-1]:null;return '<option value="'+c.id+'">'+c.nome+' ('+c.nivel+')'+(lastAv?' \u2014 nota '+lastAv.mediaGeral:'')+'</option>';}).join('')
       +'</select></div>'
     +'<div class="field-group"><div class="field-label">Foco do desenvolvimento</div>'
-      +'<select id="ia-pdi-foco"><option value="">Geral</option><option>Técnico</option><option>Comportamental</option><option>Liderança</option><option>Gestão</option><option>Comunicação</option></select></div>'
-    +'<div class="field-group"><div class="field-label" style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="ia-pdi-aval" checked style="accent-color:var(--green);width:16px;height:16px"> Considerar dados da avaliação</div><div style="font-size:10px;color:var(--txt3);margin-top:2px">A IA usará notas por seção para identificar pontos a desenvolver</div></div>'
+      +'<select id="ia-pdi-foco"><option value="">Geral</option><option>T\u00e9cnico</option><option>Comportamental</option><option>Lideran\u00e7a</option><option>Gest\u00e3o</option><option>Comunica\u00e7\u00e3o</option></select></div>'
+    +'<div style="background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:10px">'
+      +'<div style="font-size:11px;font-weight:700;color:var(--txt2);margin-bottom:8px">\u{1F4CE} Contexto para a IA considerar:</div>'
+      +'<label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;color:var(--txt);cursor:pointer"><input type="checkbox" id="ia-pdi-aval" '+(temAval?'checked':'')+' style="accent-color:#534AB7;width:16px;height:16px"'+(temAval?'':' disabled')+'> \u{1F4CA} Avalia\u00e7\u00f5es (pontos fracos/fortes) <span style="font-size:10px;color:var(--txt3)">'+(temAval?'('+avaliacoes.length+')':'(nenhuma)')+'</span></label>'
+      +'<label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;color:var(--txt);cursor:pointer"><input type="checkbox" id="ia-pdi-ctx-okr" '+(temOKR?'checked':'')+' style="accent-color:#534AB7;width:16px;height:16px"'+(temOKR?'':' disabled')+'> \u{1F3AF} OKRs da \u00e1rea <span style="font-size:10px;color:var(--txt3)">'+(temOKR?'('+((ls('okrs',[])||[]).length)+')':'(nenhum)')+'</span></label>'
+      +'<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--txt);cursor:pointer"><input type="checkbox" id="ia-pdi-ctx-meta" '+(temMeta?'checked':'')+' style="accent-color:#534AB7;width:16px;height:16px"'+(temMeta?'':' disabled')+'> \u2705 Metas SMART <span style="font-size:10px;color:var(--txt3)">'+(temMeta?'('+metas.filter(function(m){return m.tipo==='smart';}).length+')':'(nenhuma)')+'</span></label>'
+    +'</div>'
     +'<div class="field-group"><div class="field-label">Contexto adicional (opcional)</div>'
-      +'<input id="ia-pdi-ctx" placeholder="Ex: Preparar para promoção, melhorar gestão de tempo..."/></div>'
+      +'<input id="ia-pdi-ctx" placeholder="Ex: Preparar para promo\u00e7\u00e3o, melhorar gest\u00e3o de tempo..."/></div>'
     +'<div style="display:flex;gap:8px;margin-top:12px">'
-      +'<button class="btn btn-purple btn-sm" onclick="executarGeracaoPDIIA()">🤖 Gerar PDI</button>'
+      +'<button class="btn btn-purple btn-sm" onclick="executarGeracaoPDIIA()">\u{1F916} Gerar PDI</button>'
       +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
     +'</div>';
   document.getElementById('modal').style.display='flex';
 }
+
 
 async function executarGeracaoPDIIA(){
   var colId=(document.getElementById('ia-pdi-col')||{}).value;
@@ -591,6 +600,8 @@ async function executarGeracaoPDIIA(){
   toast('🤖 Gerando PDI com IA para '+col.nome+'...');
 
   var usarAval=(document.getElementById('ia-pdi-aval')||{}).checked!==false;
+  var usarOKR=(document.getElementById('ia-pdi-ctx-okr')||{}).checked;
+  var usarMeta=(document.getElementById('ia-pdi-ctx-meta')||{}).checked;
   var prompt='Gere um PDI (Plano de Desenvolvimento Individual) para:\n';
   prompt+='Nome: '+col.nome+'\nNível: '+col.nivel+'\nÁrea: '+(col.area||'geral')+'\n';
   if(lastAv&&usarAval){
@@ -605,10 +616,11 @@ async function executarGeracaoPDIIA(){
       if(fortes.length) prompt+='✅ Pontos fortes: '+fortes.join(', ')+'\n';
     }
   }
-  // Contexto cruzado: OKRs e Metas da área
-  if(col.area){
+  if(usarOKR&&col.area){
     var okrsArea=(ls('okrs',[])||[]).filter(function(o){return o.area===col.area;});
-    if(okrsArea.length) prompt+='OKRs da área: '+okrsArea.map(function(o){return o.objetivo;}).join('; ')+'\n';
+    if(okrsArea.length) prompt+='OKRs da área para alinhar: '+okrsArea.map(function(o){return o.objetivo;}).join('; ')+'\n';
+  }
+  if(usarMeta){
     var metasCol=metas.filter(function(m){return m.colId===colId&&m.tipo==='smart';});
     if(metasCol.length) prompt+='Metas existentes: '+metasCol.map(function(m){return m.titulo;}).join('; ')+'\n';
   }

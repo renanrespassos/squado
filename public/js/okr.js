@@ -319,22 +319,29 @@ function salvarKRs(okrId,count){
 // ═══ IA para OKR ═══
 async function gerarOKRsIA(){
   var areasDisp=[...new Set(colaboradores.filter(function(c){return c.area&&c.status!=='Desligado';}).map(function(c){return c.area;}))];
-  if(!areasDisp.length){toast('Cadastre áreas primeiro.');return;}
+  if(!areasDisp.length){toast('Cadastre \u00e1reas primeiro.');return;}
+  var temMeta=metas.filter(function(m){return m.tipo==='smart';}).length>0;
+  var temAval=avaliacoes.length>0;
 
-  document.getElementById('modal-title').textContent='🤖 Sugerir OKRs com IA';
+  document.getElementById('modal-title').textContent='\u{1F916} Sugerir OKRs com IA';
   document.getElementById('modal-box').classList.remove('modal-lg');
   document.getElementById('modal-body').innerHTML=
-    '<div style="margin-bottom:12px;font-size:12px;color:var(--txt2)">A IA vai gerar objetivos com key results mensuráveis para cada área.</div>'
-    +'<div class="field-group"><div class="field-label">Área</div>'
-      +'<select id="ia-okr-area"><option value="">— Todas as áreas —</option>'
+    '<div style="margin-bottom:12px;font-size:12px;color:var(--txt2)">A IA vai gerar objetivos com key results mensur\u00e1veis.</div>'
+    +'<div class="field-group"><div class="field-label">\u00c1rea</div>'
+      +'<select id="ia-okr-area"><option value="">\u2014 Todas as \u00e1reas \u2014</option>'
         +areasDisp.map(function(a){return '<option value="'+a+'">'+a+'</option>';}).join('')
       +'</select></div>'
-    +'<div class="field-group"><div class="field-label">Período</div>'
+    +'<div class="field-group"><div class="field-label">Per\u00edodo</div>'
       +'<select id="ia-okr-periodo"><option>Q2 2026</option><option>Q3 2026</option><option>2026</option><option>Semestre 1</option><option>Semestre 2</option></select></div>'
+    +'<div style="background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:10px">'
+      +'<div style="font-size:11px;font-weight:700;color:var(--txt2);margin-bottom:8px">\u{1F4CE} Contexto para a IA considerar:</div>'
+      +'<label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;color:var(--txt);cursor:pointer"><input type="checkbox" id="ia-okr-ctx-meta" '+(temMeta?'checked':'')+' style="accent-color:#534AB7;width:16px;height:16px"'+(temMeta?'':' disabled')+'> \u2705 Metas SMART <span style="font-size:10px;color:var(--txt3)">'+(temMeta?'('+metas.filter(function(m){return m.tipo==='smart';}).length+')':'(nenhuma)')+'</span></label>'
+      +'<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--txt);cursor:pointer"><input type="checkbox" id="ia-okr-ctx-aval" '+(temAval?'checked':'')+' style="accent-color:#534AB7;width:16px;height:16px"'+(temAval?'':' disabled')+'> \u{1F4CA} Avalia\u00e7\u00f5es <span style="font-size:10px;color:var(--txt3)">'+(temAval?'('+avaliacoes.length+')':'(nenhuma)')+'</span></label>'
+    +'</div>'
     +'<div class="field-group"><div class="field-label">Foco / Contexto (opcional)</div>'
-      +'<input id="ia-okr-ctx" placeholder="Ex: Qualidade, produtividade, certificação, inovação..."/></div>'
+      +'<input id="ia-okr-ctx" placeholder="Ex: Qualidade, produtividade, certifica\u00e7\u00e3o, inova\u00e7\u00e3o..."/></div>'
     +'<div style="display:flex;gap:8px;margin-top:12px">'
-      +'<button class="btn btn-purple btn-sm" onclick="executarGeracaoOKRIA()">🤖 Gerar OKRs</button>'
+      +'<button class="btn btn-purple btn-sm" onclick="executarGeracaoOKRIA()">\u{1F916} Gerar OKRs</button>'
       +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
     +'</div>';
   document.getElementById('modal').style.display='flex';
@@ -344,16 +351,24 @@ async function executarGeracaoOKRIA(){
   var area=(document.getElementById('ia-okr-area')||{}).value;
   var periodo=(document.getElementById('ia-okr-periodo')||{}).value||'Q2 2026';
   var ctx=(document.getElementById('ia-okr-ctx')||{}).value||'';
+  var usarMeta=(document.getElementById('ia-okr-ctx-meta')||{}).checked;
+  var usarAval=(document.getElementById('ia-okr-ctx-aval')||{}).checked;
 
   closeModal();
-  toast('🤖 Gerando OKRs com IA...');
+  toast('\u{1F916} Gerando OKRs com IA...');
 
   var areasGerar=area?[area]:[...new Set(colaboradores.filter(function(c){return c.area&&c.status!=='Desligado';}).map(function(c){return c.area;}))];
-  var prompt='Gere OKRs para as seguintes áreas: '+areasGerar.join(', ')+'.\n';
-  prompt+='Período: '+periodo+'\n';
+  var prompt='Gere OKRs para: '+areasGerar.join(', ')+'.\nPer\u00edodo: '+periodo+'\n';
   if(ctx) prompt+='Foco: '+ctx+'\n';
-  prompt+='Retorne JSON: [{\"area\":\"...\",\"objetivo\":\"...\",\"keyResults\":[{\"titulo\":\"...\",\"alvo\":100,\"unidade\":\"...\"},{\"titulo\":\"...\",\"alvo\":100,\"unidade\":\"...\"}]}]\n';
-  prompt+='Cada OKR deve ter 2-3 key results com alvos numéricos concretos.\nSem markdown. Apenas JSON.';
+  if(usarMeta){
+    var metasCtx=metas.filter(function(m){return m.tipo==='smart';}).slice(0,5);
+    if(metasCtx.length) prompt+='Metas SMART existentes para alinhar: '+metasCtx.map(function(m){return m.titulo;}).join('; ')+'\n';
+  }
+  if(usarAval&&avaliacoes.length){
+    prompt+='Avalia\u00e7\u00f5es recentes: '+avaliacoes.slice(-5).map(function(a){return a.colaborador+' '+a.mediaGeral;}).join(', ')+'\n';
+  }
+  prompt+='Retorne JSON: [{"area":"...","objetivo":"...","keyResults":[{"titulo":"...","alvo":100,"unidade":"..."}]}]\n';
+  prompt+='Cada OKR deve ter 2-3 key results com alvos num\u00e9ricos concretos.\nSem markdown. Apenas JSON.';
 
   try{
     var token=squadoGetToken();

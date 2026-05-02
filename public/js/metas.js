@@ -310,22 +310,30 @@ function delMeta(id){
 async function gerarMetasIA(){
   var col=colaboradores.filter(function(c){return c.status!=='Desligado';});
   if(!col.length){toast('Cadastre colaboradores primeiro.');return;}
+  var temOKR=(ls('okrs',[])||[]).length>0;
+  var temAval=avaliacoes.length>0;
+  var temPDI=(typeof getPDIs==='function'?getPDIs():[]).length>0;
 
-  // Modal de seleção
-  document.getElementById('modal-title').textContent='🤖 Sugerir Metas com IA';
+  document.getElementById('modal-title').textContent='\u{1F916} Sugerir Metas com IA';
   document.getElementById('modal-box').classList.remove('modal-lg');
   document.getElementById('modal-body').innerHTML=
-    '<div style="margin-bottom:12px;font-size:12px;color:var(--txt2)">A IA vai analisar seus colaboradores e sugerir metas SMART personalizadas.</div>'
+    '<div style="margin-bottom:12px;font-size:12px;color:var(--txt2)">A IA vai analisar seus dados e sugerir metas SMART personalizadas.</div>'
     +'<div class="field-group"><div class="field-label">Colaborador</div>'
-      +'<select id="ia-meta-col"><option value="">— Toda a equipe —</option>'
+      +'<select id="ia-meta-col"><option value="">\u2014 Toda a equipe \u2014</option>'
         +col.map(function(c){return '<option value="'+c.id+'">'+c.nome+' ('+c.nivel+')</option>';}).join('')
       +'</select></div>'
-    +'<div class="field-group"><div class="field-label">Contexto adicional (opcional)</div>'
-      +'<input id="ia-meta-ctx" placeholder="Ex: Foco em produtividade, certificação ISO, liderança..."/></div>'
-    +'<div class="field-group"><div class="field-label">Quantidade de metas</div>'
+    +'<div class="field-group"><div class="field-label">Quantidade</div>'
       +'<select id="ia-meta-qtd"><option value="1">1 meta</option><option value="2">2 metas</option><option value="3" selected>3 metas</option></select></div>'
+    +'<div style="background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:10px">'
+      +'<div style="font-size:11px;font-weight:700;color:var(--txt2);margin-bottom:8px">\u{1F4CE} Contexto para a IA considerar:</div>'
+      +'<label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;color:var(--txt);cursor:pointer"><input type="checkbox" id="ia-meta-ctx-okr" '+(temOKR?'checked':'')+' style="accent-color:#534AB7;width:16px;height:16px"'+(temOKR?'':' disabled')+'> \u{1F3AF} OKRs da \u00e1rea <span style="font-size:10px;color:var(--txt3)">'+(temOKR?'('+((ls('okrs',[])||[]).length)+')':'(nenhum)')+'</span></label>'
+      +'<label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;color:var(--txt);cursor:pointer"><input type="checkbox" id="ia-meta-ctx-aval" '+(temAval?'checked':'')+' style="accent-color:#534AB7;width:16px;height:16px"'+(temAval?'':' disabled')+'> \u{1F4CA} Avalia\u00e7\u00f5es <span style="font-size:10px;color:var(--txt3)">'+(temAval?'('+avaliacoes.length+')':'(nenhuma)')+'</span></label>'
+      +'<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--txt);cursor:pointer"><input type="checkbox" id="ia-meta-ctx-pdi" '+(temPDI?'checked':'')+' style="accent-color:#534AB7;width:16px;height:16px"'+(temPDI?'':' disabled')+'> \u{1F4CB} PDIs existentes <span style="font-size:10px;color:var(--txt3)">'+(temPDI?'('+(typeof getPDIs==='function'?getPDIs():[]).length+')':'(nenhum)')+'</span></label>'
+    +'</div>'
+    +'<div class="field-group"><div class="field-label">Contexto adicional (opcional)</div>'
+      +'<input id="ia-meta-ctx" placeholder="Ex: Foco em produtividade, certifica\u00e7\u00e3o, lideran\u00e7a..."/></div>'
     +'<div style="display:flex;gap:8px;margin-top:12px">'
-      +'<button class="btn btn-purple btn-sm" onclick="executarGeracaoMetasIA()">🤖 Gerar Sugestões</button>'
+      +'<button class="btn btn-purple btn-sm" onclick="executarGeracaoMetasIA()">\u{1F916} Gerar Sugest\u00f5es</button>'
       +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
     +'</div>';
   document.getElementById('modal').style.display='flex';
@@ -336,14 +344,31 @@ async function executarGeracaoMetasIA(){
   var ctx=(document.getElementById('ia-meta-ctx')||{}).value||'';
   var qtd=parseInt((document.getElementById('ia-meta-qtd')||{}).value)||3;
   var col=colId?colaboradores.find(function(c){return c.id===colId;}):null;
+  var usarOKR=(document.getElementById('ia-meta-ctx-okr')||{}).checked;
+  var usarAval=(document.getElementById('ia-meta-ctx-aval')||{}).checked;
+  var usarPDI=(document.getElementById('ia-meta-ctx-pdi')||{}).checked;
 
   closeModal();
-  toast('🤖 Gerando metas com IA...');
+  toast('\u{1F916} Gerando metas com IA...');
 
-  var prompt='Gere '+qtd+' metas SMART'+(col?' para '+col.nome+' ('+col.nivel+', área: '+(col.area||'geral')+')':', uma para cada área da equipe')+'.\n';
+  var prompt='Gere '+qtd+' metas SMART'+(col?' para '+col.nome+' ('+col.nivel+', \u00e1rea: '+(col.area||'geral')+')':', uma para cada \u00e1rea da equipe')+'.\n';
   if(ctx) prompt+='Contexto: '+ctx+'\n';
+  if(usarOKR){
+    var okrs=ls('okrs',[])||[];
+    var okrsFiltrados=col&&col.area?okrs.filter(function(o){return o.area===col.area;}):okrs;
+    if(okrsFiltrados.length) prompt+='OKRs para alinhar: '+okrsFiltrados.map(function(o){return o.objetivo+' ('+o.area+')';}).join('; ')+'\n';
+  }
+  if(usarAval){
+    var avsCtx=col?avaliacoes.filter(function(a){return a.colaboradorId===colId;}):avaliacoes.slice(-5);
+    if(avsCtx.length) prompt+='Avalia\u00e7\u00f5es: '+avsCtx.map(function(a){return a.colaborador+' nota '+a.mediaGeral;}).join('; ')+'\n';
+  }
+  if(usarPDI){
+    var pdis=typeof getPDIs==='function'?getPDIs():[];
+    var pdisFilt=col?pdis.filter(function(p){return p.colId===colId;}):pdis.slice(-3);
+    if(pdisFilt.length) prompt+='PDIs: '+pdisFilt.map(function(p){return p.objetivo;}).join('; ')+'\n';
+  }
   prompt+='Equipe: '+colaboradores.filter(function(c){return c.status!=="Desligado";}).map(function(c){return c.nome+' ('+c.nivel+')';}).join(', ')+'\n';
-  prompt+='\nRetorne JSON puro: [{\"titulo\":\"...\",\"especifica\":\"...\",\"mensuravel\":\"...\",\"atingivel\":\"...\",\"relevante\":\"...\",\"temporal\":\"...\"}]\nSem markdown. Sem backticks. Apenas JSON.';
+  prompt+='\nRetorne JSON puro: [{"titulo":"...","especifica":"...","mensuravel":"...","atingivel":"...","relevante":"...","temporal":"..."}]\nSem markdown. Sem backticks. Apenas JSON.';
 
   try{
     var token=squadoGetToken();
