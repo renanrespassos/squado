@@ -715,3 +715,106 @@ function deletarFuncaoCapacidade(id) {
 }
 
 
+
+// ═══ RELATÓRIO PDF CAPACIDADE ═══════════════════════════════
+function gerarRelatorioCapacidade(){
+  var funcs = ls('funcoes_v8', []);
+  if(!funcs.length){toast('Nenhuma função cadastrada.');return;}
+
+  var qtdServicos = parseInt(ls('qtdServicos',100))||100;
+  var areas = {};
+  funcs.forEach(function(f){
+    var a = f.area || 'Sem área';
+    if(!areas[a]) areas[a] = [];
+    areas[a].push(f);
+  });
+
+  // Calcular ocupação por colaborador
+  var colOcupacao = {};
+  funcs.forEach(function(f){
+    (f.responsaveis||[]).forEach(function(r){
+      if(!colOcupacao[r.nome]) colOcupacao[r.nome]={total:0,funcoes:[]};
+      var minMes = (f.tempoMin||0) * qtdServicos * ((f.pctServicos||100)/100) * ((r.pct||100)/100);
+      var hMes = Math.round(minMes/60*10)/10;
+      colOcupacao[r.nome].total += hMes;
+      colOcupacao[r.nome].funcoes.push({nome:f.nome,horas:hMes,pct:r.pct||100});
+    });
+  });
+
+  var dataHoje = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  var totalFuncs = funcs.length;
+  var totalResp = Object.keys(colOcupacao).length;
+
+  // Gerar tabelas por área
+  var areasHtml = '';
+  Object.keys(areas).sort().forEach(function(area){
+    var areaFuncs = areas[area];
+    var corArea = (AREA_COLORS[area]||{}).cor||'#185FA5';
+    areasHtml += '<div style="margin-bottom:24px;page-break-inside:avoid">'
+      +'<h3 style="font-size:14px;font-weight:700;color:'+corArea+';padding:8px 12px;background:'+corArea+'10;border-left:3px solid '+corArea+';border-radius:0 6px 6px 0;margin-bottom:8px">'+area+' <span style="font-weight:400;font-size:11px;color:#666">('+areaFuncs.length+' funções)</span></h3>'
+      +'<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:4px">'
+      +'<tr style="background:#f4f4f0"><th style="text-align:left;padding:6px 8px;border:1px solid #ddd;font-weight:600">Função</th><th style="padding:6px 8px;border:1px solid #ddd;width:60px;font-weight:600">Tempo</th><th style="padding:6px 8px;border:1px solid #ddd;width:50px;font-weight:600">% Serv</th><th style="text-align:left;padding:6px 8px;border:1px solid #ddd;font-weight:600">Responsáveis</th></tr>';
+    areaFuncs.forEach(function(f){
+      var resps = (f.responsaveis||[]).map(function(r){return r.nome+' ('+r.pct+'%)';}).join(', ') || '—';
+      areasHtml += '<tr>'
+        +'<td style="padding:5px 8px;border:1px solid #ddd">'+f.nome+'</td>'
+        +'<td style="padding:5px 8px;border:1px solid #ddd;text-align:center">'+(f.tempoMin||0)+'min</td>'
+        +'<td style="padding:5px 8px;border:1px solid #ddd;text-align:center">'+(f.pctServicos||100)+'%</td>'
+        +'<td style="padding:5px 8px;border:1px solid #ddd;font-size:10px;color:#555">'+resps+'</td>'
+        +'</tr>';
+    });
+    areasHtml += '</table></div>';
+  });
+
+  // Tabela de ocupação por colaborador
+  var ocupHtml = '<div style="page-break-inside:avoid"><h3 style="font-size:14px;font-weight:700;color:#0F6E56;margin-bottom:8px">Ocupação por Colaborador</h3>'
+    +'<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:16px">'
+    +'<tr style="background:#f4f4f0"><th style="text-align:left;padding:6px 8px;border:1px solid #ddd;font-weight:600">Colaborador</th><th style="padding:6px 8px;border:1px solid #ddd;width:70px;font-weight:600">Horas/mês</th><th style="padding:6px 8px;border:1px solid #ddd;width:60px;font-weight:600">% Carga</th><th style="text-align:left;padding:6px 8px;border:1px solid #ddd;font-weight:600">Funções</th></tr>';
+
+  var sortedCols = Object.keys(colOcupacao).sort(function(a,b){return colOcupacao[b].total-colOcupacao[a].total;});
+  sortedCols.forEach(function(nome){
+    var c = colOcupacao[nome];
+    var pctCarga = Math.round(c.total/176*100);
+    var corCarga = pctCarga > 100 ? '#A32D2D' : pctCarga > 80 ? '#854F0B' : '#0F6E56';
+    var funcList = c.funcoes.map(function(f){return f.nome;}).join(', ');
+    ocupHtml += '<tr>'
+      +'<td style="padding:5px 8px;border:1px solid #ddd;font-weight:500">'+nome+'</td>'
+      +'<td style="padding:5px 8px;border:1px solid #ddd;text-align:center;font-weight:600">'+c.total+'h</td>'
+      +'<td style="padding:5px 8px;border:1px solid #ddd;text-align:center;font-weight:700;color:'+corCarga+'">'+pctCarga+'%</td>'
+      +'<td style="padding:5px 8px;border:1px solid #ddd;font-size:10px;color:#555">'+funcList+'</td>'
+      +'</tr>';
+  });
+  ocupHtml += '</table></div>';
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório de Capacidade</title>'
+    +'<style>*{margin:0;padding:0;box-sizing:border-box}'
+    +'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111827;background:#fff;padding:40px}'
+    +'@media print{body{padding:0}.np{display:none!important}@page{margin:14mm;size:A4 landscape}}'
+    +'</style></head><body>'
+    +'<div class="np" style="position:fixed;top:0;left:0;right:0;background:#185FA5;padding:10px 24px;display:flex;align-items:center;gap:12px;z-index:999">'
+      +'<span style="color:#fff;font-weight:700;font-size:14px;flex:1">Relatório de Capacidade e Funções</span>'
+      +'<button onclick="window.print()" style="background:#fff;color:#185FA5;border:none;padding:7px 20px;border-radius:7px;font-weight:700;cursor:pointer">🖨 Imprimir / PDF</button>'
+      +'<button onclick="window.close()" style="background:rgba(255,255,255,.2);color:#fff;border:none;padding:7px 12px;border-radius:7px;cursor:pointer">×</button>'
+    +'</div><div class="np" style="height:52px"></div>'
+    +'<div style="text-align:center;padding-bottom:16px;border-bottom:3px solid #185FA5;margin-bottom:24px">'
+      +'<div style="font-size:9px;font-weight:700;color:#185FA5;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px">Squado</div>'
+      +'<div style="font-size:24px;font-weight:900;color:#111827;margin-bottom:4px">Relatório de Capacidade e Funções</div>'
+      +'<div style="font-size:11px;color:#666">Gerado em '+dataHoje+'</div>'
+    +'</div>'
+    +'<div style="display:flex;gap:16px;margin-bottom:24px">'
+      +'<div style="flex:1;background:#E1F5EE;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:#0F6E56">'+totalFuncs+'</div><div style="font-size:10px;color:#085041">Funções</div></div>'
+      +'<div style="flex:1;background:#E6F1FB;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:#185FA5">'+Object.keys(areas).length+'</div><div style="font-size:10px;color:#0C447C">Áreas</div></div>'
+      +'<div style="flex:1;background:#FAEEDA;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:#854F0B">'+totalResp+'</div><div style="font-size:10px;color:#633806">Responsáveis</div></div>'
+      +'<div style="flex:1;background:#F3F0FF;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:#534AB7">'+qtdServicos+'</div><div style="font-size:10px;color:#3D2E8D">Serviços/mês</div></div>'
+    +'</div>'
+    +'<h2 style="font-size:16px;font-weight:800;margin-bottom:16px;padding-bottom:6px;border-bottom:2px solid #185FA5">Funções por Área</h2>'
+    +areasHtml
+    +'<h2 style="font-size:16px;font-weight:800;margin-bottom:16px;padding-bottom:6px;border-bottom:2px solid #0F6E56">Ocupação da Equipe</h2>'
+    +ocupHtml
+    +'<div style="margin-top:24px;padding-top:12px;border-top:1px solid #ddd;font-size:9px;color:#999;text-align:center">Relatório gerado pelo Squado · squado.com.br · '+dataHoje+'</div>'
+    +'</body></html>';
+
+  var w = window.open('','_blank','width=1100,height=800');
+  if(w){w.document.write(html);w.document.close();}
+  else{toast('Permita pop-ups para gerar o relatório.');}
+}
