@@ -272,7 +272,7 @@ function salvarMetaSMART(id){
   if(!titulo){alert('Título obrigatório.');return;}
   function gv(elId){var e=document.getElementById(elId);return e?e.value:'';}
   var colSel=gv('sm-col');var colNome=colSel?(colaboradores.find(function(c){return c.id===colSel})||{}).nome||'':'';
-  var nova={id:id||uid(),tipo:'smart',titulo:titulo,
+  if(!colSel){toast('Selecione um colaborador para a meta.');return;}  var nova={id:id||uid(),tipo:'smart',titulo:titulo,
     colId:colSel||null,colaborador:colNome,prazo:gv('sm-prazo'),
     status:gv('sm-status')||'Pendente',
     progresso:parseInt(gv('sm-prog'))||0,
@@ -350,6 +350,7 @@ async function gerarMetasIA(){
 
 async function executarGeracaoMetasIA(){
   var colId=(document.getElementById('ia-meta-col')||{}).value;
+  if(!colId){toast('Selecione um colaborador para gerar metas.');return;}
   var ctx=(document.getElementById('ia-meta-ctx')||{}).value||'';
   var qtd=parseInt((document.getElementById('ia-meta-qtd')||{}).value)||3;
   var col=colId?colaboradores.find(function(c){return c.id===colId;}):null;

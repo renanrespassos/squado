@@ -235,6 +235,7 @@ function salvarMetaOKR(id){
   });
   var areaSel=document.getElementById('okr-area');
   var perSel=document.getElementById('okr-periodo');
+  if(!areaSel||!areaSel.value){toast('Selecione uma área para o OKR.');return;}
   var nova={id:id||uid(),tipo:'okr',objetivo:objVal,
     area:areaSel?areaSel.value:'',
     periodo:perSel?perSel.value:'',

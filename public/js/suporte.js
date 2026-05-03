@@ -12,101 +12,122 @@ var suporteState = {
 };
 
 function renderSuporte(){
-  var msgs = suporteState.mensagens;
-  var msgsHtml = '';
+  var user=squadoGetUser();
+  var nomeUser=user&&user.nome?user.nome:'';
+  var emailUser=user&&user.email?user.email:'';
+  var tickets=ls('suporte_tickets',[])||[];
 
-  if(msgs.length === 0){
-    msgsHtml = '<div style="display:flex;gap:10px;margin-bottom:16px">'
-      +'<div style="width:36px;height:36px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">🤖</div>'
-      +'<div style="background:#F5F6F4;border-radius:0 12px 12px 12px;padding:14px 16px;max-width:80%;line-height:1.6;font-size:13px;color:#3A4240">'
-        +'Olá! Sou o assistente de suporte do Squado. 👋<br><br>'
-        +'Me conte o que está acontecendo e vou te ajudar a resolver. Posso:<br><br>'
-        +'<span style="color:#0F6E56">●</span> Diagnosticar problemas técnicos<br>'
-        +'<span style="color:#0F6E56">●</span> Responder dúvidas sobre a plataforma<br>'
-        +'<span style="color:#0F6E56">●</span> Registrar sugestões de melhoria<br>'
-        +'<span style="color:#0F6E56">●</span> Criar um ticket pra nossa equipe analisar<br><br>'
-        +'<strong>Descreva seu problema ou dúvida:</strong>'
-      +'</div>'
-    +'</div>';
-  } else {
-    msgs.forEach(function(m){
-      if(m.role === 'user'){
-        msgsHtml += '<div style="display:flex;gap:10px;margin-bottom:16px;justify-content:flex-end">'
-          +'<div style="background:#0F6E56;color:#fff;border-radius:12px 0 12px 12px;padding:12px 16px;max-width:75%;font-size:13px;line-height:1.5">'+esc(m.content)+'</div>'
-        +'</div>';
-      } else {
-        var txt = (m.content||'').replace(/TICKET_REGISTRAR/g,'').replace(/DIAGNÓSTICO:/g,'<strong style="color:#0F6E56">📋 Diagnóstico:</strong>').replace(/CATEGORIA:\s*/g,'<span style="font-weight:700;color:#185FA5">Categoria:</span> ').replace(/PRIORIDADE:\s*/g,'<span style="font-weight:700;color:#854F0B">Prioridade:</span> ').replace(/RESUMO:\s*/g,'<span style="font-weight:700;color:#0F6E56">Resumo:</span> ').replace(/\n/g,'<br>');
-        msgsHtml += '<div style="display:flex;gap:10px;margin-bottom:16px">'
-          +'<div style="width:36px;height:36px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">🤖</div>'
-          +'<div style="background:#F5F6F4;border-radius:0 12px 12px 12px;padding:12px 16px;max-width:80%;font-size:13px;color:#3A4240;line-height:1.6">'+txt+'</div>'
-        +'</div>';
-      }
+  var ticketsHtml='';
+  if(tickets.length){
+    ticketsHtml='<div style="margin-top:20px"><div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">\u{1F4CB} Seus tickets</div>';
+    tickets.slice().reverse().forEach(function(t){
+      var statusCor=t.status==='Resolvido'?'#0F6E56':t.status==='Em andamento'?'#854F0B':'#185FA5';
+      var statusBg=t.status==='Resolvido'?'#E1F5EE':t.status==='Em andamento'?'#FAEEDA':'#E6F1FB';
+      ticketsHtml+='<div class="card" style="padding:12px 16px;margin-bottom:8px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+          +'<span style="font-size:12px;font-weight:600;color:var(--txt)">'+t.assunto+'</span>'
+          +'<span style="font-size:10px;padding:2px 10px;border-radius:20px;background:'+statusBg+';color:'+statusCor+';font-weight:600">'+t.status+'</span>'
+        +'</div>'
+        +'<div style="font-size:11px;color:var(--txt3)">'+t.categoria+' \u00b7 '+t.prioridade+' \u00b7 '+t.data+'</div>'
+        +'<div style="font-size:11px;color:var(--txt2);margin-top:4px">'+t.descricao.slice(0,100)+(t.descricao.length>100?'...':'')+'</div>'
+      +'</div>';
     });
+    ticketsHtml+='</div>';
   }
-
-  // Sugestões rápidas quando chat está vazio
-  var sugestoesHtml = '';
-  if(msgs.length === 0){
-    var sugs = [
-      {icon:'🐛', txt:'Encontrei um bug no sistema'},
-      {icon:'❓', txt:'Tenho uma dúvida sobre como usar'},
-      {icon:'💡', txt:'Tenho uma sugestão de melhoria'},
-      {icon:'💳', txt:'Problema com meu plano ou pagamento'},
-      {icon:'🔄', txt:'Meus dados não estão sincronizando'},
-      {icon:'🔒', txt:'Não consigo acessar minha conta'},
-    ];
-    sugestoesHtml = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">'
-      +sugs.map(function(s){ return '<button onclick="enviarMsgSuporte(\''+s.txt+'\')" style="display:flex;align-items:center;gap:6px;padding:8px 14px;border:1px solid #E0E2E0;border-radius:8px;background:#fff;cursor:pointer;font-size:12px;color:#3A4240;transition:all .15s;font-family:inherit" onmouseover="this.style.borderColor=\'#0F6E56\';this.style.background=\'#E1F5EE\'" onmouseout="this.style.borderColor=\'#E0E2E0\';this.style.background=\'#fff\'">'+s.icon+' '+s.txt+'</button>'; }).join('')
-    +'</div>';
-  }
-
-  // Botão de registrar ticket (quando IA diagnosticou)
-  var ticketBtn = '';
-  if(suporteState.categoria && !suporteState.ticketRegistrado){
-    ticketBtn = '<div style="background:#E1F5EE;border:1px solid #9FE1CB;border-radius:10px;padding:14px;margin-bottom:16px;display:flex;align-items:center;gap:12px">'
-      +'<span style="font-size:20px">📋</span>'
-      +'<div style="flex:1"><strong style="color:#0F6E56">Problema identificado</strong><br>'
-        +'<span style="font-size:12px;color:#3A4240">'+esc(suporteState.categoria)+' · '+esc(suporteState.prioridade)+' · '+esc(suporteState.resumo||'')+'</span></div>'
-      +'<button onclick="registrarTicketSuporte()" class="btn btn-primary btn-sm">Registrar ticket</button>'
-    +'</div>';
-  }
-  if(suporteState.ticketRegistrado){
-    ticketBtn = '<div style="background:#E1F5EE;border:1px solid #9FE1CB;border-radius:10px;padding:14px;margin-bottom:16px;text-align:center">'
-      +'<span style="font-size:24px">✅</span><br>'
-      +'<strong style="color:#0F6E56">Ticket registrado com sucesso!</strong><br>'
-      +'<span style="font-size:12px;color:#3A4240">Nossa equipe vai analisar e responder em breve.</span><br>'
-      +'<button onclick="resetarSuporte()" class="btn btn-sm" style="margin-top:10px">Novo atendimento</button>'
-    +'</div>';
-  }
-
-  // Tickets anteriores
-  var ticketsHtml = '';
 
   return '<div style="max-width:700px;margin:0 auto">'
-    // Chat
-    +'<div class="card" style="padding:0;overflow:hidden">'
-      +'<div style="padding:14px 16px;border-bottom:1px solid #E0E2E0;display:flex;align-items:center;gap:8px">'
-        +'<span style="font-size:18px">💬</span>'
-        +'<div><div style="font-size:14px;font-weight:700;color:#1A1F1D">Suporte Squado</div>'
-        +'<div style="font-size:11px;color:#9BA09E">IA · Responde instantaneamente</div></div>'
-        +'<span style="flex:1"></span>'
-        +(msgs.length?'<button onclick="resetarSuporte()" class="btn btn-sm" style="font-size:10px">🔄 Novo chat</button>':'')
+    +'<div class="card" style="padding:24px">'
+      +'<div style="text-align:center;margin-bottom:20px">'
+        +'<div style="font-size:32px;margin-bottom:8px">\u{1F4AC}</div>'
+        +'<div style="font-size:18px;font-weight:800;color:var(--txt)">Como podemos ajudar?</div>'
+        +'<div style="font-size:12px;color:var(--txt3)">Preencha o formul\u00e1rio abaixo e nossa equipe responder\u00e1 em breve.</div>'
       +'</div>'
-      +'<div id="suporte-msgs" style="padding:16px;max-height:400px;overflow-y:auto;background:#FCFCFA">'+msgsHtml+'</div>'
-      +ticketBtn
-      +sugestoesHtml
-      +'<div style="padding:12px 16px;border-top:1px solid #E0E2E0;display:flex;gap:8px">'
-        +'<input id="suporte-input" placeholder="Descreva seu problema..." style="flex:1;padding:10px 14px;border:1px solid #E0E2E0;border-radius:8px;font-size:13px;font-family:inherit" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();enviarMsgSuporte()}"'+(suporteState.enviando?' disabled':'')+'>'
-        +'<button onclick="enviarMsgSuporte()" class="btn btn-primary" style="padding:10px 18px"'+(suporteState.enviando?' disabled':'')+'>'+( suporteState.enviando?'⏳':'Enviar')+'</button>'
+
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">'
+        +'<div class="field-group"><div class="field-label">Nome</div>'
+          +'<input id="sup-nome" value="'+nomeUser+'" placeholder="Seu nome"/></div>'
+        +'<div class="field-group"><div class="field-label">Email</div>'
+          +'<input id="sup-email" value="'+emailUser+'" placeholder="Seu email"/></div>'
+      +'</div>'
+
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">'
+        +'<div class="field-group"><div class="field-label">Categoria *</div>'
+          +'<select id="sup-cat">'
+            +'<option value="">Selecione...</option>'
+            +'<option>Bug / Erro</option>'
+            +'<option>D\u00favida de uso</option>'
+            +'<option>Sugest\u00e3o de melhoria</option>'
+            +'<option>Problema de acesso</option>'
+            +'<option>Solicita\u00e7\u00e3o de recurso</option>'
+            +'<option>Outro</option>'
+          +'</select></div>'
+        +'<div class="field-group"><div class="field-label">Prioridade</div>'
+          +'<select id="sup-prio">'
+            +'<option>Normal</option>'
+            +'<option>Baixa</option>'
+            +'<option>Alta</option>'
+            +'<option>Urgente</option>'
+          +'</select></div>'
+      +'</div>'
+
+      +'<div class="field-group" style="margin-bottom:10px"><div class="field-label">Assunto *</div>'
+        +'<input id="sup-assunto" placeholder="Resuma o problema em poucas palavras"/></div>'
+
+      +'<div class="field-group" style="margin-bottom:14px"><div class="field-label">Descri\u00e7\u00e3o detalhada *</div>'
+        +'<textarea id="sup-desc" rows="5" placeholder="Descreva o que aconteceu, os passos para reproduzir o problema, e o que esperava que acontecesse..."></textarea></div>'
+
+      +'<div style="display:flex;gap:8px;justify-content:flex-end">'
+        +'<button class="btn btn-sm" onclick="limparFormSuporte()">Limpar</button>'
+        +'<button class="btn btn-primary btn-sm" onclick="enviarTicketSuporte()">\u{1F4E8} Enviar Ticket</button>'
       +'</div>'
     +'</div>'
-    // Info
-    +'<div style="margin-top:16px;display:flex;gap:12px">'
-      +'<div class="card" style="flex:1;text-align:center;padding:14px"><div style="font-size:20px;margin-bottom:4px">📧</div><div style="font-size:11px;color:#3A4240"><strong>Email</strong><br>contato@squado.com.br</div></div>'
-      +'<div class="card" style="flex:1;text-align:center;padding:14px"><div style="font-size:20px;margin-bottom:4px">⏱</div><div style="font-size:11px;color:#3A4240"><strong>Tempo de resposta</strong><br>Até 24h úteis</div></div>'
-      +'<div class="card" style="flex:1;text-align:center;padding:14px"><div style="font-size:20px;margin-bottom:4px">📋</div><div style="font-size:11px;color:#3A4240"><strong>Status</strong><br><a href="#" onclick="verMeusTickets();return false" style="color:#0F6E56">Ver meus tickets</a></div></div>'
-    +'</div>'
+    +ticketsHtml
   +'</div>';
+}
+
+function limparFormSuporte(){
+  ['sup-cat','sup-assunto','sup-desc'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el){el.tagName==='SELECT'?el.selectedIndex=0:el.value='';}
+  });
+}
+
+async function enviarTicketSuporte(){
+  var cat=(document.getElementById('sup-cat')||{}).value;
+  var assunto=(document.getElementById('sup-assunto')||{}).value;
+  var desc=(document.getElementById('sup-desc')||{}).value;
+  var nome=(document.getElementById('sup-nome')||{}).value;
+  var email=(document.getElementById('sup-email')||{}).value;
+  var prio=(document.getElementById('sup-prio')||{}).value||'Normal';
+
+  if(!cat){toast('Selecione uma categoria.');return;}
+  if(!assunto){toast('Informe o assunto.');return;}
+  if(!desc||desc.length<10){toast('Descreva o problema com mais detalhes (min 10 caracteres).');return;}
+
+  var ticket={
+    id:uid(),nome:nome,email:email,
+    categoria:cat,prioridade:prio,assunto:assunto,descricao:desc,
+    status:'Aberto',data:new Date().toISOString().slice(0,10),
+    timestamp:new Date().toISOString()
+  };
+
+  // Salvar localmente
+  var tickets=ls('suporte_tickets',[])||[];
+  tickets.push(ticket);
+  lss('suporte_tickets',tickets);
+
+  // Enviar pro backend
+  try{
+    var token=squadoGetToken();
+    await fetch(SQUADO_API+'/api/suporte/ticket',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify(ticket)
+    });
+  }catch(e){console.warn('Suporte ticket err:',e);}
+
+  toast('\u2705 Ticket enviado com sucesso! Responderemos em breve.');
+  render('suporte');
 }
 
 async function enviarMsgSuporte(msgPredefinida){
