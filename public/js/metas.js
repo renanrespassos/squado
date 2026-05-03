@@ -357,8 +357,8 @@ async function gerarMetasIA(){
       +'<select id="ia-meta-col"><option value="">\u2014 Toda a equipe \u2014</option>'
         +col.map(function(c){return '<option value="'+c.id+'">'+c.nome+' ('+c.nivel+')</option>';}).join('')
       +'</select></div>'
-    +'<div class="field-group"><div class="field-label">Quantidade</div>'
-      +'<select id="ia-meta-qtd"><option value="1">1 meta</option><option value="2">2 metas</option><option value="3" selected>3 metas</option></select></div>'
+    +'<input type="hidden" id="ia-meta-qtd" value="1">'
+      
     +'<div style="background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:10px">'
       +'<div style="font-size:11px;font-weight:700;color:var(--txt2);margin-bottom:8px">\u{1F4CE} Contexto para a IA considerar:</div>'
       +'<label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;color:var(--txt);cursor:pointer"><input type="checkbox" id="ia-meta-ctx-okr" '+(temOKR?'checked':'')+' style="accent-color:#534AB7;width:16px;height:16px"'+(temOKR?'':' disabled')+'> \u{1F3AF} OKRs da \u00e1rea <span style="font-size:10px;color:var(--txt3)">'+(temOKR?'('+((ls('okrs',[])||[]).length)+')':'(nenhum)')+'</span></label>'
@@ -378,7 +378,7 @@ async function executarGeracaoMetasIA(){
   var colId=(document.getElementById('ia-meta-col')||{}).value;
   if(!colId){toast('Selecione um colaborador para gerar metas.');return;}
   var ctx=(document.getElementById('ia-meta-ctx')||{}).value||'';
-  var qtd=parseInt((document.getElementById('ia-meta-qtd')||{}).value)||3;
+  var qtd=1;
   var col=colId?colaboradores.find(function(c){return c.id===colId;}):null;
   var usarOKR=(document.getElementById('ia-meta-ctx-okr')||{}).checked;
   var usarAval=(document.getElementById('ia-meta-ctx-aval')||{}).checked;
@@ -387,7 +387,8 @@ async function executarGeracaoMetasIA(){
   closeModal();
   toast('\u{1F916} Gerando metas com IA...');
 
-  var prompt='Gere '+qtd+' metas SMART'+(col?' para '+col.nome+' ('+col.nivel+', \u00e1rea: '+(col.area||'geral')+')':', uma para cada \u00e1rea da equipe')+'.\n';
+  var metasExist=metas.filter(function(m){return m.tipo==='smart'&&(!colId||m.colId===colId);}).map(function(m){return m.titulo;});
+  var prompt='Gere EXATAMENTE 1 meta SMART'+(col?' para '+col.nome+' ('+col.nivel+', \u00e1rea: '+(col.area||'geral')+')':', uma para cada \u00e1rea da equipe')+'.\n';
   if(ctx) prompt+='Contexto: '+ctx+'\n';
   if(usarOKR){
     var okrs=ls('okrs',[])||[];
@@ -415,6 +416,7 @@ async function executarGeracaoMetasIA(){
     if(pdisFilt.length) prompt+='PDIs: '+pdisFilt.map(function(p){return p.objetivo;}).join('; ')+'\n';
   }
   prompt+='Equipe: '+colaboradores.filter(function(c){return c.status!=="Desligado";}).map(function(c){return c.nome+' ('+c.nivel+')';}).join(', ')+'\n';
+  if(metasExist.length) prompt+='NÃO repita metas já existentes: '+metasExist.join('; ')+'\n';
   prompt+='\nRetorne JSON puro: [{"titulo":"...","especifica":"...","mensuravel":"...","atingivel":"...","relevante":"...","temporal":"..."}]\nSem markdown. Sem backticks. Apenas JSON.';
 
   try{
@@ -432,6 +434,12 @@ async function executarGeracaoMetasIA(){
     if(!match){toast('⚠️ IA não retornou JSON válido');return;}
     var sugestoes=JSON.parse(match[0]);
 
+    // Limitar a 1 meta
+    if(sugestoes.length>1) sugestoes=sugestoes.slice(0,1);
+    // Checar duplicatas
+    var existentes=metas.filter(function(m){return m.colId===colId;}).map(function(m){return m.titulo.toLowerCase();});
+    sugestoes=sugestoes.filter(function(s){return existentes.indexOf((s.titulo||'').toLowerCase())<0;});
+    if(!sugestoes.length){toast('⚠️ Meta sugerida já existe. Tente novamente.');return;}
     sugestoes.forEach(function(s){
       metas.push({
         id:uid(),tipo:'smart',titulo:s.titulo||'Meta sugerida',
@@ -442,7 +450,7 @@ async function executarGeracaoMetasIA(){
       });
     });
     saveAll();
-    toast('✅ '+sugestoes.length+' metas sugeridas!');
+    toast('✅ Meta gerada!');
     render('metas');
   }catch(e){
     toast('⚠️ Erro: '+e.message);

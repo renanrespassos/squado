@@ -112,6 +112,7 @@ function renderOKR(search){
           +'<div style="display:flex;gap:4px">'
             +'<button class="btn btn-xs" onclick="openOKRForm(\''+okr.id+'\')" style="padding:1px 6px;font-size:10px">✏️</button>'
             +'<button class="btn btn-xs btn-primary" onclick="editarKRs(\''+okr.id+'\')" style="padding:1px 6px;font-size:10px">📊 KRs</button>'
+            +'<button class="btn btn-xs" onclick="delOKR(\''+okr.id+'\')" style="padding:1px 6px;font-size:10px;color:#A6311F" title="Excluir">🗑</button>'
           +'</div>'
         +'</div>';
       });
@@ -176,25 +177,79 @@ function openOKRForm(id, preArea){
   document.getElementById('modal-title').textContent=isNew?'🎯 Novo OKR':'🎯 Editar OKR';
   document.getElementById('modal-box').classList.add('modal-lg');
   document.getElementById('modal-body').innerHTML=
-    '<div class="form-grid mb-12">'
+    '<div style="display:flex;gap:8px;margin-bottom:14px">'
+      +'<div style="flex:1;background:#F3F0FF;border-radius:8px;padding:8px 12px;font-size:11px;color:#534AB7">'
+        +'<strong>OKR:</strong> Defina um Objetivo inspiracional e Key Results mensuráveis'
+      +'</div>'
+      +(isNew?'<button class="btn btn-sm" onclick="preencherOKRComIA()" style="border-color:#534AB7;color:#534AB7;white-space:nowrap">🤖 Preencher com IA</button>':'')
+    +'</div>'
+    +'<div class="form-grid mb-12">'
       +'<div class="field-group form-full"><div class="field-label">🎯 Objetivo (O) — O que queremos alcançar?</div>'
-        +'<input id="okr-obj" value="'+(m&&m.objetivo||'')+'" placeholder="Ex: Aumentar a capacidade de ensaios EMC"/></div>'
-      +'<div class="field-group"><div class="field-label">Área</div>'
+        +'<input id="okr-obj" value="'+(m&&m.objetivo||'')+'" placeholder="Ex: Aumentar a capacidade de ensaios" style="font-size:14px;font-weight:600;padding:10px 14px"/></div>'
+      +'<div class="field-group"><div class="field-label">Área *</div>'
         +'<select id="okr-area">'+areas.map(function(a){return'<option value="'+a+'"'+(selArea===a?' selected':'')+'>'+a+'</option>';}).join('')+'</select></div>'
       +'<div class="field-group"><div class="field-label">Período</div>'
-        +'<input id="okr-periodo" value="'+(m&&m.periodo||'')+'" placeholder="Ex: Q1 2025, Jan–Mar 2025"/></div>'
+        +'<input id="okr-periodo" value="'+(m&&m.periodo||'')+'" placeholder="Ex: Q2 2026"/></div>'
     +'</div>'
-    +'<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">📊 Key Results — Como vamos medir?</div>'
-    +'<div id="kr-list">'+krs.map(function(kr,i){return renderKRRow(kr,i);}).join('')+'</div>'
-    +'<button class="btn btn-sm" onclick="addKRRow()">+ Adicionar Key Result</button>'
-    +'<div class="flex gap-8 mt-16 justify-between">'
+    +'<div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+        +'<div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em">📊 Key Results — Como vamos medir?</div>'
+        +'<button class="btn btn-xs" onclick="addKRRow()" style="font-size:10px">+ Key Result</button>'
+      +'</div>'
+      +'<div id="kr-list">'+krs.map(function(kr,i){return renderKRRow(kr,i);}).join('')+'</div>'
+    +'</div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center">'
       +(id?'<button class="btn btn-danger btn-sm" onclick="delOKR(\''+id+'\')">Excluir</button>':'<div></div>')
-      +'<div class="flex gap-8">'
+      +'<div style="display:flex;gap:8px">'
         +'<button class="btn btn-sm" onclick="closeModal()">Cancelar</button>'
-        +'<button class="btn btn-primary btn-sm" onclick="salvarMetaOKR(\''+(id||'')+'\')">💾 Salvar OKR</button>'
+        +'<button class="btn btn-primary btn-sm" onclick="salvarMetaOKR(\''+(id||'')+'\')">💾 Salvar</button>'
       +'</div>'
     +'</div>';
   document.getElementById('modal').style.display='flex';
+}
+
+// Preencher OKR com IA (popup de contexto inline)
+function preencherOKRComIA(){
+  var existing=document.getElementById('ia-ctx-popup');
+  if(existing)existing.remove();
+  var popup=document.createElement('div');
+  popup.id='ia-ctx-popup';
+  popup.style.cssText='background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:12px;animation:fadeIn .2s';
+  popup.innerHTML='<div style="font-size:11px;font-weight:700;color:var(--txt2);margin-bottom:8px">🤖 Contexto para a IA gerar o OKR:</div>'
+    +'<input id="ia-okr-inline-ctx" placeholder="Ex: Foco em qualidade, produtividade, inovação..." style="width:100%;margin-bottom:8px;font-size:12px">'
+    +'<div style="display:flex;gap:8px">'
+      +'<button class="btn btn-purple btn-sm" onclick="executarPreencherOKRIA()">Gerar com IA</button>'
+      +'<button class="btn btn-sm" onclick="document.getElementById(\'ia-ctx-popup\').remove()">Cancelar</button>'
+    +'</div>';
+  var obj=document.getElementById('okr-obj');
+  if(obj)obj.parentElement.parentElement.insertBefore(popup,obj.parentElement);
+  document.getElementById('ia-okr-inline-ctx').focus();
+}
+
+async function executarPreencherOKRIA(){
+  var area=(document.getElementById('okr-area')||{}).value||'';
+  var ctx=(document.getElementById('ia-okr-inline-ctx')||{}).value||'';
+  var popup=document.getElementById('ia-ctx-popup');
+  if(popup)popup.remove();
+  toast('🤖 Gerando OKR com IA...');
+  var okrsExist=metas.filter(function(m){return m.tipo==='okr'&&m.area===area;}).map(function(m){return m.objetivo;});
+  var prompt='Gere EXATAMENTE 1 OKR para a área '+area+' com 2-3 key results.\n';
+  if(ctx)prompt+='CONTEXTO: '+ctx+'\n';
+  if(okrsExist.length)prompt+='NÃO repita OKRs existentes: '+okrsExist.join('; ')+'\n';
+  prompt+='Retorne JSON: {"objetivo":"...","keyResults":[{"titulo":"...","alvo":100,"unidade":"%"}]}\nSem markdown. Apenas JSON.';
+  try{
+    var token=squadoGetToken();
+    var r=await fetch(SQUADO_API+'/api/ai/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({messages:[{role:'system',content:'Responda SOMENTE com JSON válido. OKR concreto e mensurável. Português.'},{role:'user',content:prompt}],max_tokens:800})});
+    var d=await r.json();
+    var txt=(d.content||'').replace(/```json/g,'').replace(/```/g,'').trim();
+    var match=txt.match(/\{[\s\S]*\}/);
+    if(!match){toast('⚠️ IA não retornou JSON');return;}
+    var s=JSON.parse(match[0]);
+    if(s.objetivo)document.getElementById('okr-obj').value=s.objetivo;
+    if(s.keyResults&&s.keyResults.length){document.getElementById('kr-list').innerHTML=s.keyResults.map(function(kr,i){return renderKRRow(kr,i);}).join('');}
+    toast('✅ OKR preenchido! Revise e salve.');
+  }catch(e){toast('⚠️ '+e.message);}
 }
 
 // ── KR helpers ─────────────────────────────────────────────────
@@ -359,7 +414,8 @@ async function executarGeracaoOKRIA(){
   toast('\u{1F916} Gerando OKRs com IA...');
 
   var areasGerar=area?[area]:[...new Set(colaboradores.filter(function(c){return c.area&&c.status!=='Desligado';}).map(function(c){return c.area;}))];
-  var prompt='Gere OKRs para: '+areasGerar.join(', ')+'.\nPer\u00edodo: '+periodo+'\n';
+  var okrsExist=metas.filter(function(m){return m.tipo==='okr';}).map(function(m){return m.objetivo;});
+  var prompt='Gere EXATAMENTE 1 OKR para a área: '+(area||areasGerar[0])+'.\nPer\u00edodo: '+periodo+'\n';
   if(ctx) prompt+='Foco: '+ctx+'\n';
   if(usarMeta){
     var metasCtx=metas.filter(function(m){return m.tipo==='smart';}).slice(0,5);
@@ -369,7 +425,8 @@ async function executarGeracaoOKRIA(){
     prompt+='Avalia\u00e7\u00f5es recentes: '+avaliacoes.slice(-5).map(function(a){return a.colaborador+' '+a.mediaGeral;}).join(', ')+'\n';
   }
   prompt+='Retorne JSON: [{"area":"...","objetivo":"...","keyResults":[{"titulo":"...","alvo":100,"unidade":"..."}]}]\n';
-  prompt+='Cada OKR deve ter 2-3 key results com alvos num\u00e9ricos concretos.\nSem markdown. Apenas JSON.';
+  if(okrsExist.length) prompt+='NÃO repita OKRs existentes: '+okrsExist.join('; ')+'\n';
+  prompt+='O OKR deve ter 2-3 key results com alvos num\u00e9ricos concretos.\nSem markdown. Apenas JSON.';
 
   try{
     var token=squadoGetToken();
@@ -386,6 +443,8 @@ async function executarGeracaoOKRIA(){
     if(!match){toast('⚠️ IA não retornou JSON válido');return;}
     var sugestoes=JSON.parse(match[0]);
 
+    // Limitar a 1 OKR
+    if(sugestoes.length>1) sugestoes=sugestoes.slice(0,1);
     sugestoes.forEach(function(s){
       var areaFinal=s.area||areasGerar[0];
       // Validar que a área existe

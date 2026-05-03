@@ -628,6 +628,8 @@ async function executarGeracaoPDIIA(){
   prompt+='Foco: '+foco+'\n';
   if(ctx) prompt+='Contexto: '+ctx+'\n';
   prompt+='\nRetorne JSON: {\"objetivo\":\"objetivo geral do PDI\",\"competencias\":[\"comp1\",\"comp2\"],\"acoes\":[{\"descricao\":\"...\",\"tipo\":\"Treinamento|Mentoria|Projeto|Leitura|Curso\",\"prazo\":\"2026-06-30\",\"progresso\":0}]}\n';
+  var pdisExist=(typeof getPDIs==='function'?getPDIs():[]).filter(function(p){return p.colId===colId;}).map(function(p){return p.objetivo;});
+  if(pdisExist.length) prompt+='NÃO repita PDIs existentes: '+pdisExist.join('; ')+'\n';
   prompt+='Gere 4-6 ações concretas e realistas. Sem markdown. Apenas JSON.';
 
   try{
