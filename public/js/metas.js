@@ -216,16 +216,42 @@ function atualizarOKRCtxMeta(){
 async function preencherMetaComIA(){
   var colId=(document.getElementById('sm-col')||{}).value;
   var col=colId?colaboradores.find(function(c){return c.id===colId;}):null;
+
+  // Popup inline para contexto
+  var existing=document.getElementById('ia-ctx-popup');
+  if(existing)existing.remove();
+  var popup=document.createElement('div');
+  popup.id='ia-ctx-popup';
+  popup.style.cssText='background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:12px;animation:fadeIn .2s';
+  popup.innerHTML=
+    '<div style="font-size:11px;font-weight:700;color:var(--txt2);margin-bottom:8px">🤖 Contexto para a IA gerar a meta:</div>'
+    +'<input id="ia-meta-inline-ctx" placeholder="Ex: Foco em produtividade, certificação, liderança..." style="width:100%;margin-bottom:8px;font-size:12px">'
+    +'<div style="display:flex;gap:8px">'
+      +'<button class="btn btn-purple btn-sm" onclick="executarPreencherMetaIA()">Gerar com IA</button>'
+      +'<button class="btn btn-sm" onclick="document.getElementById(\'ia-ctx-popup\').remove()">Cancelar</button>'
+    +'</div>';
+  var smTitulo=document.getElementById('sm-titulo');
+  if(smTitulo)smTitulo.parentElement.parentElement.insertBefore(popup, smTitulo.parentElement);
+  document.getElementById('ia-meta-inline-ctx').focus();
+}
+
+async function executarPreencherMetaIA(){
+  var colId=(document.getElementById('sm-col')||{}).value;
+  var col=colId?colaboradores.find(function(c){return c.id===colId;}):null;
+  var ctx=(document.getElementById('ia-meta-inline-ctx')||{}).value||'';
+  var popup=document.getElementById('ia-ctx-popup');
+  if(popup)popup.remove();
+
   toast('\u{1F916} Gerando meta com IA...');
 
-  var prompt='Gere UMA meta SMART'+(col?' para '+col.nome+' ('+col.nivel+', \u00e1rea: '+(col.area||'geral')+')':' para a equipe')+'.\n';
-  // Contexto cruzado: usar OKRs da \u00e1rea
+  var prompt='Gere UMA meta SMART'+(col?' para '+col.nome+' ('+col.nivel+', \u00e1rea: '+(col.area||'geral')+')':', para a equipe')+'.\n';
+  if(ctx) prompt+='CONTEXTO DO GESTOR: '+ctx+'\n';
+  // OKRs da área (buscar em metas tipo okr, não em ls('okrs'))
   if(col&&col.area){
-    var okrs=ls('okrs',[])||[];
-    var okrsArea=okrs.filter(function(o){return o.area===col.area;});
+    var okrsArea=metas.filter(function(m){return m.tipo==='okr'&&m.area===col.area;});
     if(okrsArea.length) prompt+='OKRs da \u00e1rea: '+okrsArea.map(function(o){return o.objetivo;}).join('; ')+'\n';
   }
-  // Contexto: avalia\u00e7\u00e3o
+  // Avaliação
   if(col){
     var avsC=avaliacoes.filter(function(a){return a.colaboradorId===colId;});
     var lastAv=avsC.length?avsC[avsC.length-1]:null;

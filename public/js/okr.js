@@ -386,17 +386,19 @@ async function executarGeracaoOKRIA(){
     if(!match){toast('⚠️ IA não retornou JSON válido');return;}
     var sugestoes=JSON.parse(match[0]);
 
-    var okrs=ls('okrs',[])||[];
     sugestoes.forEach(function(s){
-      okrs.push({
-        id:uid(),area:s.area||areasGerar[0],objetivo:s.objetivo||'Objetivo',
-        periodo:periodo,status:'Em andamento',
+      var areaFinal=s.area||areasGerar[0];
+      // Validar que a área existe
+      var areasValidas=Object.keys(AREA_COLORS);
+      if(areasValidas.indexOf(areaFinal)<0 && areasValidas.length) areaFinal=areasValidas[0];
+      metas.push({
+        id:uid(),tipo:'okr',objetivo:s.objetivo||'Objetivo',
+        area:areaFinal,periodo:periodo,status:'Em andamento',
         keyResults:(s.keyResults||[]).map(function(kr){
           return{id:uid(),titulo:kr.titulo||'KR',alvo:kr.alvo||100,atual:0,unidade:kr.unidade||'%'};
         })
       });
     });
-    lss('okrs',okrs);
     saveAll();
     toast('✅ '+sugestoes.length+' OKRs gerados!');
     render('okr');
