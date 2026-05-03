@@ -3593,6 +3593,34 @@ var SQUADO_KB={
   'movimentacao':{
     q:['movimentação','movimentacao','promoção','promocao','transferência','transferencia','admissão','demissão','histórico'],
     r:'<strong>Movimentações:</strong><br><span class="step">1.</span> Abra o <strong>Perfil</strong> do colaborador<br><span class="step">2.</span> Vá na aba <strong>Movimentações</strong><br><span class="step">3.</span> Clique <strong>+ Nova Movimentação</strong><br><span class="step">4.</span> Selecione o tipo (Promoção, Transferência, etc.)<br><span class="step">5.</span> Preencha data e descrição<br><span class="step">6.</span> Cada movimentação fica no histórico do colaborador'
+  },
+  'oque_okr':{
+    q:['o que e okr','o que é okr','oque e okr','significado okr','pra que serve okr','como funciona okr'],
+    r:'<strong>O que é OKR?</strong><br>OKR = <em>Objectives and Key Results</em> (Objetivos e Resultados-chave).<br><br>Método de metas usado por Google, Spotify e outras empresas. Funciona assim:<br><br><span class="step">🎯 Objetivo:</span> O que queremos alcançar (qualitativo)<br><span class="step">📊 Key Results:</span> Como vamos medir (quantitativo, com números)<br><br><strong>Exemplo:</strong><br>Objetivo: <em>Ser referência em qualidade</em><br>KR1: Reduzir retrabalho para menos de 5%<br>KR2: Atingir NPS interno de 4.5<br><span class="nav-link" onclick="go(\'okr\');sqAssistToggle()">→ Criar um OKR</span>'
+  },
+  'oque_pdi':{
+    q:['o que e pdi','o que é pdi','oque e pdi','significado pdi','pra que serve pdi'],
+    r:'<strong>O que é PDI?</strong><br>PDI = <em>Plano de Desenvolvimento Individual</em>.<br><br>É um plano de ações concretas para desenvolver um colaborador, baseado nos pontos fracos e fortes da avaliação.<br><br><strong>Estrutura:</strong><br>• <strong>Objetivo:</strong> O que desenvolver<br>• <strong>Competências:</strong> Áreas de foco<br>• <strong>Ações:</strong> Treinamento, mentoria, cursos<br>• <strong>Prazos:</strong> Quando concluir cada ação<br><br>No Squado, a IA gera o PDI usando dados da avaliação!<br><span class="nav-link" onclick="go(\'pdi\');sqAssistToggle()">→ Criar PDI com IA</span>'
+  },
+  'oque_smart':{
+    q:['o que e smart','o que é smart','meta smart','significado smart','como fazer meta smart'],
+    r:'<strong>O que é uma Meta SMART?</strong><br>SMART é um acrônimo para criar metas eficazes:<br><br><span class="step">S</span> — <strong>Específica:</strong> O que exatamente?<br><span class="step">M</span> — <strong>Mensurável:</strong> Como medir?<br><span class="step">A</span> — <strong>Atingível:</strong> É realista?<br><span class="step">R</span> — <strong>Relevante:</strong> Por que importa?<br><span class="step">T</span> — <strong>Temporal:</strong> Até quando?<br><br><strong>Exemplo:</strong><br><em>Reduzir tempo de emissão de relatórios de 72h para 48h até junho de 2026.</em><br><span class="nav-link" onclick="go(\'metas\');sqAssistToggle()">→ Criar Meta SMART</span>'
+  },
+  'oque_ninebox':{
+    q:['o que e ninebox','o que é nine box','oque e 9box','pra que serve ninebox','matriz 9box'],
+    r:'<strong>O que é o Nine-Box?</strong><br>Matriz 3×3 que cruza dois eixos:<br><br>• <strong>Eixo X:</strong> Desempenho (nota da avaliação)<br>• <strong>Eixo Y:</strong> Potencial (definido pelo gestor)<br><br><strong>Os quadrantes indicam:</strong><br>🌟 <em>Alto + Alto:</em> Estrelas (promover)<br>💪 <em>Alto desempenho:</em> Manter e valorizar<br>⚠️ <em>Baixo + Alto potencial:</em> Desenvolver com PDI<br>❌ <em>Baixo + Baixo:</em> Atenção / realocar<br><span class="nav-link" onclick="go(\'ninebox\');sqAssistToggle()">→ Ver Nine-Box</span>'
+  },
+  'oque_avaliacao':{
+    q:['o que e avaliação','avaliação desempenho','pra que serve avaliação','como funciona avaliação'],
+    r:'<strong>Avaliação de Desempenho</strong><br>Processo de medir a performance de um colaborador.<br><br><strong>No Squado:</strong><br>• Perguntas por <strong>seções</strong> (Técnica, Liderança, etc.)<br>• Notas de <strong>1 a 5</strong> por pergunta<br>• Calcula <strong>média</strong> por seção e geral<br>• Gera <strong>PDF</strong> automático<br>• Alimenta <strong>Nine-Box</strong>, <strong>PDI</strong> e <strong>Metas</strong><br><br>Perguntas configuráveis por nível de cargo.<br><span class="nav-link" onclick="go(\'avaliacao\');sqAssistToggle()">→ Ir para Avaliação</span>'
+  },
+  'oque_capacidade':{
+    q:['o que e capacidade','carga de trabalho','distribuição de trabalho','gargalo','pessoas ideais'],
+    r:'<strong>Gestão de Capacidade</strong><br>Mapeia funções da equipe e calcula se você tem gente suficiente.<br><br><strong>Conceitos:</strong><br>• <strong>Função:</strong> Uma atividade (ex: Emissão de relatórios)<br>• <strong>Tempo unitário:</strong> Duração por serviço<br>• <strong>Total/mês:</strong> Carga total da função<br>• <strong>Pessoas ideais:</strong> Quantas precisaria<br>• <strong>Ocupação:</strong> % de tempo de cada pessoa<br><br>Se alguém está acima de 100%, está sobrecarregado!<br><span class="nav-link" onclick="go(\'capacidade\');sqAssistToggle()">→ Ver Capacidade</span>'
+  },
+  'diferenca_meta_okr':{
+    q:['diferença meta okr','meta vs okr','meta ou okr','quando usar meta','quando usar okr'],
+    r:'<strong>Meta SMART vs OKR</strong><br><br><span class="step">Meta SMART:</span> Individual, para UM colaborador. Foco em desenvolvimento pessoal.<br>Ex: <em>João reduzir erros em 20% até junho.</em><br><br><span class="step">OKR:</span> Para a ÁREA/equipe. Foco em resultado coletivo.<br>Ex: <em>Área de Qualidade atingir NPS 4.5.</em><br><br><strong>Regra prática:</strong><br>• Desenvolvimento individual → <strong>Meta SMART</strong><br>• Objetivo da área/empresa → <strong>OKR</strong><br>• Ambos se complementam!'
   }
 };
 
@@ -3908,4 +3936,7 @@ function mostrarOnboarding(){
 .sq-a-typing span:nth-child(3){animation-delay:.4s}
 @keyframes sqBounce{to{transform:translateY(-3px);background:#0F6E56}}
 @media(max-width:640px){#sq-assist-popup{right:8px;left:8px;width:auto;bottom:78px}#sq-assist-btn{bottom:80px;right:12px}}
+</style>
+<style>
+.grecaptcha-badge{visibility:hidden!important;opacity:0!important;position:fixed!important;bottom:-100px!important}
 </style>
