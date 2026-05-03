@@ -4,26 +4,135 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Suporte · Squado</title>
-<meta http-equiv="refresh" content="0;url=/app#suporte">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--paper:#FAFAF7;--ink-900:#1A1F1D;--ink-500:#6B7370;--green:#0F6E56}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--paper);color:var(--ink-900);display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:20px}
-h1{font-family:'Sora',sans-serif;font-size:24px;font-weight:600;margin-bottom:8px}
-p{font-size:14px;color:var(--ink-500);margin-bottom:20px}
-a{color:var(--green);font-weight:500;text-decoration:none}
-a:hover{text-decoration:underline}
+:root{--paper:#FAFAF7;--ink-900:#1A1F1D;--ink-700:#3A4240;--ink-500:#6B7370;--ink-400:#9BA09E;--ink-200:#E0E2E0;--ink-50:#F5F6F4;--green:#0F6E56;--green-deep:#084231;--green-soft:#E6EFEB;--white:#fff}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--paper);color:var(--ink-900);min-height:100vh}
+nav{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:rgba(250,250,247,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--ink-200);position:sticky;top:0;z-index:10}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-mark{width:30px;height:30px;background:var(--green);border-radius:6px;display:flex;align-items:center;justify-content:center}
+.nav-word{font-weight:700;font-size:16px;color:var(--ink-900)}
+.container{max-width:640px;margin:0 auto;padding:48px 24px 80px}
+h1{font-family:'Sora',sans-serif;font-size:28px;font-weight:600;letter-spacing:-.03em;text-align:center;margin-bottom:8px}
+.sub{font-size:14px;color:var(--ink-500);text-align:center;margin-bottom:32px}
+.card{background:var(--white);border:1px solid var(--ink-200);border-radius:12px;padding:28px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-700);margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1px solid var(--ink-200);border-radius:8px;font-size:13px;font-family:inherit;background:var(--white);color:var(--ink-900);outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(15,110,86,.1)}
+.field textarea{resize:vertical;min-height:100px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn-send{display:block;width:100%;padding:12px;background:var(--ink-900);color:var(--white);border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;margin-top:8px}
+.btn-send:hover{background:var(--green)}
+.success{display:none;text-align:center;padding:40px 20px}
+.success .icon{font-size:48px;margin-bottom:12px}
+.success h2{font-family:'Sora';font-size:22px;font-weight:600;margin-bottom:8px}
+.success p{font-size:14px;color:var(--ink-500)}
+.success a{color:var(--green);font-weight:600;text-decoration:none}
+.alternatives{margin-top:24px;text-align:center;font-size:13px;color:var(--ink-500)}
+.alternatives a{color:var(--green);font-weight:500;text-decoration:none}
+footer{text-align:center;padding:20px;font-size:11px;color:var(--ink-400);border-top:1px solid var(--ink-200);margin-top:40px}
+@media(max-width:600px){.row{grid-template-columns:1fr}.container{padding:32px 16px 60px}}
 </style>
 </head>
 <body>
-<div>
-<div style="font-size:40px;margin-bottom:16px">💬</div>
-<h1>Suporte Squado</h1>
-<p>Redirecionando para o painel de suporte...</p>
-<p><a href="/app#suporte">Clique aqui se não for redirecionado automaticamente</a></p>
-<p style="margin-top:20px;font-size:12px;color:var(--ink-500)">Ou entre em contato: <a href="mailto:contato@squado.com.br">contato@squado.com.br</a></p>
+<nav>
+  <a href="/" class="nav-brand">
+    <div class="nav-mark"><svg viewBox="0 0 40 40" width="18" height="18" style="color:#fff"><rect x="6" y="6" width="28" height="6" fill="currentColor"/><rect x="6" y="6" width="6" height="14" fill="currentColor"/><rect x="6" y="17" width="28" height="6" fill="currentColor"/><rect x="28" y="20" width="6" height="14" fill="currentColor"/><rect x="6" y="28" width="28" height="6" fill="currentColor"/></svg></div>
+    <span class="nav-word">Squado</span>
+  </a>
+  <a href="/app" style="font-size:13px;color:var(--green);font-weight:500;text-decoration:none">Entrar →</a>
+</nav>
+
+<div class="container">
+  <h1>💬 Suporte</h1>
+  <p class="sub">Tem alguma dúvida ou problema? Preencha o formulário abaixo.</p>
+
+  <div class="card" id="form-card">
+    <form id="suporte-form" onsubmit="enviar(event)">
+      <div class="row">
+        <div class="field">
+          <label>Nome</label>
+          <input type="text" id="sup-nome" placeholder="Seu nome" required>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="sup-email" placeholder="seu@email.com" required>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Categoria *</label>
+          <select id="sup-cat" required>
+            <option value="">Selecione...</option>
+            <option>Bug / Erro</option>
+            <option>Dúvida de uso</option>
+            <option>Sugestão de melhoria</option>
+            <option>Problema de acesso</option>
+            <option>Solicitação de recurso</option>
+            <option>Outro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Prioridade</label>
+          <select id="sup-prio">
+            <option>Normal</option>
+            <option>Baixa</option>
+            <option>Alta</option>
+            <option>Urgente</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Assunto *</label>
+        <input type="text" id="sup-assunto" placeholder="Resuma o problema em poucas palavras" required>
+      </div>
+      <div class="field">
+        <label>Descrição detalhada *</label>
+        <textarea id="sup-desc" placeholder="Descreva o que aconteceu, os passos para reproduzir o problema, e o que esperava que acontecesse..." required></textarea>
+      </div>
+      <button type="submit" class="btn-send">📨 Enviar Ticket</button>
+    </form>
+  </div>
+
+  <div class="success" id="success-card">
+    <div class="icon">✅</div>
+    <h2>Ticket enviado!</h2>
+    <p>Recebemos sua mensagem e vamos responder em breve.<br>Você também pode acompanhar pelo <a href="/app#suporte">painel do app</a>.</p>
+  </div>
+
+  <div class="alternatives">
+    Ou entre em contato por email: <a href="mailto:contato@squado.com.br">contato@squado.com.br</a>
+  </div>
 </div>
+
+<footer>© 2026 Squado Tecnologia · <a href="/politica-privacidade.html" style="color:var(--ink-400)">Privacidade</a> · <a href="/termos-uso.html" style="color:var(--ink-400)">Termos</a></footer>
+
+<script>
+async function enviar(e){
+  e.preventDefault();
+  var nome=document.getElementById('sup-nome').value;
+  var email=document.getElementById('sup-email').value;
+  var cat=document.getElementById('sup-cat').value;
+  var prio=document.getElementById('sup-prio').value;
+  var assunto=document.getElementById('sup-assunto').value;
+  var desc=document.getElementById('sup-desc').value;
+
+  if(!cat||!assunto||!desc){alert('Preencha todos os campos obrigatórios.');return;}
+
+  try{
+    await fetch('https://squado-api-936751823867.us-central1.run.app/api/suporte/ticket',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({nome:nome,email:email,categoria:cat,prioridade:prio,assunto:assunto,descricao:desc,status:'Aberto',data:new Date().toISOString().slice(0,10)})
+    });
+  }catch(err){console.warn('Suporte err:',err);}
+
+  document.getElementById('form-card').style.display='none';
+  document.getElementById('success-card').style.display='block';
+}
+</script>
 </body>
 </html>

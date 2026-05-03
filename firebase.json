@@ -16,6 +16,10 @@
         "destination": "/app.html"
       },
       {
+        "source": "/suporte",
+        "destination": "/suporte.html"
+      },
+      {
         "source": "/formulario",
         "destination": "/formulario.html"
       },
