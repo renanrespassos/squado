@@ -1824,6 +1824,7 @@ const SEED=[
 ];
 let niveis=ls('niveis_v2',DEFAULT_NIVEIS);
 let perguntas=ls('perguntas_v3',DEFAULT_PERGUNTAS);
+let perguntasOrdem=ls('perguntas_ordem',null)||Object.keys(perguntas);
 // Se tem token salvo, começa com localStorage (pode estar vazio — nuvem preenche)
 // Se não tem token, usa SEED como demo local
 const _temToken = !!localStorage.getItem('squado_jwt_token');
@@ -2260,7 +2261,7 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
 <script src="js/dashboard.js?v=1777775973"></script>
 <script src="js/colaboradores.js?v=1777775973"></script>
 <script src="js/organograma.js?v=1777775973"></script>
-<script src="js/avaliacao.js?v=1777775973"></script>
+<script src="js/avaliacao.js?v=1777794883"></script>
 <script src="js/pdi.js?v=1777775973"></script>
 <script src="js/ninebox.js?v=1777775973"></script>
 <script src="js/competencias.js?v=1777775973"></script>
@@ -2268,8 +2269,8 @@ notas:{title:'Bloco de Notas',sub:'Anotações organizadas pela IA',btn:null},
 <script src="js/perfil.js?v=1777775973"></script>
 <script src="js/notas-particulares.js?v=1777775973"></script>
 <script src="js/suporte.js?v=1777775973"></script>
-<script src="js/metas.js?v=1777794254"></script>
-<script src="js/okr.js?v=1777794254"></script>
+<script src="js/metas.js?v=1777794883"></script>
+<script src="js/okr.js?v=1777794883"></script>
 <script src="js/ia.js?v=1777775973"></script>
 <script src="js/notas.js?v=1777775973"></script>
 <script src="js/capacidade.js?v=1777775973"></script>
@@ -2579,9 +2580,9 @@ async function squadoCarregarDaNuvem() {
         avaliacoes = cfg.snapshot_avaliacoes;
         lss('avaliacoes', avaliacoes);
       } else if(!cfg.snapshot_avaliacoes) {
-        // Nuvem não tem avaliações — manter locais se existirem
-        var localAvals = ls('avaliacoes', []);
-        if(localAvals.length > 0) { avaliacoes = localAvals; }
+        // Nuvem não tem avaliações — limpar (não manter dados de outra conta)
+        avaliacoes = [];
+        lss('avaliacoes', []);
       }
       if (cfg.snapshot_metas && Array.isArray(cfg.snapshot_metas) && cfg.snapshot_metas.length > 0) {
         metas = cfg.snapshot_metas;
@@ -2625,6 +2626,8 @@ async function squadoCarregarDaNuvem() {
       if (cfg.valores)        lss('valores_v1', cfg.valores);
       if (cfg.matriz_comp)    lss('matriz_comp_v1', cfg.matriz_comp);
       if (cfg.perguntas)      { perguntas = cfg.perguntas; lss('perguntas_v3', cfg.perguntas); }
+      if (cfg.perguntas_ordem) { perguntasOrdem = cfg.perguntas_ordem; lss('perguntas_ordem', cfg.perguntas_ordem); }
+      else if (cfg.perguntas)  { lss('perguntas_ordem', Object.keys(cfg.perguntas)); }
       if (cfg.niveis)         { niveis = cfg.niveis; }
       if (cfg.organograma_pos){ orgPositions = cfg.organograma_pos; lss('orgPos_v2', orgPositions); }
       if (cfg.organograma_conn){ orgConnections = cfg.organograma_conn; lss('orgConns', orgConnections); }
@@ -2752,6 +2755,7 @@ async function squadoMigrarDados() {
       valores:         ls('valores_v1', null),
       matriz_comp:     ls('matriz_comp_v1', null),
       perguntas:       ls('perguntas_v3', null),
+      perguntas_ordem: ls('perguntas_ordem', null),
       niveis:          niveis,
       organograma_pos: orgPositions,
       organograma_conn:orgConnections,
@@ -2800,6 +2804,7 @@ async function squadoSyncSnapshot(origem) {
       valores:          ls('valores_v1', null),
       matriz_comp:      ls('matriz_comp_v1', null),
       perguntas:        ls('perguntas_v3', null),
+      perguntas_ordem:  ls('perguntas_ordem', null),
       niveis:           niveis,
       organograma_pos:  orgPositions,
       organograma_conn: orgConnections,
@@ -2819,6 +2824,7 @@ async function squadoSyncSnapshot(origem) {
       snapshot_competencias:   ls('competencias_v2', []),
       snapshot_niveis:         ls('niveis_v2', []),
       snapshot_perguntas:      ls('perguntas_v3', null),
+      snapshot_perguntas_ordem: ls('perguntas_ordem', null),
       snapshot_notas_part:     ls('squado_notas_part', null),
       snapshot_notas_senha:    localStorage.getItem('squado_notas_senha') || null,
     });

@@ -605,7 +605,16 @@ function delAvaliacao(id){if(!confirm('Excluir?'))return;avaliacoes=avaliacoes.f
 // PERGUNTAS
 // ══════════════════════════════════════════
 function renderPerguntas(){
-  const niveisDisp=Object.keys(perguntas);
+  // Usar ordem explícita se disponível
+  var pergOrdem=ls('perguntas_ordem',null);
+  var niveisDisp;
+  if(pergOrdem&&Array.isArray(pergOrdem)){
+    // Usar ordem salva, adicionar novos que não estão na ordem
+    niveisDisp=pergOrdem.filter(function(k){return perguntas[k];});
+    Object.keys(perguntas).forEach(function(k){if(niveisDisp.indexOf(k)<0)niveisDisp.push(k);});
+  } else {
+    niveisDisp=Object.keys(perguntas);
+  }
   const ativo=window._pergNivelAtivo&&perguntas[window._pergNivelAtivo]?window._pergNivelAtivo:niveisDisp[0];
   return`<div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
@@ -630,16 +639,21 @@ function pergDragStart(e,nivel){_pergDragNivel=nivel;e.dataTransfer.effectAllowe
 function pergDrop(e,nivelAlvo){
   e.preventDefault();
   if(!_pergDragNivel||_pergDragNivel===nivelAlvo)return;
-  var keys=Object.keys(perguntas);
+  // Usar ordem salva ou Object.keys
+  var pergOrdem=ls('perguntas_ordem',null);
+  var keys=pergOrdem&&Array.isArray(pergOrdem)?pergOrdem.filter(function(k){return perguntas[k];}):Object.keys(perguntas);
+  // Adicionar chaves novas que não estão na ordem
+  Object.keys(perguntas).forEach(function(k){if(keys.indexOf(k)<0)keys.push(k);});
   var fromIdx=keys.indexOf(_pergDragNivel);
   var toIdx=keys.indexOf(nivelAlvo);
   if(fromIdx<0||toIdx<0)return;
   keys.splice(fromIdx,1);
   keys.splice(toIdx,0,_pergDragNivel);
+  // Salvar ordem explícita
+  lss('perguntas_ordem', keys);
   // Reconstruir objeto na nova ordem
   var novo={};
   keys.forEach(function(k){novo[k]=perguntas[k];});
-  // Atualizar variável global E salvar explicitamente
   for(var k in perguntas) delete perguntas[k];
   keys.forEach(function(k){perguntas[k]=novo[k];});
   lss('perguntas_v3', perguntas);
@@ -668,7 +682,14 @@ function delPergunta(nivel,sec,qi){if(!confirm('Excluir?'))return;perguntas[nive
 function addPergunta(nivel,sec){perguntas[nivel][sec].push('Nova pergunta...');saveAll();render('perguntas')}
 function addSecao(nivel){const s=prompt('Nome da nova seção:');if(s&&!perguntas[nivel][s]){perguntas[nivel][s]=[];saveAll();render('perguntas')}}
 function addNivelPerguntas(){const n=prompt('Nome do nível:');if(n&&!perguntas[n]){perguntas[n]={...perguntas['Estagiário']};saveAll();render('perguntas')}}
-function salvarPerguntas(){saveAll();toast('Perguntas salvas!')}
+function salvarPerguntas(){
+  // Salvar ordem explícita
+  var pergOrdem=ls('perguntas_ordem',null);
+  if(!pergOrdem) lss('perguntas_ordem', Object.keys(perguntas));
+  lss('perguntas_v3', perguntas);
+  saveAll();
+  toast('Perguntas salvas!');
+}
 
 function excluirNivel(nome){
   if(!confirm('Excluir o nível "'+nome+'" e todas as suas perguntas?'))return;
