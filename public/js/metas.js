@@ -391,9 +391,8 @@ async function executarGeracaoMetasIA(){
   var prompt='Gere EXATAMENTE 1 meta SMART'+(col?' para '+col.nome+' ('+col.nivel+', \u00e1rea: '+(col.area||'geral')+')':', uma para cada \u00e1rea da equipe')+'.\n';
   if(ctx) prompt+='Contexto: '+ctx+'\n';
   if(usarOKR){
-    var okrs=ls('okrs',[])||[];
-    var okrsFiltrados=col&&col.area?okrs.filter(function(o){return o.area===col.area;}):okrs;
-    if(okrsFiltrados.length) prompt+='OKRs para alinhar: '+okrsFiltrados.map(function(o){return o.objetivo+' ('+o.area+')';}).join('; ')+'\n';
+    var okrsFiltrados=metas.filter(function(m){return m.tipo==='okr'&&(!col||!col.area||m.area===col.area);});
+    if(okrsFiltrados.length) prompt+='OKRs para alinhar: '+okrsFiltrados.map(function(o){return o.objetivo+' ('+(o.area||'')+')';}).join('; ')+'\n';
   }
   if(usarAval){
     var avsCtx=col?avaliacoes.filter(function(a){return a.colaboradorId===colId;}):avaliacoes.slice(-5);

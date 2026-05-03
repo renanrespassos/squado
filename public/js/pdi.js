@@ -627,6 +627,9 @@ async function executarGeracaoPDIIA(){
   }
   prompt+='Foco: '+foco+'\n';
   if(ctx) prompt+='Contexto: '+ctx+'\n';
+  // PDIs existentes para evitar duplicatas
+  var pdisExist=getPDIs().filter(function(p){return p.colId===colId;}).map(function(p){return p.objetivo;});
+  if(pdisExist.length) prompt+='NÃO repita PDIs já existentes: '+pdisExist.join('; ')+'\n';
   prompt+='\nRetorne JSON: {\"objetivo\":\"objetivo geral do PDI\",\"competencias\":[\"comp1\",\"comp2\"],\"acoes\":[{\"descricao\":\"...\",\"tipo\":\"Treinamento|Mentoria|Projeto|Leitura|Curso\",\"prazo\":\"2026-06-30\",\"progresso\":0}]}\n';
   var pdisExist=(typeof getPDIs==='function'?getPDIs():[]).filter(function(p){return p.colId===colId;}).map(function(p){return p.objetivo;});
   if(pdisExist.length) prompt+='NÃO repita PDIs existentes: '+pdisExist.join('; ')+'\n';
@@ -647,7 +650,12 @@ async function executarGeracaoPDIIA(){
     if(!match){toast('⚠️ IA não retornou JSON válido');return;}
     var sugestao=JSON.parse(match[0]);
 
+    // Checar se já existe PDI para esse colaborador com objetivo similar
     var pdis=getPDIs();
+    var pdisCol=pdis.filter(function(p){return p.colId===colId;});
+    var duplicado=pdisCol.some(function(p){return p.objetivo&&sugestao.objetivo&&p.objetivo.toLowerCase()===sugestao.objetivo.toLowerCase();});
+    if(duplicado){toast('⚠️ PDI com objetivo similar já existe para este colaborador.');return;}
+
     pdis.push({
       id:uid(),colId:colId,colNome:col.nome,
       objetivo:sugestao.objetivo||'PDI — '+col.nome,
