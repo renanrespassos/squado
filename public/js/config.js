@@ -533,7 +533,7 @@ function renderValores(){
 
   if(!secoesHtml) secoesHtml='<div style="text-align:center;padding:40px;color:var(--txt3)"><div style="font-size:40px;margin-bottom:8px">⭐</div><div style="font-size:14px;font-weight:600;margin-bottom:6px">Nenhuma seção ativa</div><div style="font-size:12px">Clique em "✏️ Editar" pra selecionar as seções visíveis.</div></div>';
 
-  return '<div style="max-width:900px">'
+  return '<div style="max-width:100%">'
     // Card header com botões (SEM bolhas - ficam no editar)
     +'<div class="card" style="padding:16px;margin-bottom:12px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'

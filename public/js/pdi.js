@@ -64,7 +64,7 @@ function renderPDI(search){
       html+='</div>';
     }
     html+='<div style="display:flex;gap:6px">';
-    html+='<button class="btn btn-xs btn-primary" data-col="'+col.id+'" onclick="abrirPDI(this.dataset.col)" style="flex:1">'+(ativo?'Ver PDI':'+ Criar PDI')+'</button>';
+    html+='<button class="btn btn-sm btn-primary" data-col="'+col.id+'" onclick="abrirPDI(this.dataset.col)" style="flex:1;font-size:11px">'+(ativo?'Ver PDI':'+ Criar PDI')+'</button>';
     if(meusPDIs.length>1)html+='<button class="btn btn-xs" data-col="'+col.id+'" onclick="verHistoricoPDI(this.dataset.col)">📂 '+meusPDIs.length+'</button>';
     html+='</div></div>';
     return html;
@@ -673,50 +673,89 @@ async function executarGeracaoPDIIA(){
 }
 
 // ═══ IA inline no PDI modal ═══
-async function gerarPDIIAInline(){
+function gerarPDIIAInline(){
   var pdiId=window._currentPdiId;
   if(!pdiId){toast('Abra um PDI primeiro.');return;}
+  // Popup de contexto inline
+  var existing=document.getElementById('ia-ctx-popup');
+  if(existing)existing.remove();
+  var popup=document.createElement('div');
+  popup.id='ia-ctx-popup';
+  popup.style.cssText='background:var(--bg2);border-radius:10px;padding:14px;margin-top:12px;animation:fadeIn .2s';
+  popup.innerHTML='<div style="font-size:11px;font-weight:700;color:var(--txt2);margin-bottom:8px">🤖 Contexto para a IA sugerir ação:</div>'
+    +'<input id="ia-pdi-inline-ctx" placeholder="Ex: Foco em liderança, norma 17025, comunicação..." style="width:100%;margin-bottom:8px;font-size:12px">'
+    +'<div style="display:flex;gap:8px">'
+      +'<button class="btn btn-purple btn-sm" onclick="executarPDIIAInline()">Gerar 1 ação com IA</button>'
+      +'<button class="btn btn-sm" onclick="document.getElementById(\'ia-ctx-popup\').remove()">Cancelar</button>'
+    +'</div>';
+  // Inserir antes do rodapé
+  var rodape=document.querySelector('#modal-body > div:last-child');
+  if(rodape)rodape.parentElement.insertBefore(popup,rodape);
+  document.getElementById('ia-pdi-inline-ctx').focus();
+}
+
+async function executarPDIIAInline(){
+  var pdiId=window._currentPdiId;
+  if(!pdiId)return;
+  var ctx=(document.getElementById('ia-pdi-inline-ctx')||{}).value||'';
+  var popup=document.getElementById('ia-ctx-popup');
+  if(popup)popup.remove();
+
   var pdis=getPDIs();
   var pdi=pdis.find(function(p){return p.id===pdiId;});
   if(!pdi)return;
   var col=colaboradores.find(function(c){return c.id===pdi.colId;});
   if(!col)return;
 
-  toast('🤖 Gerando ações com IA...');
+  toast('🤖 Gerando ação com IA...');
 
   var avsC=avaliacoes.filter(function(a){return a.colaboradorId===pdi.colId;});
   var lastAv=avsC.length?avsC[avsC.length-1]:null;
-  var prompt='Gere 3-4 ações de PDI para '+col.nome+' ('+col.nivel+', '+col.area+').\n';
+  var prompt='Gere EXATAMENTE 1 ação de PDI para '+col.nome+' ('+col.nivel+', '+col.area+').\n';
+  if(ctx) prompt+='CONTEXTO DO GESTOR: '+ctx+'\n';
   if(lastAv&&lastAv.secaoMedias){
     var fracos=Object.entries(lastAv.secaoMedias).filter(function(e){return e[1]<4;});
-    if(fracos.length) prompt+='Pontos fracos: '+fracos.map(function(e){return e[0]+' ('+e[1]+')';}).join(', ')+'\n';
+    if(fracos.length) prompt+='Pontos fracos na avaliação: '+fracos.map(function(e){return e[0]+' ('+e[1]+')';}).join(', ')+'\n';
+    prompt+='A ação DEVE focar nos pontos fracos.\n';
   }
   var acoesExist=(pdi.acoes||[]).map(function(a){return a.descricao;});
   if(acoesExist.length) prompt+='NÃO repita ações existentes: '+acoesExist.join('; ')+'\n';
-  prompt+='Retorne JSON: [{"descricao":"...","tipo":"Treinamento|Mentoria|Projeto|Curso","prazo":"2026-06-30"}]\nSem markdown. Apenas JSON.';
+  prompt+='Retorne JSON: [{"descricao":"...","tipo":"Treinamento|Mentoria|Projeto|Curso","prazo":"2026-06-30"}]\nApenas 1 ação. Sem markdown. Apenas JSON.';
 
   try{
     var token=squadoGetToken();
     var r=await fetch(SQUADO_API+'/api/ai/chat',{
       method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
       body:JSON.stringify({messages:[
-        {role:'system',content:'Responda SOMENTE com JSON válido. Ações concretas e realistas. Português.'},
+        {role:'system',content:'Responda SOMENTE com JSON válido. Gere EXATAMENTE 1 ação concreta e realista. Português brasileiro.'},
         {role:'user',content:prompt}
-      ],max_tokens:800})
+      ],max_tokens:400})
     });
     var d=await r.json();
     var txt=(d.content||'').replace(/```json/g,'').replace(/```/g,'').trim();
     var match=txt.match(/\[[\s\S]*\]/);
-    if(!match){toast('⚠️ IA não retornou JSON');return;}
-    var novasAcoes=JSON.parse(match[0]);
+    if(!match){
+      // Tentar como objeto único
+      var matchObj=txt.match(/\{[\s\S]*\}/);
+      if(matchObj){
+        var obj=JSON.parse(matchObj[0]);
+        match=['['+JSON.stringify(obj)+']'];
+      } else {toast('⚠️ IA não retornou JSON');return;}
+    }
+    var novasAcoes=JSON.parse(match[0]).slice(0,1); // Forçar máximo 1
     var idx=pdis.findIndex(function(p){return p.id===pdiId;});
     if(idx<0)return;
     if(!pdis[idx].acoes)pdis[idx].acoes=[];
+    // Verificar duplicata
+    var existDescs=(pdis[idx].acoes||[]).map(function(a){return a.descricao.toLowerCase();});
     novasAcoes.forEach(function(a){
-      pdis[idx].acoes.push({id:uid(),descricao:a.descricao||'',tipo:a.tipo||'Treinamento',prazo:a.prazo||'',status:'Não iniciada',progresso:0});
+      var desc=(a.descricao||'').trim();
+      if(desc && existDescs.indexOf(desc.toLowerCase())<0){
+        pdis[idx].acoes.push({id:uid(),descricao:desc,tipo:a.tipo||'Treinamento',prazo:a.prazo||'',status:'Não iniciada',progresso:0});
+      }
     });
     savePDIs(pdis);
-    toast('✅ '+novasAcoes.length+' ações adicionadas!');
+    toast('✅ Ação adicionada ao PDI!');
     renderModalPDI(pdis[idx],col);
   }catch(e){toast('⚠️ '+e.message);}
 }
