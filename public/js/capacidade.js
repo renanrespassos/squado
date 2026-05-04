@@ -261,8 +261,8 @@ function renderCapacidade() {
     // Botões de acesso rápido
     if(col){
       card += '<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);display:flex;gap:6px">'
-        + '<button class="btn btn-xs" onclick="event.stopPropagation();verCol(\''+col.id+'\')" style="flex:1">👤 Perfil</button>'
-        + '<button class="btn btn-xs btn-purple" onclick="event.stopPropagation();verColCapacidade(\''+col.id+'\')" style="flex:1">📌 Funções</button>'
+        + '<button class="btn btn-xs" onclick="event.stopPropagation();verCol(\''+col.id+'\')" style="flex:1">Perfil</button>'
+        + '<button class="btn btn-xs btn-primary" onclick="event.stopPropagation();verColCapacidade(\''+col.id+'\')" style="flex:1">Funções</button>'
       + '</div>';
     }
 

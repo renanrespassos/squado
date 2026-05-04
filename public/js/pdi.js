@@ -64,7 +64,7 @@ function renderPDI(search){
       html+='</div>';
     }
     html+='<div style="display:flex;gap:6px">';
-    html+='<button class="btn btn-xs" data-col="'+col.id+'" onclick="abrirPDI(this.dataset.col)" style="flex:1">📋 '+(ativo?'Ver PDI':'Criar PDI')+'</button>';
+    html+='<button class="btn btn-xs btn-primary" data-col="'+col.id+'" onclick="abrirPDI(this.dataset.col)" style="flex:1">'+(ativo?'Ver PDI':'+ Criar PDI')+'</button>';
     if(meusPDIs.length>1)html+='<button class="btn btn-xs" data-col="'+col.id+'" onclick="verHistoricoPDI(this.dataset.col)">📂 '+meusPDIs.length+'</button>';
     html+='</div></div>';
     return html;
@@ -275,7 +275,6 @@ function renderModalPDI(pdi,col){
     +'</div>'
 
     // Rodapé
-    // Rodapé
     +'<div style="display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border);flex-wrap:wrap">'
       +'<button class="btn btn-sm" data-pdi="'+pdi.id+'" data-col="'+col.id+'" onclick="deletarPDI(this.dataset.pdi,this.dataset.col)" style="color:#A6311F">Excluir</button>'
       +'<button class="btn btn-sm" data-pdi="'+pdi.id+'" onclick="gerarPDFPDI(this.dataset.pdi)">PDF</button>'
@@ -283,6 +282,7 @@ function renderModalPDI(pdi,col){
       +'<button class="btn btn-sm" onclick="gerarPDIIAInline()" style="border-color:#534AB7;color:#534AB7">🤖 Sugerir Ações com IA</button>'
       +'<button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="closeModal();render(\'pdi\')">Fechar</button>'
     +'</div>';
+    document.getElementById('modal').style.display='flex';
   setTimeout(function(){
     var inp=document.getElementById('pdi-nova-comp');
     if(inp&&!inp._bound){
