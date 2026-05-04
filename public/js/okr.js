@@ -188,8 +188,8 @@ function openOKRForm(id, preArea){
         +'<input id="okr-obj" value="'+(m&&m.objetivo||'')+'" placeholder="Ex: Aumentar a capacidade de ensaios" style="font-size:14px;font-weight:600;padding:10px 14px"/></div>'
       +'<div class="field-group"><div class="field-label">Área *</div>'
         +'<select id="okr-area">'+areas.map(function(a){return'<option value="'+a+'"'+(selArea===a?' selected':'')+'>'+a+'</option>';}).join('')+'</select></div>'
-      +'<div class="field-group"><div class="field-label">Período</div>'
-        +'<input id="okr-periodo" value="'+(m&&m.periodo||'')+'" placeholder="Ex: Q2 2026"/></div>'
+      +'<div class="field-group"><div class="field-label">Prazo</div>'
+        +'<input id="okr-periodo" type="date" value="'+(m&&m.periodo||'')+'"/></div>'
     +'</div>'
     +'<div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
@@ -338,10 +338,10 @@ function editarKRs(okrId){
           '<span style="font-size:13px;font-weight:600;flex:1">'+kr.titulo+'</span>'+
           '<span style="font-size:12px;font-weight:700;color:'+(done?'var(--green)':'var(--txt2)')+'">'+pct+'%</span>'+
         '</div>'+
-        '<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end">'+
-          '<div><div class="field-label">Atual</div><input type="number" id="kr-atual-'+i+'" value="'+atual+'" step="any" style="font-size:13px;width:100%"/></div>'+
-          '<div><div class="field-label">Alvo</div><input type="number" id="kr-alvo-'+i+'" value="'+alvo+'" step="any" style="font-size:13px;width:100%"/></div>'+
-          '<button class="btn btn-xs '+(done?'btn-primary':'')+'" onclick="document.getElementById(\'kr-atual-'+i+'\').value=document.getElementById(\'kr-alvo-'+i+'\').value" style="margin-bottom:2px">'+(done?'Concluído':'Concluir')+'</button>'+
+        '<div style="display:flex;align-items:center;gap:10px;margin-top:4px">'+
+          '<input type="range" min="0" max="100" value="'+pct+'" id="kr-prog-'+i+'" oninput="document.getElementById(\'kr-pct-'+i+'\').textContent=this.value+\'%\'" style="flex:1;accent-color:'+(done?'var(--green)':'#185FA5')+'"/>'+
+          '<span id="kr-pct-'+i+'" style="font-size:12px;font-weight:700;min-width:36px;color:'+(done?'var(--green)':'var(--txt2)')+'">'+pct+'%</span>'+
+          '<input type="hidden" id="kr-alvo-'+i+'" value="100"/>'+
         '</div>'+
         (kr.unidade?'<div style="font-size:10px;color:var(--txt3);margin-top:4px">Unidade: '+kr.unidade+'</div>':'')+
       '</div>';
@@ -359,10 +359,14 @@ function salvarKRs(okrId,count){
   var okr=metas.find(function(m){return m.id===okrId;});
   if(!okr)return;
   for(var i=0;i<count;i++){
-    var atualEl=document.getElementById('kr-atual-'+i);
+    var progEl=document.getElementById('kr-prog-'+i);
     var alvoEl=document.getElementById('kr-alvo-'+i);
-    if(atualEl)okr.keyResults[i].atual=atualEl.value;
-    if(alvoEl)okr.keyResults[i].alvo=alvoEl.value;
+    if(progEl){
+      var pctVal=parseInt(progEl.value)||0;
+      var alvo=parseFloat(alvoEl?alvoEl.value:100)||100;
+      okr.keyResults[i].atual=Math.round(alvo*pctVal/100);
+      okr.keyResults[i].alvo=alvo;
+    }
   }
   saveAll();
   var calcPct=0;var krsLen=okr.keyResults.length;

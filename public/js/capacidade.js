@@ -471,9 +471,9 @@ function renderCapacidade() {
 
   // TABS: Pessoas | Por Área
   + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">'
-    + '<div style="display:flex;gap:0;border:0.5px solid var(--border2);border-radius:8px;overflow:hidden;width:fit-content">'
-      + '<button id="tab-cap-pessoas" class="btn btn-primary btn-sm" onclick="switchCapTab(\'pessoas\')">👥 Por Pessoa</button>'
-      + '<button id="tab-cap-areas" class="btn btn-sm" onclick="switchCapTab(\'areas\')">📋 Por Área / Função</button>'
+    + '<div style="display:flex;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden">'
+      + '<button id="tab-cap-pessoas" onclick="switchCapTab(\'pessoas\')" style="padding:7px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all .15s;background:var(--green);color:#fff">Por Pessoa</button>'
+      + '<button id="tab-cap-areas" onclick="switchCapTab(\'areas\')" style="padding:7px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all .15s;background:var(--bg);color:var(--txt2)">Por Função</button>'
     + '</div>'
     + '<button class="btn btn-sm btn-danger" id="btn-excluir-selecionadas" onclick="excluirFuncoesSelecionadas()" style="display:none">🗑 Excluir selecionadas</button>'
     + '<button class="btn btn-sm" onclick="render(\'capacidade\')" style="display:flex;align-items:center;gap:5px;border-color:var(--green);color:var(--green)">🔄 Atualizar</button>'
@@ -502,10 +502,12 @@ function switchCapTab(tab) {
   const isPessoas = tab === 'pessoas';
   document.getElementById('cap-panel-pessoas').style.display = isPessoas ? '' : 'none';
   document.getElementById('cap-panel-areas').style.display  = isPessoas ? 'none' : 'block';
-  document.getElementById('tab-cap-pessoas').style.background = isPessoas ? 'var(--green)' : 'var(--bg2)';
-  document.getElementById('tab-cap-pessoas').style.color = isPessoas ? '#fff' : 'var(--txt2)';
-  document.getElementById('tab-cap-areas').style.background  = isPessoas ? 'var(--bg2)' : 'var(--green)';
-  document.getElementById('tab-cap-areas').style.color  = isPessoas ? 'var(--txt2)' : '#fff';
+  var btnP=document.getElementById('tab-cap-pessoas');
+  var btnA=document.getElementById('tab-cap-areas');
+  btnP.style.background = isPessoas ? 'var(--green)' : 'var(--bg)';
+  btnP.style.color = isPessoas ? '#fff' : 'var(--txt2)';
+  btnA.style.background = isPessoas ? 'var(--bg)' : 'var(--green)';
+  btnA.style.color = isPessoas ? 'var(--txt2)' : '#fff';
 }
 
 function ajustarServicos(delta) {

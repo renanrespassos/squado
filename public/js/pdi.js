@@ -44,7 +44,7 @@ function renderPDI(search){
       html+='<div style="text-align:right"><div style="font-size:16px;font-weight:900;color:'+corP+'">'+pct+'%</div>';
       html+='<div style="font-size:9px;color:var(--txt3)">'+(ativo.ciclo||'PDI Ativo')+'</div></div>';
     } else {
-      html+='<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:#FAEEDA;color:#854F0B">Sem PDI</span>';
+      html+='<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:#FAEEDA;color:#854F0B;font-weight:600">Sem PDI</span>';
     }
     html+='</div>';
     if(ativo&&pct>=0){
@@ -64,7 +64,7 @@ function renderPDI(search){
       html+='</div>';
     }
     html+='<div style="display:flex;gap:6px">';
-    html+='<button class="btn btn-primary btn-xs" data-col="'+col.id+'" onclick="abrirPDI(this.dataset.col)" style="flex:1">📋 '+(ativo?'Ver PDI':'Criar PDI')+'</button>';
+    html+='<button class="btn btn-xs" data-col="'+col.id+'" onclick="abrirPDI(this.dataset.col)" style="flex:1">📋 '+(ativo?'Ver PDI':'Criar PDI')+'</button>';
     if(meusPDIs.length>1)html+='<button class="btn btn-xs" data-col="'+col.id+'" onclick="verHistoricoPDI(this.dataset.col)">📂 '+meusPDIs.length+'</button>';
     html+='</div></div>';
     return html;
@@ -246,17 +246,11 @@ function renderModalPDI(pdi,col){
       +'<button class="btn btn-primary btn-sm" data-pdi="'+pdi.id+'" onclick="adicionarAcaoPDI(this.dataset.pdi)">+ Adicionar ao PDI</button>'
     +'</div>'
     // Datas de Controle e Revisões
-    +'<div style="margin-top:14px;padding-top:14px;border-top:0.5px solid var(--border);margin-bottom:14px">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">📅 Datas de Controle</div>'
-      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'
-        +'<div><div style="font-size:10px;color:var(--txt3);margin-bottom:3px">Data de Criação</div>'
-          +'<div style="font-size:12px;font-weight:600;color:var(--txt)">'+pdi.dataCriacao+'</div>'
-        +'</div>'
-        +'<div><div style="font-size:10px;color:var(--txt3);margin-bottom:3px">Próxima Revisão</div>'
-          +'<input id="pdi-prox-rev" type="date" value="'+(pdi.dataProxRevisao||'')+'" '
-            +'onblur="_pdiSaveRev(this)" data-pdi="'+pdi.id+'" '
-            +'style="font-size:12px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:6px;width:100%"/>'
-        +'</div>'
+    +'<div style="margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border);margin-bottom:12px">'
+      +'<div style="display:flex;align-items:center;gap:16px;margin-bottom:8px">'
+        +'<span style="font-size:10px;color:var(--txt3)">Criado: <strong>'+pdi.dataCriacao+'</strong></span>'
+        +'<span style="font-size:10px;color:var(--txt3)">Revisão: </span>'
+        +'<input id="pdi-prox-rev" type="date" value="'+(pdi.dataProxRevisao||'')+'" onblur="_pdiSaveRev(this)" data-pdi="'+pdi.id+'" style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:6px"/>'
       +'</div>'
       // Histórico de revisões
       +'<div style="font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Histórico de Revisões</div>'
@@ -674,4 +668,53 @@ async function executarGeracaoPDIIA(){
   }catch(e){
     toast('⚠️ Erro: '+e.message);
   }
+}
+
+// ═══ IA inline no PDI modal ═══
+async function gerarPDIIAInline(){
+  var pdiId=window._currentPdiId;
+  if(!pdiId){toast('Abra um PDI primeiro.');return;}
+  var pdis=getPDIs();
+  var pdi=pdis.find(function(p){return p.id===pdiId;});
+  if(!pdi)return;
+  var col=colaboradores.find(function(c){return c.id===pdi.colId;});
+  if(!col)return;
+
+  toast('🤖 Gerando ações com IA...');
+
+  var avsC=avaliacoes.filter(function(a){return a.colaboradorId===pdi.colId;});
+  var lastAv=avsC.length?avsC[avsC.length-1]:null;
+  var prompt='Gere 3-4 ações de PDI para '+col.nome+' ('+col.nivel+', '+col.area+').\n';
+  if(lastAv&&lastAv.secaoMedias){
+    var fracos=Object.entries(lastAv.secaoMedias).filter(function(e){return e[1]<4;});
+    if(fracos.length) prompt+='Pontos fracos: '+fracos.map(function(e){return e[0]+' ('+e[1]+')';}).join(', ')+'\n';
+  }
+  var acoesExist=(pdi.acoes||[]).map(function(a){return a.descricao;});
+  if(acoesExist.length) prompt+='NÃO repita ações existentes: '+acoesExist.join('; ')+'\n';
+  prompt+='Retorne JSON: [{"descricao":"...","tipo":"Treinamento|Mentoria|Projeto|Curso","prazo":"2026-06-30"}]\nSem markdown. Apenas JSON.';
+
+  try{
+    var token=squadoGetToken();
+    var r=await fetch(SQUADO_API+'/api/ai/chat',{
+      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({messages:[
+        {role:'system',content:'Responda SOMENTE com JSON válido. Ações concretas e realistas. Português.'},
+        {role:'user',content:prompt}
+      ],max_tokens:800})
+    });
+    var d=await r.json();
+    var txt=(d.content||'').replace(/```json/g,'').replace(/```/g,'').trim();
+    var match=txt.match(/\[[\s\S]*\]/);
+    if(!match){toast('⚠️ IA não retornou JSON');return;}
+    var novasAcoes=JSON.parse(match[0]);
+    var idx=pdis.findIndex(function(p){return p.id===pdiId;});
+    if(idx<0)return;
+    if(!pdis[idx].acoes)pdis[idx].acoes=[];
+    novasAcoes.forEach(function(a){
+      pdis[idx].acoes.push({id:uid(),descricao:a.descricao||'',tipo:a.tipo||'Treinamento',prazo:a.prazo||'',status:'Não iniciada',progresso:0});
+    });
+    savePDIs(pdis);
+    toast('✅ '+novasAcoes.length+' ações adicionadas!');
+    renderModalPDI(pdis[idx],col);
+  }catch(e){toast('⚠️ '+e.message);}
 }
