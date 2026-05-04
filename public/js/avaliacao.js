@@ -19,16 +19,105 @@ function limparRascunhoAval(){
   localStorage.removeItem('aval_rascunho');
 }
 function renderAvaliacao(){
-  const temRascunho = avalState.colId && avalState.colId !== '';
-  const rascunhoMsg = temRascunho ? `
-    <div style="background:#E1F5EE;border:1px solid #9FE1CB;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
-      <span style="font-size:20px">📝</span>
-      <div style="flex:1">
-        <div style="font-size:13px;font-weight:700;color:#0F6E56">Rascunho em andamento</div>
-        <div style="font-size:11px;color:#1D9E75">Avaliação de <strong>${(colaboradores.find(x=>x.id===avalState.colId)||{}).nome||'colaborador'}</strong> — continue de onde parou</div>
-      </div>
-      <button class="btn btn-sm" onclick="limparRascunhoAval();avalState={colId:'',nivel:'',respostas:{},obs:{},pontosPos:'',oportunidades:''};render('avaliacao')" style="border-color:#A32D2D;color:#A32D2D">✕ Descartar</button>
-    </div>` : '';
+  // Se tem colaborador selecionado (rascunho ou avaliação ativa), mostra o formulário
+  if(avalState.colId && avalState.colId !== ''){
+    return renderAvalForm();
+  }
+  // Senão, mostra grid de colaboradores
+  var q='';
+  var totalAvs=avaliacoes.length;
+  var avPorCol={};
+  avaliacoes.forEach(function(a){
+    if(!avPorCol[a.colaboradorId])avPorCol[a.colaboradorId]=[];
+    avPorCol[a.colaboradorId].push(a);
+  });
+  var semAval=colaboradores.filter(function(c){return !avPorCol[c.id]||!avPorCol[c.id].length;}).length;
+  var avaliados=colaboradores.length-semAval;
+
+  function cardCol(c){
+    var avsC=avPorCol[c.id]||[];
+    var lastAv=avsC.length?avsC.sort(function(a,b){return(b.data||'').localeCompare(a.data||'');})[0]:null;
+    var temAv=!!lastAv;
+    var nota=lastAv?lastAv.mediaGeral:null;
+    var corNota=nota?nota>=4?'var(--green)':nota>=3?'#854F0B':'#A32D2D':'var(--txt3)';
+
+    var html='<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:12px;overflow:hidden">'
+      +'<div style="padding:12px 14px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid var(--border)">'
+        +av(c.nome,false,true)
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:13px;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.nome+'</div>'
+          +'<div style="font-size:10px;color:var(--txt3)">'+(c.nivel||'')+(c.area?' · '+c.area:'')+'</div>'
+        +'</div>';
+
+    if(temAv){
+      html+='<div style="text-align:right">'
+        +'<div style="font-size:18px;font-weight:800;color:'+corNota+'">'+nota.toFixed(1)+'</div>'
+        +'<div style="font-size:9px;color:var(--txt3)">'+lastAv.data+'</div>'
+      +'</div>';
+    } else {
+      html+='<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:#FAEEDA;color:#854F0B;font-weight:600">Sem avaliação</span>';
+    }
+    html+='</div>';
+
+    // Seções com notas (se avaliado)
+    if(temAv && lastAv.secaoMedias){
+      html+='<div style="padding:8px 14px">';
+      Object.entries(lastAv.secaoMedias).forEach(function(e){
+        var sec=e[0],val=e[1];
+        var pct=Math.round(val/5*100);
+        var cor=val>=4?'var(--green)':val>=3?'#854F0B':'#A32D2D';
+        html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'
+          +'<span style="font-size:10px;color:var(--txt3);width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+sec+'</span>'
+          +'<div style="flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+cor+';border-radius:2px"></div></div>'
+          +'<span style="font-size:10px;font-weight:700;color:'+cor+';width:24px;text-align:right">'+val.toFixed(1)+'</span>'
+        +'</div>';
+      });
+      html+='</div>';
+    }
+
+    // Botão
+    html+='<div style="padding:8px 14px;border-top:0.5px solid var(--border)">'
+      +'<button class="btn btn-sm '+(temAv?'':'btn-primary')+'" onclick="iniciarAvaliacao(\''+c.id+'\')" style="width:100%;font-size:11px">'
+        +(temAv?'Reavaliar':'Avaliar')
+      +'</button>'
+    +'</div></div>';
+    return html;
+  }
+
+  return '<div>'
+    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px">'
+      +'<div style="background:var(--bg);padding:12px;text-align:center"><div style="font-size:22px;font-weight:900;color:var(--txt)">'+colaboradores.length+'</div><div style="font-size:10px;color:var(--txt3)">Colaboradores</div></div>'
+      +'<div style="background:var(--bg);padding:12px;text-align:center"><div style="font-size:22px;font-weight:900;color:var(--green)">'+avaliados+'</div><div style="font-size:10px;color:var(--txt3)">Avaliados</div></div>'
+      +'<div style="background:var(--bg);padding:12px;text-align:center"><div style="font-size:22px;font-weight:900;color:#854F0B">'+semAval+'</div><div style="font-size:10px;color:var(--txt3)">Sem avaliação</div></div>'
+      +'<div style="background:var(--bg);padding:12px;text-align:center"><div style="font-size:22px;font-weight:900;color:var(--blue)">'+totalAvs+'</div><div style="font-size:10px;color:var(--txt3)">Total avaliações</div></div>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">'
+      +colaboradores.map(cardCol).join('')
+    +'</div>'
+  +'</div>';
+}
+
+function iniciarAvaliacao(colId){
+  var c=colaboradores.find(function(x){return x.id===colId;});
+  if(!c)return;
+  avalState.colId=colId;
+  avalState.nivel=c.nivel;
+  avalState.respostas={};
+  avalState.obs={};
+  avalState.pontosPos='';
+  avalState.oportunidades='';
+  render('avaliacao');
+}
+
+function renderAvalForm(){
+  const temRascunho = true;
+  const col = colaboradores.find(x=>x.id===avalState.colId);
+  const rascunhoMsg = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <button class="btn btn-sm" onclick="avalState={colId:'',nivel:'',respostas:{},obs:{},pontosPos:'',oportunidades:''};render('avaliacao')">← Voltar</button>
+      <div style="font-size:14px;font-weight:700;color:var(--txt)">Avaliação de ${col?col.nome:'colaborador'}</div>
+      <span style="font-size:11px;color:var(--txt3)">${col?col.nivel+(col.area?' · '+col.area:''):''}</span>
+    </div>`;
   return rascunhoMsg + `<div class="card mb-12"><div class="form-grid mb-12">
     <div class="field-group"><div class="field-label">Colaborador *</div><select id="av-col" onchange="onColChange(this.value)"><option value="">Selecione...</option>${colaboradores.map(c=>`<option value="${c.id}"${avalState.colId===c.id?' selected':''}>${c.nome}</option>`).join('')}</select></div>
     <div class="field-group"><div class="field-label">Data</div><input type="date" id="av-data" value="${new Date().toISOString().slice(0,10)}"/></div>
@@ -48,7 +137,7 @@ function renderAvaliacao(){
     <button class="btn btn-primary" onclick="salvarAvaliacao()">💾 Salvar Avaliação</button>
   </div>
   <div id="ai-sug-aval-wrap"></div>
-  </div>`:''}`;
+  </div>`:''}`
 }
 function onColChange(colId){
   const c=colaboradores.find(x=>x.id===colId);if(!c)return;
