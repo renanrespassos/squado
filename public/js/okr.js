@@ -194,7 +194,7 @@ function openOKRForm(id, preArea){
     +'<div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
         +'<div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em">📊 Key Results — Como vamos medir?</div>'
-        +'<button class="btn btn-xs" onclick="addKRRow()" style="font-size:10px">+ Key Result</button>'
+        +'<button class="btn btn-sm" onclick="addKRRow()" style="border-color:var(--border);font-size:11px">+ Adicionar KR</button>'
       +'</div>'
       +'<div id="kr-list">'+krs.map(function(kr,i){return renderKRRow(kr,i);}).join('')+'</div>'
     +'</div>'
@@ -254,13 +254,18 @@ async function executarPreencherOKRIA(){
 
 // ── KR helpers ─────────────────────────────────────────────────
 function renderKRRow(kr,i){
-  return '<div style="background:var(--bg);border:0.5px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;gap:8px;align-items:center" id="kr-row-'+i+'">'
-    +'<span style="width:20px;height:20px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">'+(typeof i==="number"?i+1:'?')+'</span>'
-    +'<input placeholder="KR *" data-kr-titulo="'+i+'" value="'+(kr&&kr.titulo||'')+'" style="font-size:12px;flex:2;min-width:0"/>'
-    +'<input placeholder="Alvo" data-kr-alvo="'+i+'" type="number" value="'+(kr&&kr.alvo||'')+'" style="font-size:12px;width:65px"/>'
-    +'<input placeholder="Atual" data-kr-atual="'+i+'" type="number" value="'+(kr&&kr.atual||'')+'" style="font-size:12px;width:60px"/>'
-    +'<input placeholder="Un." data-kr-unidade="'+i+'" value="'+(kr&&kr.unidade||'')+'" style="font-size:12px;width:50px"/>'
-    +'<button class="btn btn-xs btn-danger" onclick="this.parentElement.remove()" style="flex-shrink:0">00d7</button>'
+  var pct=0;
+  if(kr&&kr.alvo&&kr.atual){pct=Math.min(100,Math.round((parseFloat(kr.atual)||0)/(parseFloat(kr.alvo)||1)*100));}
+  return '<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:6px" id="kr-row-'+i+'">'
+    +'<div style="display:flex;gap:8px;align-items:center">'
+      +'<span style="width:20px;height:20px;border-radius:6px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">'+(typeof i==="number"?i+1:'?')+'</span>'
+      +'<input placeholder="Descreva o Key Result" data-kr-titulo="'+i+'" value="'+(kr&&kr.titulo||'')+'" style="font-size:12px;flex:1;min-width:0"/>'
+      +'<input placeholder="Meta" data-kr-alvo="'+i+'" type="number" value="'+(kr&&kr.alvo||100)+'" style="font-size:12px;width:55px;text-align:center"/>'
+      +'<input type="hidden" data-kr-atual="'+i+'" value="'+(kr&&kr.atual||0)+'"/>'
+      +'<input type="hidden" data-kr-unidade="'+i+'" value="'+(kr&&kr.unidade||'%')+'"/>'
+      +'<button class="btn btn-sm" onclick="this.closest(\'[id^=kr-row]\').remove()" style="padding:3px 8px;color:#A6311F;border-color:#E0E2E0;font-size:11px">Excluir</button>'
+    +'</div>'
+    +(pct>0?'<div style="height:3px;background:var(--bg2);border-radius:2px;overflow:hidden;margin-top:6px"><div style="height:100%;width:'+pct+'%;background:var(--blue);border-radius:2px"></div></div>':'')
   +'</div>';
 }
 

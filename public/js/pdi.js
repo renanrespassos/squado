@@ -275,12 +275,14 @@ function renderModalPDI(pdi,col){
     +'</div>'
 
     // Rodapé
-    +'<div style="display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border)">'
-      +'<button class="btn btn-xs" data-pdi="'+pdi.id+'" data-col="'+col.id+'" onclick="deletarPDI(this.dataset.pdi,this.dataset.col)" style="border-color:#DC2626;color:#DC2626">🗑️ Excluir</button>'+'<button class="btn btn-xs" data-pdi="'+pdi.id+'" onclick="gerarPDFPDI(this.dataset.pdi)" style="border-color:#185FA5;color:#185FA5">📄 Exportar PDF</button>'
-      +'<button class="btn btn-xs" data-col="'+col.id+'" onclick="verHistoricoPDI(this.dataset.col)" style="border-color:var(--txt3);color:var(--txt3)">📂 Histórico</button>'
-      +'<button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="closeModal();render(\'pdi\')">✓ Fechar</button>'
+    // Rodapé
+    +'<div style="display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border);flex-wrap:wrap">'
+      +'<button class="btn btn-sm" data-pdi="'+pdi.id+'" data-col="'+col.id+'" onclick="deletarPDI(this.dataset.pdi,this.dataset.col)" style="color:#A6311F">Excluir</button>'
+      +'<button class="btn btn-sm" data-pdi="'+pdi.id+'" onclick="gerarPDFPDI(this.dataset.pdi)">PDF</button>'
+      +'<button class="btn btn-sm" data-col="'+col.id+'" onclick="verHistoricoPDI(this.dataset.col)">Histórico</button>'
+      +'<button class="btn btn-sm" onclick="gerarPDIIAInline()" style="border-color:#534AB7;color:#534AB7">🤖 Sugerir Ações com IA</button>'
+      +'<button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="closeModal();render(\'pdi\')">Fechar</button>'
     +'</div>';
-    document.getElementById('modal').style.display='flex';
   setTimeout(function(){
     var inp=document.getElementById('pdi-nova-comp');
     if(inp&&!inp._bound){
